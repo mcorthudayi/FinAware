@@ -1,0 +1,271 @@
+﻿@using FinAware.MVC.Models.ViewModels
+@model AnalysisViewModel
+@{
+    ViewData["Title"] = "Analiz";
+}
+
+<div class="mb-4">
+    <h1 class="display-6 fw-bold">Analiz & İstatistikler</h1>
+    <p class="text-muted">Gelir ve gider analizleriniz</p>
+</div>
+
+<!-- Period Filter Buttonları -->
+<div class="mb-4">
+    <div class="btn-group" role="group">
+        <a href="/Analysis/Index?period=weekly" class="btn @(Model.Period == "weekly" ? "btn-primary" : "btn-outline-secondary")" style="@(Model.Period == "weekly" ? "background: #4DB6AC; border-color: #4DB6AC;" : "")">
+            <i class="bi bi-calendar-week me-1"></i>Haftalık
+        </a>
+        <a href="/Analysis/Index?period=monthly" class="btn @(Model.Period == "monthly" ? "btn-primary" : "btn-outline-secondary")" style="@(Model.Period == "monthly" ? "background: #4DB6AC; border-color: #4DB6AC;" : "")">
+            <i class="bi bi-calendar-month me-1"></i>Aylık
+        </a>
+        <a href="/Analysis/Index?period=6months" class="btn @(Model.Period == "6months" ? "btn-primary" : "btn-outline-secondary")" style="@(Model.Period == "6months" ? "background: #4DB6AC; border-color: #4DB6AC;" : "")">
+            <i class="bi bi-calendar-range me-1"></i>6 Aylık
+        </a>
+        <a href="/Analysis/Index?period=yearly" class="btn @(Model.Period == "yearly" ? "btn-primary" : "btn-outline-secondary")" style="@(Model.Period == "yearly" ? "background: #4DB6AC; border-color: #4DB6AC;" : "")">
+            <i class="bi bi-calendar4 me-1"></i>Yıllık
+        </a>
+    </div>
+</div>
+
+<!-- Summary Kartları -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div style="width: 48px; height: 48px; background: #E8F5E9; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-arrow-up-circle" style="font-size: 24px; color: #4CAF50;"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="mb-0 text-muted small">Toplam Gelir</p>
+                        <h4 class="mb-0 fw-bold" style="color: #4CAF50;">₺@Model.TotalIncome.ToString("N2")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div style="width: 48px; height: 48px; background: #FFEBEE; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-arrow-down-circle" style="font-size: 24px; color: #EF5350;"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="mb-0 text-muted small">Toplam Gider</p>
+                        <h4 class="mb-0 fw-bold" style="color: #EF5350;">₺@Model.TotalExpenses.ToString("N2")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div style="width: 48px; height: 48px; background: #E0F2F1; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-wallet2" style="font-size: 24px; color: #4DB6AC;"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="mb-0 text-muted small">Bakiye</p>
+                        <h4 class="mb-0 fw-bold" style="color: @(Model.Balance >= 0 ? "#4DB6AC" : "#EF5350");">₺@Model.Balance.ToString("N2")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts rowları -->
+<div class="row g-3 mb-4">
+    <!-- Income vs Expense Chartları -->
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">Gelir vs Gider</h5>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="incomeExpenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Category Breakdown Chartları -->
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">Kategori Bazlı Harcamalar</h5>
+                @if (Model.CategoryExpenses != null && Model.CategoryExpenses.Any())
+                {
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                }
+                else
+                {
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                        <p class="text-muted">Bu dönemde gider yok</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction geçmişleri -->
+<div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-4">İşlem Geçmişi</h5>
+        
+        @if (Model.Transactions != null && Model.Transactions.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Kategori</th>
+                            <th>Açıklama</th>
+                            <th>Tip</th>
+                            <th class="text-end">Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var transaction in Model.Transactions)
+                        {
+                            <tr>
+                                <td>@transaction.Date.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</td>
+                                <td>
+                                    <span class="me-1">@transaction.CategoryIcon</span>
+                                    @transaction.CategoryName
+                                </td>
+                                <td>@(string.IsNullOrEmpty(transaction.Description) ? "-" : transaction.Description)</td>
+                                <td>
+                                    <span class="badge @(transaction.Type == "Income" ? "bg-success" : "bg-danger")">
+                                        @(transaction.Type == "Income" ? "Gelir" : "Gider")
+                                    </span>
+                                </td>
+                                <td class="text-end fw-bold" style="color: @(transaction.Type == "Income" ? "#4CAF50" : "#EF5350");">
+                                    @(transaction.Type == "Income" ? "+" : "-")₺@transaction.Amount.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="text-muted mt-3">Bu dönemde işlem yok</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Income vs Expense Chart
+        const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+        
+        // Değerleri InvariantCulture ile al (nokta ayırıcı)
+        const incomeValue = @Model.TotalIncome.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const expenseValue = @Model.TotalExpenses.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        
+        console.log('Gelir:', incomeValue);
+        console.log('Gider:', expenseValue);
+        
+        new Chart(incomeExpenseCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Gelir', 'Gider'],
+                datasets: [{
+                    label: 'Tutar (₺)',
+                    data: [incomeValue, expenseValue],
+                    backgroundColor: ['#4CAF50', '#EF5350'],
+                    borderRadius: 8,
+                    barThickness: 60
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: false 
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ₺' + context.parsed.y.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₺' + value.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        @if (Model.CategoryExpenses != null && Model.CategoryExpenses.Any())
+        {
+            <text>
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            
+            // Kategori verilerini hazırla - JSON ile doğru encode
+            const categoryData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+                labels = Model.CategoryExpenses.Keys.ToArray(),
+                values = Model.CategoryExpenses.Values.Select(v => decimal.ToDouble(v)).ToArray()
+            }));
+            
+            console.log('Kategori verileri:', categoryData);
+            
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryData.labels,
+                    datasets: [{
+                        data: categoryData.values,
+                        backgroundColor: ['#4DB6AC', '#FF5722', '#2196F3', '#9C27B0', '#FF9800', '#E91E63', '#00BCD4', '#8BC34A']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ₺' + context.parsed.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}

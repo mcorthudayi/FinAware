@@ -1,0 +1,121 @@
+﻿@using FinAware.MVC.Models.ViewModels
+@model CategoryViewModel
+@{
+    ViewData["Title"] = "Kategori Ekle";
+}
+
+<div class="mb-4">
+    <h1 class="display-6 fw-bold">Kategori Ekle</h1>
+    <p class="text-muted">Yeni kategori oluşturun</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <form method="post" action="/Category/Create">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="Name" class="form-label fw-bold">Kategori Adı</label>
+                        <input type="text" class="form-control" id="Name" name="Name" placeholder="Örn: Abonelikler" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Type" class="form-label fw-bold">Tip</label>
+                        <select class="form-select" id="Type" name="Type" required>
+                            <option value="">Seçin...</option>
+                            <option value="Income">Gelir</option>
+                            <option value="Expense">Gider</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Icon" class="form-label fw-bold">İkon (Emoji)</label>
+                        <input type="text" class="form-control" id="Icon" name="Icon" placeholder="📱" maxlength="10" />
+                        <small class="text-muted">Bir emoji seçin (📱 💻 🍔 🚗 vb.)</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="Color" class="form-label fw-bold">Renk</label>
+                        <input type="color" class="form-control form-control-color" id="Color" name="Color" value="#4DB6AC" />
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-lg" style="background: #4DB6AC; color: white;">
+                            <i class="bi bi-check-lg me-2"></i>Kaydet
+                        </button>
+                        <a href="/Category/Index" class="btn btn-outline-secondary">İptal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Önizleme -->
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">Önizleme</h5>
+
+                <div class="text-center p-4" style="background: #f5f5f5; border-radius: 12px;">
+                    <div id="preview-icon" style="font-size: 64px;">📁</div>
+                    <h5 id="preview-name" class="mt-3 fw-bold">Kategori Adı</h5>
+                    <span id="preview-type" class="badge bg-secondary">Tip</span>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="fw-bold">Popüler Emoji'ler:</h6>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">📱</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">💻</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">🍔</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">🚗</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">🏠</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">⚡</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">💰</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">🎮</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">📚</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary emoji-btn" style="font-size: 24px;">🎵</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Önizleme güncellemeleri
+        document.getElementById('Name').addEventListener('input', function() {
+            document.getElementById('preview-name').textContent = this.value || 'Kategori Adı';
+        });
+
+        document.getElementById('Icon').addEventListener('input', function() {
+            document.getElementById('preview-icon').textContent = this.value || '📁';
+        });
+
+        document.getElementById('Type').addEventListener('change', function() {
+            const badge = document.getElementById('preview-type');
+            if (this.value === 'Income') {
+                badge.textContent = 'Gelir';
+                badge.className = 'badge bg-success';
+            } else if (this.value === 'Expense') {
+                badge.textContent = 'Gider';
+                badge.className = 'badge bg-danger';
+            } else {
+                badge.textContent = 'Tip';
+                badge.className = 'badge bg-secondary';
+            }
+        });
+
+        // Emoji butonları
+        document.querySelectorAll('.emoji-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const emoji = this.textContent.trim();
+                document.getElementById('Icon').value = emoji;
+                document.getElementById('preview-icon').textContent = emoji;
+            });
+        });
+    </script>
+}

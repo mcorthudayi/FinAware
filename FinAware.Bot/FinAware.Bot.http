@@ -1,0 +1,6 @@
+@FinAware.Bot_HostAddress = http://localhost:5239
+
+GET {{FinAware.Bot_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

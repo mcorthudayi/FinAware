@@ -1,0 +1,305 @@
+﻿
+
+:root {
+    --primary: #1AAFA3;
+    --primary-dark: #0D7A71;
+    --primary-light: #80CBC4;
+    --income-color: #10b981;
+    --expense-color: #ef4444;
+    --background: #f4f7f9;
+    --card-bg: #ffffff;
+    --border-radius: 12px;
+    --border-color: #e5e7eb;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+}
+
+/* KARTLAR */
+.card {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+}
+
+.card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/*ÖZET KARTLARI DASHBOARD'DAKİ */
+.stat-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.stat-card-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.stat-card-amount {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* İŞLEM LİSTESİ */
+.transaction-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 14px;
+}
+
+    .transaction-item:last-child {
+        border-bottom: none;
+    }
+
+.transaction-icon {
+    width: 42px;
+    height: 42px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.transaction-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.transaction-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.transaction-date {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.transaction-amount {
+    font-size: 15px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+    .transaction-amount.income {
+        color: var(--income-color);
+    }
+
+    .transaction-amount.expense {
+        color: var(--expense-color);
+    }
+
+/*  BUTONLAR */
+.btn-primary-custom {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+    .btn-primary-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(26,175,163,0.35);
+        color: white;
+    }
+
+/*  FORM KONTROLLER */
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(26,175,163,0.12) !important;
+}
+
+.form-control, .form-select {
+    border-radius: 10px !important;
+    border-color: var(--border-color) !important;
+    font-size: 14px;
+}
+
+/* BADGE'LER */
+.badge-income {
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-expense {
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* TABLO */
+.table {
+    font-size: 14px;
+}
+
+    .table th {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--border-color) !important;
+        padding: 10px 12px !important;
+    }
+
+    .table td {
+        padding: 12px !important;
+        vertical-align: middle;
+        border-color: #f3f4f6 !important;
+        color: var(--text-primary);
+    }
+
+    .table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+/* UYARILAR */
+.alert {
+    border-radius: 12px !important;
+    border: none !important;
+    font-size: 14px;
+}
+
+.alert-success {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+}
+
+.alert-danger {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+}
+
+.alert-warning {
+    background: #fffbeb !important;
+    color: #92400e !important;
+}
+
+.alert-info {
+    background: #eff6ff !important;
+    color: #1e40af !important;
+}
+
+/*  PROGRESS BAR */
+.progress {
+    border-radius: 8px !important;
+    background: #f3f4f6 !important;
+}
+
+.progress-bar {
+    border-radius: 8px !important;
+}
+
+/* MODAL */
+.modal-content {
+    border-radius: 18px !important;
+    border: none !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid #f3f4f6 !important;
+    padding: 20px 24px !important;
+}
+
+.modal-footer {
+    border-top: 1px solid #f3f4f6 !important;
+    padding: 16px 24px !important;
+}
+
+/* DROPDOWN */
+.dropdown-item {
+    font-size: 14px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: background 0.15s;
+}
+
+    .dropdown-item:hover {
+        background: #f3f4f6;
+    }
+
+/* YARDIMCI */
+.text-income {
+    color: var(--income-color) !important;
+}
+
+.text-expense {
+    color: var(--expense-color) !important;
+}
+
+.text-primary-custom {
+    color: var(--primary) !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-state-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.empty-state-desc {
+    font-size: 14px;
+}

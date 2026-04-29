@@ -1,0 +1,458 @@
+﻿@{
+    ViewData["Title"] = "Birikim Detayı";
+    var detailsJson = ViewBag.DetailsJson as string ?? "{}";
+    var savingId = ViewBag.SavingId ?? 0;
+}
+
+@Html.AntiForgeryToken()
+<div id="savingDetails" data-json='@Html.Raw(detailsJson)' data-saving-id="@savingId"></div>
+
+<div class="mb-4">
+    <a href="/Saving/Index" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Geri
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div id="detailsContent">
+    <div class="text-center py-5">
+        <div class="spinner-border" style="color: #4DB6AC;"></div>
+        <p class="mt-3 text-muted">Yükleniyor...</p>
+    </div>
+</div>
+
+<!-- Sat Modal -->
+<div class="modal fade" id="sellModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #4DB6AC 0%, #26A69A 100%); color: white; border-radius: 15px 15px 0 0;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-cash-coin me-2"></i>Satış İşlemi
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="sellModalInfo" class="alert alert-info" style="border-radius: 10px;"></div>
+                <form method="post" action="/Saving/Sell" id="sellForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="savingId" value="@savingId" />
+                    <input type="hidden" name="depositTxId" id="sellDepositTxId" />
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            💱 Satış Kuru <span id="sellRateUnit" class="text-muted"></span>
+                        </label>
+                        <input type="text" class="form-control" name="saleRate" id="sellRateInput"
+                               placeholder="Örn: 35.50" required />
+                        <small class="text-muted">Satış anındaki kuru elle giriniz (virgül veya nokta kullanabilirsiniz)</small>
+                    </div>
+                    <div class="alert alert-secondary" id="sellPreview" style="border-radius: 10px; display: none;">
+                        <strong>📊 Tahmini Sonuç:</strong>
+                        <div id="sellPreviewContent" class="mt-2"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">📝 Not (opsiyonel)</label>
+                        <input type="text" class="form-control" name="note" id="sellNoteInput"
+                               placeholder="örn: Acil ihtiyaç, kar realize" maxlength="200" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="button" class="btn btn-success" id="confirmSellBtn">
+                    <i class="bi bi-check-circle me-1"></i>Satışı Onayla
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Düzenle Modal -->
+<div class="modal fade" id="editDepositModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #4DB6AC 0%, #26A69A 100%); color: white; border-radius: 15px 15px 0 0;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-pencil me-2"></i>İşlemi Düzenle
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/Saving/EditTransaction" id="editDepositForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="savingId" value="@savingId" />
+                    <input type="hidden" name="transactionId" id="editTransactionId" />
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tutar</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="amount"
+                                   id="editAmount" placeholder="0.0000" required />
+                            <input type="hidden" name="currency" id="editCurrency" />
+                            <span class="input-group-text" id="editCurrencyLabel">TRY</span>
+                        </div>
+                        <small class="text-muted">Orijinal para biriminde girin</small>
+                    </div>
+                    <div class="mb-3" id="editManualRateDiv" style="display:none;">
+                        <label class="form-label fw-bold">Manuel Kur (₺)</label>
+                        <input type="number" step="0.0001" class="form-control"
+                               name="manualRate" id="editManualRate"
+                               placeholder="Opsiyonel - boş bırakırsanız TCMB kuru kullanılır" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tarih</label>
+                        <input type="date" class="form-control" name="date" id="editDate" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Not (opsiyonel)</label>
+                        <input type="text" class="form-control" name="note"
+                               id="editNote" placeholder="Açıklama..." maxlength="200" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="button" class="btn btn-primary" id="confirmEditBtn"
+                        style="background: linear-gradient(135deg, #4DB6AC 0%, #26A69A 100%); border: none;">
+                    <i class="bi bi-check-circle me-1"></i>Güncelle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const el = document.getElementById('savingDetails');
+            const rawJson = el.dataset.json;
+            const savingId = el.dataset.savingId;
+            const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+
+            let data;
+            try { data = JSON.parse(rawJson); } catch (e) { return; }
+
+            const progressColor = data.progress >= 100 ? '#4CAF50' :
+                data.progress >= 75 ? '#4DB6AC' :
+                data.progress >= 50 ? '#FFC107' : '#FF9800';
+
+            const currencyNames = {
+                'TRY': '₺ TL', 'USD': '$ USD', 'EUR': '€ EUR',
+                'GBP': '£ GBP', 'CHF': 'Fr CHF', 'JPY': '¥ JPY',
+                'SAR': '﷼ SAR', 'AED': 'AED',
+                'XAU': '🥇 Altın/gr', 'XAG': '🥈 Gümüş/gr'
+            };
+
+            const fmt = (n, dec = 2) => Number(n).toLocaleString('tr-TR', {
+                minimumFractionDigits: dec, maximumFractionDigits: dec
+            });
+
+            const active = data.activeSummary || { totalPaid: 0, totalCurrentValue: 0, totalProfitLoss: 0, totalProfitLossPercent: 0, isProfit: true };
+            const sales = data.saleSummary || { saleCount: 0, totalSoldAmount: 0, totalRealizedProfitLoss: 0, isProfit: true };
+
+            const activeProfitColor = active.isProfit ? '#4CAF50' : '#F44336';
+            const activeIcon = active.isProfit ? '📈' : '📉';
+            const activeSign = active.isProfit ? '+' : '';
+
+            const realizedColor = sales.totalRealizedProfitLoss >= 0 ? '#4CAF50' : '#F44336';
+            const realizedSign = sales.totalRealizedProfitLoss >= 0 ? '+' : '';
+            const realizedIcon = sales.totalRealizedProfitLoss >= 0 ? '🟢' : '🔴';
+
+            // ── Aktif deposit kartları ──────────────────────────────────
+            let activeHtml = '';
+            if (data.activeDeposits && data.activeDeposits.length > 0) {
+                data.activeDeposits.forEach(t => {
+                    const pColor = t.isProfit ? '#4CAF50' : '#F44336';
+                    const pSign = t.isProfit ? '+' : '';
+                    const pIcon = t.isProfit ? '🟢' : '🔴';
+                    const date = new Date(t.date).toLocaleDateString('tr-TR', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+
+                    const currencyDisplay = t.currency === 'TRY'
+                        ? `₺${fmt(t.originalAmount)}`
+                        : `${fmt(t.originalAmount, 4)} ${currencyNames[t.currency] || t.currency}`;
+
+                    const rateDisplay = t.currency !== 'TRY'
+                        ? `<small class="text-muted d-block">Alış kuru: ₺${Number(t.exchangeRate).toFixed(4)} → Güncel: ₺${Number(t.currentRate).toFixed(4)}</small>`
+                        : '';
+
+                    // ✅ Düzenle butonu
+                    const editBtn = `
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                onclick="openEditModal(${t.savingTransactionId}, ${t.originalAmount}, '${t.currency}', '${t.date}', ${t.note ? `'${t.note.replace(/'/g, "\\'")}'` : 'null'})"
+                                title="Düzenle">
+                            <i class="bi bi-pencil"></i>
+                        </button>`;
+
+                    // Sat butonu (sadece TRY değilse)
+                    const sellBtn = t.currency !== 'TRY'
+                        ? `<button type="button" class="btn btn-sm btn-success"
+                                   onclick="openSellModal(${t.savingTransactionId}, '${t.currency}', ${t.originalAmount}, ${t.amount}, ${t.exchangeRate}, ${t.currentRate})"
+                                   title="Sat">
+                              <i class="bi bi-cash-coin"></i> Sat
+                           </button>`
+                        : '';
+
+                    const deleteBtn = `
+                        <form method="post" action="/Saving/DeleteTransaction"
+                              onsubmit="return confirm('Bu yatırma işlemini silmek istediğinize emin misiniz?')"
+                              style="display:inline;">
+                            <input type="hidden" name="__RequestVerificationToken" value="${csrfToken}" />
+                            <input type="hidden" name="savingId" value="${savingId}" />
+                            <input type="hidden" name="transactionId" value="${t.savingTransactionId}" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>`;
+
+                    activeHtml += `
+                        <div class="card mb-2" style="border-radius: 10px; border-left: 3px solid ${pColor};">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                    <div style="min-width: 0; flex: 1;">
+                                        <div class="fw-bold">📅 ${date}</div>
+                                        <div>Eklenen: <strong>${currencyDisplay}</strong> = <strong>₺${fmt(t.amount)}</strong></div>
+                                        ${rateDisplay}
+                                        ${t.note ? `<small class="text-muted d-block">📝 ${t.note}</small>` : ''}
+                                    </div>
+                                    <div class="text-end d-flex flex-column align-items-end gap-2">
+                                        <div style="color: ${pColor}; font-weight: bold;">
+                                            ${pIcon} ${pSign}₺${fmt(Math.abs(t.profitLoss))}
+                                        </div>
+                                        <small style="color: ${pColor};">${pSign}%${Math.abs(t.profitLossPercent).toFixed(2)}</small>
+                                        <div class="text-muted" style="font-size: 11px;">
+                                            Güncel: ₺${fmt(t.currentValue)}
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            ${editBtn}
+                                            ${sellBtn}
+                                            ${deleteBtn}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                activeHtml = '<p class="text-muted text-center py-3">Henüz aktif yatırma yok</p>';
+            }
+
+            // ── Satış geçmişi kartları ──────────────────────────────────
+            let salesHtml = '';
+            if (data.sales && data.sales.length > 0) {
+                data.sales.forEach(s => {
+                    const pColor = s.isProfit ? '#4CAF50' : '#F44336';
+                    const pSign = s.isProfit ? '+' : '';
+                    const pIcon = s.isProfit ? '📈' : '📉';
+                    const date = new Date(s.date).toLocaleDateString('tr-TR', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+
+                    const currencyDisplay = s.currency === 'TRY'
+                        ? `₺${fmt(s.originalAmount)}`
+                        : `${fmt(s.originalAmount, 4)} ${currencyNames[s.currency] || s.currency}`;
+
+                    salesHtml += `
+                        <div class="card mb-2" style="border-radius: 10px; border-left: 3px solid ${pColor}; background: ${s.isProfit ? '#F1F8E9' : '#FFEBEE'};">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                    <div style="min-width: 0; flex: 1;">
+                                        <div class="fw-bold">${pIcon} ${date}</div>
+                                        <div>Satılan: <strong>${currencyDisplay}</strong></div>
+                                        <small class="text-muted d-block">Alış kuru: ₺${Number(s.buyRate).toFixed(4)} → Satış kuru: ₺${Number(s.saleRate).toFixed(4)}</small>
+                                        <small class="text-muted d-block">Alış: ₺${fmt(s.buyAmount)} → Satış: ₺${fmt(s.saleAmount)}</small>
+                                        ${s.note ? `<small class="text-muted d-block">📝 ${s.note}</small>` : ''}
+                                    </div>
+                                    <div class="text-end d-flex flex-column align-items-end gap-2">
+                                        <div style="color: ${pColor}; font-weight: bold; font-size: 18px;">
+                                            ${pSign}₺${fmt(Math.abs(s.realizedProfitLoss))}
+                                        </div>
+                                        <small style="color: ${pColor}; font-weight: bold;">
+                                            ${pSign}%${Math.abs(s.realizedPercent).toFixed(2)}
+                                        </small>
+                                        <form method="post" action="/Saving/ReverseSale"
+                                              onsubmit="return confirm('Bu satışı geri almak istediğinize emin misiniz?')"
+                                              style="display:inline;">
+                                            <input type="hidden" name="__RequestVerificationToken" value="${csrfToken}" />
+                                            <input type="hidden" name="savingId" value="${savingId}" />
+                                            <input type="hidden" name="saleTxId" value="${s.saleTransactionId}" />
+                                            <button type="submit" class="btn btn-sm btn-outline-warning" title="Geri Al">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Geri Al
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                salesHtml = '<p class="text-muted text-center py-3">Henüz satış yapılmadı</p>';
+            }
+
+            // ── Sayfayı render et ───────────────────────────────────────
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="card mb-4" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ${data.color || '#4DB6AC'};">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-1">${data.icon || '💰'} ${data.goalName}</h4>
+                        ${data.targetDate ? `<small class="text-muted">🗓️ Hedef Tarih: ${new Date(data.targetDate).toLocaleDateString('tr-TR')}</small>` : ''}
+                        <div class="d-flex justify-content-between mt-3 mb-1">
+                            <span class="fw-bold" style="color: ${progressColor};">₺${fmt(data.currentAmount)}</span>
+                            <span class="text-muted">₺${fmt(data.targetAmount)}</span>
+                        </div>
+                        <div class="progress mb-1" style="height: 12px; border-radius: 6px;">
+                            <div class="progress-bar" style="width: ${Math.min(data.progress, 100)}%; background-color: ${progressColor};"></div>
+                        </div>
+                        <small class="text-muted">%${Number(data.progress).toFixed(1)} tamamlandı</small>
+                    </div>
+                </div>
+
+                <div class="card mb-3" style="border-radius: 12px; background: ${active.isProfit ? '#E8F5E9' : '#FFEBEE'}; border: 2px solid ${activeProfitColor};">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">${activeIcon} Aktif Pozisyon (Yansımamış)</h5>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="fw-bold text-secondary">₺${fmt(active.totalPaid)}</div>
+                                <small class="text-muted">Toplam Yatırılan</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold" style="color: #4DB6AC;">₺${fmt(active.totalCurrentValue)}</div>
+                                <small class="text-muted">Güncel Değer</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold" style="color: ${activeProfitColor};">${activeSign}₺${fmt(Math.abs(active.totalProfitLoss))}</div>
+                                <small class="text-muted">${activeSign}%${Math.abs(active.totalProfitLossPercent).toFixed(2)} Kar/Zarar</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${sales.saleCount > 0 ? `
+                <div class="card mb-4" style="border-radius: 12px; background: ${sales.totalRealizedProfitLoss >= 0 ? '#F1F8E9' : '#FFEBEE'}; border: 2px solid ${realizedColor};">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">${realizedIcon} Gerçekleşen Kar/Zarar</h5>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="fw-bold text-secondary">${sales.saleCount}</div>
+                                <small class="text-muted">Satış Sayısı</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold" style="color: #4DB6AC;">₺${fmt(sales.totalSoldAmount)}</div>
+                                <small class="text-muted">Toplam Satış</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold" style="color: ${realizedColor};">${realizedSign}₺${fmt(Math.abs(sales.totalRealizedProfitLoss))}</div>
+                                <small class="text-muted">Gerçekleşen K/Z</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>` : ''}
+
+                <div class="card mb-3" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">📋 Aktif Pozisyonlar</h5>
+                        ${activeHtml}
+                    </div>
+                </div>
+
+                <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">💸 Satış Geçmişi</h5>
+                        ${salesHtml}
+                    </div>
+                </div>
+            `;
+
+            // ── Sat modal preview ───────────────────────────────────────
+            const sellRateInput = document.getElementById('sellRateInput');
+            const sellPreview = document.getElementById('sellPreview');
+            const sellPreviewContent = document.getElementById('sellPreviewContent');
+            window._currentSellContext = null;
+
+            sellRateInput.addEventListener('input', function () {
+                if (!window._currentSellContext) return;
+                const ctx = window._currentSellContext;
+                const rate = parseFloat(this.value.replace(',', '.'));
+                if (isNaN(rate) || rate <= 0) { sellPreview.style.display = 'none'; return; }
+                const saleAmountTry = ctx.originalAmount * rate;
+                const pl = saleAmountTry - ctx.buyAmount;
+                const plPct = ctx.buyAmount > 0 ? (pl / ctx.buyAmount * 100) : 0;
+                const plColor = pl >= 0 ? '#4CAF50' : '#F44336';
+                const plSign = pl >= 0 ? '+' : '';
+                sellPreviewContent.innerHTML = `
+                    <div>Satış Tutarı: <strong>₺${fmt(saleAmountTry)}</strong></div>
+                    <div>Alış Tutarı: <strong>₺${fmt(ctx.buyAmount)}</strong></div>
+                    <div style="color: ${plColor};">
+                        Kar/Zarar: <strong>${plSign}₺${fmt(Math.abs(pl))}</strong>
+                        <span class="ms-2">(${plSign}%${Math.abs(plPct).toFixed(2)})</span>
+                    </div>`;
+                sellPreview.style.display = 'block';
+            });
+
+            document.getElementById('confirmSellBtn').addEventListener('click', function () {
+                document.getElementById('sellForm').submit();
+            });
+
+            // ── Düzenle modal confirm ───────────────────────────────────
+            document.getElementById('confirmEditBtn').addEventListener('click', function () {
+                document.getElementById('editDepositForm').submit();
+            });
+        });
+
+        // ── Sat modal aç ────────────────────────────────────────────────
+        function openSellModal(depositTxId, currency, originalAmount, buyAmount, buyRate, currentRate) {
+            window._currentSellContext = { originalAmount, buyAmount, buyRate, currency };
+            document.getElementById('sellDepositTxId').value = depositTxId;
+            document.getElementById('sellRateInput').value = '';
+            document.getElementById('sellNoteInput').value = '';
+            document.getElementById('sellPreview').style.display = 'none';
+
+            const currencyNames = {
+                'USD': '$ USD', 'EUR': '€ EUR', 'GBP': '£ GBP',
+                'CHF': 'Fr CHF', 'JPY': '¥ JPY', 'SAR': '﷼ SAR',
+                'AED': 'AED', 'XAU': '🥇 Altın/gr', 'XAG': '🥈 Gümüş/gr'
+            };
+
+            document.getElementById('sellModalInfo').innerHTML = `
+                <strong>📦 Satılacak:</strong> ${Number(originalAmount).toLocaleString('tr-TR', { minimumFractionDigits: 4 })} ${currencyNames[currency] || currency}<br>
+                <strong>💰 Alış değeri:</strong> ₺${Number(buyAmount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                <small class="d-block">(Alış kuru: ₺${Number(buyRate).toFixed(4)} • Anlık kur: ₺${Number(currentRate).toFixed(4)})</small>
+            `;
+            document.getElementById('sellRateUnit').textContent = `(₺ / 1 ${currency})`;
+            document.getElementById('sellRateInput').placeholder = `Örn: ${Number(currentRate).toFixed(2)}`;
+
+            new bootstrap.Modal(document.getElementById('sellModal')).show();
+        }
+
+        // ── Düzenle modal aç ────────────────────────────────────────────
+        function openEditModal(depositTxId, originalAmount, currency, date, note) {
+            document.getElementById('editTransactionId').value = depositTxId;
+            document.getElementById('editAmount').value = Number(originalAmount).toFixed(4);
+            document.getElementById('editCurrency').value = currency;
+            document.getElementById('editCurrencyLabel').textContent = currency;
+            document.getElementById('editDate').value = new Date(date).toISOString().split('T')[0];
+            document.getElementById('editNote').value = note || '';
+            document.getElementById('editManualRate').value = '';
+
+            // TRY değilse manuel kur alanını göster
+            document.getElementById('editManualRateDiv').style.display =
+                currency !== 'TRY' ? 'block' : 'none';
+
+            new bootstrap.Modal(document.getElementById('editDepositModal')).show();
+        }
+    </script>
+}

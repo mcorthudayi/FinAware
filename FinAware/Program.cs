@@ -1,0 +1,137 @@
+﻿using FinAware.API.Data;
+using FinAware.API.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Database
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        var mvcUrl = builder.Configuration["AppSettings:MvcBaseUrl"]
+                     ?? "https://localhost:7023";
+
+        policy.WithOrigins(
+                    mvcUrl,
+                    "https://localhost:7023",
+                    "http://localhost:5285"
+              )
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+// JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"];
+
+if (string.IsNullOrEmpty(secretKey))
+{
+    throw new Exception("JWT SecretKey is not configured in appsettings.json!");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+        };
+    });
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+Console.WriteLine("═══════════════════════════════════════");
+Console.WriteLine("🚀 FinAware API Started!");
+Console.WriteLine("📡 Listening on: https://localhost:7061");
+Console.WriteLine("📋 Swagger: https://localhost:7061/swagger");
+Console.WriteLine("🔓 CORS: Enabled (AllowAll for testing)");
+Console.WriteLine($"🔑 JWT Issuer: {jwtSettings["Issuer"]}");
+Console.WriteLine($"🔑 JWT Audience: {jwtSettings["Audience"]}");
+Console.WriteLine("═══════════════════════════════════════");
+
+// Seed default categories
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    try
+    {
+        // Database'in oluşturulduğundan emin ol
+        dbContext.Database.EnsureCreated();
+
+        // Kategoriler varsa ekleme
+        if (!dbContext.Categories.Any())
+        {
+            Console.WriteLine("═══════════════════════════════════════");
+            Console.WriteLine("🏷️ SEEDING DEFAULT CATEGORIES...");
+
+            var defaultCategories = new List<Category>
+            {
+                new Category { Name = "Market", Icon = "🛒", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Yemek", Icon = "🍔", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Ulaşım", Icon = "🚗", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Faturalar", Icon = "🧾", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Sağlık", Icon = "💊", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Eğlence", Icon = "🎬", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Giyim", Icon = "👔", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Teknoloji", Icon = "💻", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Ev", Icon = "🏠", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Eğitim", Icon = "📚", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Spor", Icon = "⚽", CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Diğer", Icon = "📦", CreatedAt = DateTime.UtcNow }
+            };
+
+            dbContext.Categories.AddRange(defaultCategories);
+            dbContext.SaveChanges();
+
+            Console.WriteLine($"✅ {defaultCategories.Count} default categories added!");
+            Console.WriteLine("═══════════════════════════════════════");
+        }
+        else
+        {
+            Console.WriteLine($"✅ Categories already exist: {dbContext.Categories.Count()} categories found");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Category seeding error: {ex.Message}");
+    }
+}
+
+app.Run();

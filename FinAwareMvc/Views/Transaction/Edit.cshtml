@@ -1,0 +1,177 @@
+﻿@using FinAware.MVC.Models.ViewModels
+@model TransactionViewModel
+@{
+    ViewData["Title"] = "İşlemi Düzenle";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/Transaction/Index" class="btn btn-outline-secondary btn-sm" style="border-radius: 10px;">
+        <i class="bi bi-arrow-left me-1"></i>Geri
+    </a>
+    <div>
+        <h1 class="display-6 fw-bold mb-0">İşlemi Düzenle</h1>
+        <p class="text-muted mb-0">İşlem bilgilerini güncelleyin</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div class="card-body p-4">
+                <form method="post" asp-action="Edit" asp-route-id="@Model.TransactionId">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Tip -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tip</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="Type" id="typeIncome"
+                                   value="Income" autocomplete="off"
+                                   @(Model.Type == "Income" ? "checked" : "")>
+                            <label class="btn btn-outline-success" for="typeIncome">
+                                <i class="bi bi-arrow-down-circle me-2"></i>Gelir
+                            </label>
+                            <input type="radio" class="btn-check" name="Type" id="typeExpense"
+                                   value="Expense" autocomplete="off"
+                                   @(Model.Type == "Expense" ? "checked" : "")>
+                            <label class="btn btn-outline-danger" for="typeExpense">
+                                <i class="bi bi-arrow-up-circle me-2"></i>Gider
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Tutar -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tutar</label>
+                        <div class="input-group">
+                            <input type="number" step="0.0001" class="form-control"
+                                   name="Amount" id="amount" required
+                                   value="@Model.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                   placeholder="0.00" />
+                            <select class="form-select" name="Currency" id="currency"
+                                    style="max-width: 140px;">
+                                <option value="TRY" @(Model.Currency == "TRY" ? "selected" : "")>₺ TRY</option>
+                                <option value="USD" @(Model.Currency == "USD" ? "selected" : "")>$ USD</option>
+                                <option value="EUR" @(Model.Currency == "EUR" ? "selected" : "")>€ EUR</option>
+                                <option value="GBP" @(Model.Currency == "GBP" ? "selected" : "")>£ GBP</option>
+                                <option value="CHF" @(Model.Currency == "CHF" ? "selected" : "")>Fr CHF</option>
+                                <option value="SAR" @(Model.Currency == "SAR" ? "selected" : "")>﷼ SAR</option>
+                                <option value="AED" @(Model.Currency == "AED" ? "selected" : "")>AED</option>
+                                <option value="XAU" @(Model.Currency == "XAU" ? "selected" : "")>🥇 Altın/gr</option>
+                                <option value="XAG" @(Model.Currency == "XAG" ? "selected" : "")>🥈 Gümüş/gr</option>
+                            </select>
+                        </div>
+
+                        @if (Model.OriginalCurrency != null && Model.OriginalCurrency != "TRY")
+                        {
+                            <div class="alert alert-info py-2 px-3 mt-2" style="font-size: 13px; border-radius: 8px;">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Orijinal tutar: <strong>@Model.OriginalAmount?.ToString("N4") @Model.OriginalCurrency</strong>
+                                | Alış kuru: <strong>₺@Model.ExchangeRate?.ToString("N4")</strong>
+                                | TL karşılığı: <strong>₺@Model.Amount.ToString("N2")</strong>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Tarih -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tarih</label>
+                        <input type="date" class="form-control" name="Date" required
+                               value="@Model.Date.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <!-- Kategori -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kategori</label>
+                        <select class="form-select" name="CategoryId" required>
+                            <option value="">Kategori seçin...</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                foreach (var cat in (List<CategoryViewModel>)ViewBag.Categories)
+                                {
+                                    <option value="@cat.CategoryId"
+                                            @(cat.CategoryId == Model.CategoryId ? "selected" : "")>
+                                        @cat.Icon @cat.Name
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Açıklama (Opsiyonel)</label>
+                        <textarea class="form-control" name="Description" rows="3"
+                                  placeholder="İşlem açıklaması...">@Model.Description</textarea>
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn flex-fill"
+                                style="background: linear-gradient(135deg, #1AAFA3 0%, #0D7A71 100%); color: white; border-radius: 10px; padding: 11px;">
+                            <i class="bi bi-check-circle me-2"></i>Güncelle
+                        </button>
+                        <a href="/Transaction/Index" class="btn btn-outline-secondary"
+                           style="border-radius: 10px; padding: 11px 20px;">
+                            İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bilgi kartı -->
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 14px; background: #f0fdf4; border: 1px solid #d1fae5;">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3" style="color: #065f46;">
+                    <i class="bi bi-info-circle me-2"></i>Düzenleme Hakkında
+                </h6>
+                <div class="mb-3">
+                    <p class="small mb-0" style="color: #374151;">
+                        💱 <strong>Dövizli işlem:</strong> Para birimini değiştirirseniz,
+                        yeni kur anında uygulanır.
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <p class="small mb-0" style="color: #374151;">
+                        📊 <strong>Bütçe etkisi:</strong> Güncelleme sonrası bütçe
+                        kontrolleri otomatik yenilenir.
+                    </p>
+                </div>
+                <div>
+                    <p class="small mb-0" style="color: #374151;">
+                        🏷️ <strong>Kategori:</strong> Doğru kategori seçimi
+                        analiz raporlarını iyileştirir.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.OriginalCurrency != null && Model.OriginalCurrency != "TRY")
+        {
+            <div class="card mt-3" style="border-radius: 14px; background: #eff6ff; border: 1px solid #bfdbfe;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color: #1e40af;">
+                        💱 Döviz Bilgisi
+                    </h6>
+                    <table class="table table-sm mb-0" style="font-size: 13px;">
+                        <tr>
+                            <td class="text-muted">Orijinal Tutar</td>
+                            <td class="fw-bold">@Model.OriginalAmount?.ToString("N4") @Model.OriginalCurrency</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Alış Kuru</td>
+                            <td class="fw-bold">₺@Model.ExchangeRate?.ToString("N4")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">TL Karşılığı</td>
+                            <td class="fw-bold" style="color: #1AAFA3;">₺@Model.Amount.ToString("N2")</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

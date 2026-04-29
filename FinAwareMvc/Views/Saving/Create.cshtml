@@ -1,0 +1,116 @@
+﻿@using FinAware.MVC.Models
+@model SavingViewModel
+@{
+    ViewData["Title"] = "Yeni Birikim Hedefi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="display-6 fw-bold">Yeni Birikim Hedefi</h1>
+        <p class="text-muted">Birikim hedefinizi oluşturun</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body">
+                <form method="post" asp-action="Create">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Hedef Adı -->
+                    <div class="mb-3">
+                        <label for="goalName" class="form-label">Hedef Adı</label>
+                        <input type="text" class="form-control" id="goalName" name="GoalName" required placeholder="Örn: Tatil, Araba, Ev">
+                    </div>
+
+                    <!-- İkon -->
+                    <div class="mb-3">
+                        <label for="icon" class="form-label">İkon (Opsiyonel)</label>
+                        <select class="form-select" id="icon" name="Icon">
+                            <option value="💰">💰 Para</option>
+                            <option value="🏠">🏠 Ev</option>
+                            <option value="🚗">🚗 Araba</option>
+                            <option value="✈️">✈️ Tatil</option>
+                            <option value="💻">💻 Teknoloji</option>
+                            <option value="🎓">🎓 Eğitim</option>
+                            <option value="💍">💍 Düğün</option>
+                            <option value="🎯">🎯 Hedef</option>
+                        </select>
+                    </div>
+
+                    <!-- Hedef Tutar -->
+                    <div class="mb-3">
+                        <label for="targetAmount" class="form-label">Hedef Tutar</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₺</span>
+                            <input type="number" step="0.01" class="form-control" id="targetAmount" name="TargetAmount" required placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <!-- Mevcut Tutar -->
+                    <div class="mb-3">
+                        <label for="currentAmount" class="form-label">Mevcut Tutar</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₺</span>
+                            <input type="number" step="0.01" class="form-control" id="currentAmount" name="CurrentAmount" value="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <!-- Hedef Tarih -->
+                    <div class="mb-3">
+                        <label for="targetDate" class="form-label">Hedef Tarih (Opsiyonel)</label>
+                        <input type="date" class="form-control" id="targetDate" name="TargetDate" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")">
+                    </div>
+
+                    <!-- Renk -->
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Renk (Opsiyonel)</label>
+                        <select class="form-select" id="color" name="Color">
+                            <option value="#4DB6AC">🟢 Turkuaz</option>
+                            <option value="#4CAF50">🟢 Yeşil</option>
+                            <option value="#2196F3">🔵 Mavi</option>
+                            <option value="#FF9800">🟠 Turuncu</option>
+                            <option value="#9C27B0">🟣 Mor</option>
+                            <option value="#F44336">🔴 Kırmızı</option>
+                        </select>
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check-circle me-2"></i>Kaydet
+                        </button>
+                        <a href="/Saving/Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- İpuçları -->
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; background: #E3F2FD;">
+            <div class="card-body">
+                <h5 class="card-title">💡 İpuçları</h5>
+
+                <div class="mb-3">
+                    <h6>🎯 Gerçekçi Hedefler</h6>
+                    <p class="small mb-0">Ulaşılabilir hedefler belirleyin</p>
+                </div>
+
+                <div class="mb-3">
+                    <h6>📅 Zaman Planı</h6>
+                    <p class="small mb-0">Hedef tarihi belirlemek motivasyon sağlar</p>
+                </div>
+
+                <div>
+                    <h6>💰 Küçük Adımlar</h6>
+                    <p class="small mb-0">Düzenli küçük katkılar büyük fark yaratır</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

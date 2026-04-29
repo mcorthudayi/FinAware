@@ -1,0 +1,386 @@
+﻿@{
+    ViewData["Title"] = "Profil";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="mb-4">
+    <h1 class="display-6 fw-bold">Profil Ayarları</h1>
+    <p class="text-muted">Hesap bilgilerinizi yönetin</p>
+</div>
+
+<div class="row">
+    <!-- Profil Fotoğrafı -->
+    <div class="col-md-4 mb-4">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body text-center">
+                <h5 class="card-title mb-4">Profil Fotoğrafı</h5>
+
+                @{
+                    var username = ViewBag.Username ?? Context.Session.GetString("Username") ?? "U";
+                    var profilePhoto = ViewBag.ProfilePhoto ?? Context.Session.GetString("ProfilePhoto");
+                }
+
+                <div class="mb-4">
+                    @if (string.IsNullOrEmpty(profilePhoto))
+                    {
+                        <div class="d-inline-flex align-items-center justify-content-center mx-auto"
+                             style="width: 120px; height: 120px; background: linear-gradient(135deg, #4DB6AC 0%, #26A69A 100%); border-radius: 50%; font-size: 48px; font-weight: bold; color: white;">
+                            @username.Substring(0, 1).ToUpper()
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="@profilePhoto" alt="Profil"
+                             style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #4DB6AC;" />
+                    }
+                </div>
+
+                <h6 class="mb-1">@username</h6>
+                <p class="text-muted mb-3">@(ViewBag.Email ?? Context.Session.GetString("Email"))</p>
+
+                <form method="post" action="/Account/UploadPhoto" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name="photo" id="photoInput"
+                               accept="image/jpeg,image/jpg,image/png,image/webp" required>
+                        <small class="text-muted d-block mt-2">Maks. 5MB - JPG, PNG, WEBP</small>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100" id="uploadBtn">
+                        <i class="bi bi-upload me-2"></i>Fotoğrafı Yükle
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profil Bilgileri -->
+    <div class="col-md-8 mb-4">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Profil Bilgileri</h5>
+
+                <form method="post" action="/Account/UpdateProfile">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" id="username" name="username" value="@username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-posta</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               value="@(ViewBag.Email ?? Context.Session.GetString("Email"))" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>Bilgileri Güncelle
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <h5 class="card-title mb-4">Şifre Değiştir</h5>
+
+                <form method="post" action="/Account/ChangePassword">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Mevcut Şifre</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Yeni Şifre</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="6">
+                        <small class="text-muted">En az 6 karakter</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Yeni Şifre (Tekrar)</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-shield-lock me-2"></i>Şifreyi Değiştir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bildirim Tercihleri -->
+<div class="row mt-2">
+    <div class="col-md-12">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-bell me-2"></i>Bildirim Tercihleri
+                </h5>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">📧 E-posta Bildirimleri</h6>
+                        <small class="text-muted">
+                            Bütçe uyarıları, hatırlatıcılar ve güvenlik bildirimleri için e-posta al
+                        </small>
+                    </div>
+                    <form method="post" action="/Account/ToggleEmailNotifications">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="btn @(ViewBag.EmailNotificationsEnabled == true ? "btn-success" : "btn-outline-secondary")"
+                                style="min-width: 100px;">
+                            @if (ViewBag.EmailNotificationsEnabled == true)
+                            {
+                                <i class="bi bi-bell-fill me-1"></i>
+                                <span>Açık</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-bell-slash me-1"></i>
+                                <span>Kapalı</span>
+                            }
+                        </button>
+                    </form>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <small class="text-muted">
+                            ✅ <strong>Gönderilir:</strong> Bütçe uyarıları, hatırlatıcılar, yeni cihaz girişi
+                        </small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">
+                            ❌ <strong>Gönderilmez:</strong> Her işlem bildirimi
+                        </small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">
+                            💡 Kapatırsanız sadece site içi bildirimler görünür
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Telegram Bağlantısı -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    🤖 Telegram Bağlantısı
+                </h5>
+
+                @if (ViewBag.TelegramLinked == true)
+                {
+                    <div class="alert alert-success" style="border-radius: 10px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="font-size: 24px;">✅</span>
+                            <div>
+                                <div class="fw-bold">Telegram hesabın bağlı!</div>
+                                @if (ViewBag.TelegramLinkedAt != null)
+                                {
+                                    <small class="text-muted">Bağlanma tarihi: @ViewBag.TelegramLinkedAt</small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-muted mb-3">
+                        <strong>@@FinAwareAsistanBot</strong> ile konuşarak harcama ekleyebilir,
+                        bütçeni sorgulayabilir ve birikimlerini takip edebilirsin.
+                    </p>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="https://t.me/FinAwareAsistanBot"
+                           target="_blank"
+                           class="btn btn-primary"
+                           style="background: #0088cc; border-color: #0088cc; border-radius: 8px;">
+                            📱 Bot'u Aç
+                        </a>
+
+                        <form method="post" action="/Account/UnlinkTelegram"
+                              onsubmit="return confirm('Telegram bağlantısını kaldırmak istediğinize emin misiniz?')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger" style="border-radius: 8px;">
+                                🔌 Bağlantıyı Kaldır
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-3">
+                        Telegram hesabını FinAware'e bağlayarak botumuzla konuşabilirsin.
+                        Harcama ekle, bütçeni sorgula, birikimlerini takip et — hepsi sohbet ederek!
+                    </p>
+
+                    @if (TempData["TelegramDeepLink"] != null)
+                    {
+                        <div class="alert alert-info" style="border-radius: 10px;">
+                            <div class="fw-bold mb-2">🔗 Bağlantı linki hazır!</div>
+                            <p class="mb-2 text-muted" style="font-size: 14px;">
+                                Aşağıdaki butona tıkla. Telegram açılacak ve
+                                <strong>/start</strong> komutu otomatik gönderilecek.
+                                <br />
+                                <small>⏱️ Bu link tek kullanımlıktır.</small>
+                            </p>
+                            <a href="@TempData["TelegramDeepLink"]"
+                               target="_blank"
+                               class="btn btn-success"
+                               style="border-radius: 8px;">
+                                🚀 Telegram'da Aç ve Bağlan
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <form method="post" action="/Account/GenerateTelegramLink">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-primary"
+                                    style="background: linear-gradient(135deg, #4DB6AC 0%, #26A69A 100%);
+                                                   border: none; border-radius: 8px; padding: 10px 24px;">
+                                🤖 Telegram'a Bağlan
+                            </button>
+                        </form>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İpuçları -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: linear-gradient(135deg, #E3F2FD 0%, #E0F2F1 100%);">
+            <div class="card-body">
+                <h5 class="card-title mb-3">💡 Profil İpuçları</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <h6>📸 Fotoğraf</h6>
+                        <small>Kare (1:1) oranında fotoğraf kullanın. Maksimum 5MB.</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h6>🔒 Güvenlik</h6>
+                        <small>Güçlü bir şifre kullanın ve düzenli olarak değiştirin.</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h6>📧 E-posta</h6>
+                        <small>Bildirimler için geçerli bir e-posta adresi girin.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hesabı Sil -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 2px solid #ffebee;">
+            <div class="card-body">
+                <h5 class="card-title text-danger mb-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Tehlikeli Bölge
+                </h5>
+                <p class="text-muted small mb-3">
+                    Hesabınızı sildiğinizde tüm verileriniz (işlemler, birikimler, kategoriler, bildirimler)
+                    <strong>kalıcı olarak silinir</strong> ve bu işlem geri alınamaz.
+                </p>
+                <button type="button" class="btn btn-outline-danger"
+                        data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                    <i class="bi bi-trash me-2"></i>Hesabımı Sil
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hesap Silme Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger fw-bold">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Hesabı Sil
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <strong>⚠️ Bu işlem geri alınamaz!</strong><br>
+                    Tüm işlemleriniz, birikimleriniz ve kategorileriniz silinecek.
+                </div>
+                <form method="post" action="/Account/DeleteAccount" id="deleteAccountForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Onaylamak için şifrenizi girin:</label>
+                        <input type="password" class="form-control" name="password"
+                               id="deletePassword" required placeholder="Şifreniz">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Onaylamak için <strong>"hesabımı sil"</strong> yazın:
+                        </label>
+                        <input type="text" class="form-control" id="deleteConfirmText"
+                               placeholder="hesabımı sil" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Vazgeç
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                    <i class="bi bi-trash me-2"></i>Hesabımı Kalıcı Olarak Sil
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const deleteConfirmText = document.getElementById('deleteConfirmText');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+        if (deleteConfirmText && confirmDeleteBtn) {
+            deleteConfirmText.addEventListener('input', function () {
+                confirmDeleteBtn.disabled = this.value.toLowerCase() !== 'hesabımı sil';
+            });
+
+            confirmDeleteBtn.addEventListener('click', function () {
+                const password = document.getElementById('deletePassword').value;
+                if (!password) { alert('Lütfen şifrenizi girin.'); return; }
+                document.getElementById('deleteAccountForm').submit();
+            });
+        }
+
+        const uploadBtn = document.getElementById('uploadBtn');
+        const photoInput = document.getElementById('photoInput');
+
+        if (uploadBtn && photoInput) {
+            uploadBtn.closest('form').addEventListener('submit', function () {
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Yükleniyor...';
+            });
+        }
+    </script>
+}

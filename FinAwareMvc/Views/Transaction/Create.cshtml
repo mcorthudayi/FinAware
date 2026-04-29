@@ -1,0 +1,308 @@
+﻿@using FinAware.MVC.Models.ViewModels
+@model TransactionViewModel
+@{
+    ViewData["Title"] = "İşlem Ekle";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="display-6 fw-bold">İşlem Ekle</h1>
+        <p class="text-muted">Yeni gelir veya gider ekleyin</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="card-body">
+                <form method="post" asp-action="Create">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Fatura Okuma -->
+                    <div class="mb-4 p-3" style="background: #E8F5E9; border-radius: 8px; border: 2px dashed #4DB6AC;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-1">📸 Fatura Okuma</h6>
+                                <small class="text-muted">Fatura fotoğrafından otomatik bilgi çıkar</small>
+                            </div>
+                            <label for="invoiceUpload" class="btn btn-primary mb-0" style="cursor: pointer; background: #4DB6AC; border-color: #4DB6AC;">
+                                <i class="bi bi-camera me-2"></i>Fatura Yükle
+                            </label>
+                            <input type="file" id="invoiceUpload" accept="image/*" style="display: none;">
+                        </div>
+                        <div class="alert alert-info mt-2 mb-0" style="font-size: 13px;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Yüklediğiniz fatura, analiz için OpenAI'a gönderilir ve <strong>30 gün</strong> içinde otomatik olarak silinir.
+                        </div>
+                        <div id="uploadStatus" class="mt-2" style="display: none;">
+                            <small class="text-muted">Analiz ediliyor...</small>
+                        </div>
+                    </div>
+
+                    <!-- Tip -->
+                    <div class="mb-3">
+                        <label class="form-label">Tip</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="Type" id="typeIncome" value="Income" autocomplete="off">
+                            <label class="btn btn-outline-success" for="typeIncome">
+                                <i class="bi bi-arrow-down-circle me-2"></i>Gelir
+                            </label>
+                            <input type="radio" class="btn-check" name="Type" id="typeExpense" value="Expense" checked autocomplete="off">
+                            <label class="btn btn-outline-danger" for="typeExpense">
+                                <i class="bi bi-arrow-up-circle me-2"></i>Gider
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Tutar + Para Birimi -->
+                    <div class="mb-3">
+                        <label class="form-label">Tutar</label>
+                        <div class="input-group">
+                            <input type="number" step="0.0001" class="form-control" id="amount"
+                                   name="Amount" required placeholder="0.00"
+                                   oninput="updateRateInfo()">
+                            <select class="form-select" name="Currency" id="currency"
+                                    style="max-width: 140px;" onchange="updateRateInfo()">
+                                <option value="TRY" selected>₺ TRY</option>
+                                <option value="USD">$ USD</option>
+                                <option value="EUR">€ EUR</option>
+                                <option value="GBP">£ GBP</option>
+                                <option value="CHF">Fr CHF</option>
+                                <option value="SAR">﷼ SAR</option>
+                                <option value="AED">AED</option>
+                                <option value="XAU">🥇 Altın/gr</option>
+                                <option value="XAG">🥈 Gümüş/gr</option>
+                            </select>
+                        </div>
+
+                        <!-- Standart döviz kur bilgisi -->
+                        <div id="autoRateInfo" class="mt-1" style="display: none;">
+                            <small class="text-muted" id="autoRateText"></small>
+                        </div>
+
+                        <!-- Altın/Gümüş manuel kur -->
+                        <div id="metalRateInfo" class="mt-2" style="display: none;">
+                            <div class="alert alert-warning py-2 px-3" style="font-size: 12px;">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Altın/Gümüş fiyatı piyasaya göre değişir.
+                                <a href="https://doviz.com" target="_blank" class="alert-link">doviz.com</a>'dan kontrol edin.
+                                <br>Tahmini uluslararası kur: <strong id="autoMetalRateText"></strong>
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">₺/gram</span>
+                                <input type="number" step="0.01" min="1" class="form-control"
+                                       name="ManualRate" id="manualRate"
+                                       placeholder="Gram fiyatı girin (opsiyonel)">
+                            </div>
+                            <small class="text-muted">Boş bırakırsanız uluslararası kur kullanılır</small>
+                        </div>
+                    </div>
+
+                    <!-- Tarih -->
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Tarih</label>
+                        <input type="date" class="form-control" id="date" name="Date"
+                               value="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                    </div>
+
+                    <!-- Kategori -->
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Kategori</label>
+                        <select class="form-select" id="category" name="CategoryId" required>
+                            <option value="">Kategori seçin...</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                @foreach (var category in (List<FinAware.MVC.Models.ViewModels.CategoryViewModel>)ViewBag.Categories)
+                                {
+                                    <option value="@category.CategoryId">@category.Icon @category.Name</option>
+                                }
+                            }
+                        </select>
+                        @if (ViewBag.Categories == null || ((List<FinAware.MVC.Models.ViewModels.CategoryViewModel>)ViewBag.Categories).Count == 0)
+                        {
+                            <small class="text-danger">
+                                Henüz kategori yok.
+                                <a href="/Category/Create">Kategori eklemek için tıklayın.</a>
+                            </small>
+                        }
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Açıklama (Opsiyonel)</label>
+                        <textarea class="form-control" id="description" name="Description"
+                                  rows="3" placeholder="İşlem açıklaması..."></textarea>
+                    </div>
+
+                    <!-- Hatırlatıcı -->
+                    <div class="mb-3">
+                        <label for="reminderDate" class="form-label">⏰ Hatırlatıcı (Opsiyonel)</label>
+                        <input type="date" class="form-control" id="reminderDate" name="ReminderDate"
+                               min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")">
+                        <small class="text-muted">Abonelik ödemeleri gibi düzenli giderler için hatırlatma alabilirsiniz.</small>
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check-circle me-2"></i>Kaydet
+                        </button>
+                        <a href="/Transaction/Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- İpuçları -->
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 12px; background: #E3F2FD;">
+            <div class="card-body">
+                <h5 class="card-title">💡 İpuçları</h5>
+                <div class="mb-3">
+                    <h6>📸 Fatura Okuma</h6>
+                    <p class="small mb-0">Fatura fotoğrafı yükleyerek tutar, tarih ve kategori bilgilerini otomatik doldurabilirsiniz</p>
+                </div>
+                <div class="mb-3">
+                    <h6>💱 Döviz Desteği</h6>
+                    <p class="small mb-0">Yurt dışı harcamalarınızı döviz cinsinden girebilirsiniz, TCMB güncel kuru ile TL'ye otomatik çevrilir</p>
+                </div>
+                <div class="mb-3">
+                    <h6>🏷️ Doğru Kategori</h6>
+                    <p class="small mb-0">Analizleriniz için işlemleri doğru kategorilere atayın</p>
+                </div>
+                <div>
+                    <h6>⏰ Hatırlatıcı</h6>
+                    <p class="small mb-0">Abonelik ödemeleri gibi düzenli giderler için hatırlatıcı ayarlayın</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3" style="border-radius: 12px; background: #FFF3E0;">
+            <div class="card-body">
+                <h6 class="mb-3">⚡ Hızlı Erişim</h6>
+                <p class="small">Ana sayfadaki <strong>+</strong> butonunu kullanarak hızlıca işlem ekleyebilirsiniz!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let cachedRates = null;
+
+        async function loadRates() {
+            if (cachedRates) return cachedRates;
+            try {
+                const response = await fetch('/Saving/GetRates');
+                if (response.ok) cachedRates = await response.json();
+            } catch (e) { console.error('Kur yükleme hatası:', e); }
+            return cachedRates;
+        }
+
+        async function updateRateInfo() {
+            const currency = document.getElementById('currency').value;
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const autoRateInfo = document.getElementById('autoRateInfo');
+            const autoRateText = document.getElementById('autoRateText');
+            const metalRateInfo = document.getElementById('metalRateInfo');
+            const autoMetalRateText = document.getElementById('autoMetalRateText');
+
+            if (currency === 'TRY') {
+                autoRateInfo.style.display = 'none';
+                metalRateInfo.style.display = 'none';
+                return;
+            }
+
+            const rates = await loadRates();
+            if (!rates) return;
+
+            const currencyData = rates.find(r => r.code === currency);
+
+            if (currency === 'XAU' || currency === 'XAG') {
+                autoRateInfo.style.display = 'none';
+                metalRateInfo.style.display = 'block';
+                if (currencyData) {
+                    const metalName = currency === 'XAU' ? 'Altın' : 'Gümüş';
+                    autoMetalRateText.textContent = `~₺${currencyData.rate.toFixed(2)}/gram (${metalName})`;
+                }
+            } else {
+                metalRateInfo.style.display = 'none';
+                autoRateInfo.style.display = 'block';
+                if (currencyData && currencyData.rate > 0) {
+                    const names = {
+                        'USD': 'Dolar', 'EUR': 'Euro', 'GBP': 'Sterlin',
+                        'CHF': 'Frank', 'SAR': 'Riyal', 'AED': 'Dirhem'
+                    };
+                    const tryAmount = amount * currencyData.rate;
+                    autoRateText.textContent = amount > 0
+                        ? `${amount} ${names[currency] || currency} = ₺${tryAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} (Kur: ₺${currencyData.rate.toFixed(4)} - TCMB)`
+                        : `Güncel kur: 1 ${names[currency] || currency} = ₺${currencyData.rate.toFixed(4)} (TCMB)`;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRates);
+
+        // Fatura okuma
+        const uploadInput = document.getElementById('invoiceUpload');
+        if (uploadInput) {
+            uploadInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const statusDiv = document.getElementById('uploadStatus');
+                statusDiv.style.display = 'block';
+                statusDiv.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div><small>Analiz ediliyor...</small>';
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('https://localhost:7061/api/transaction/analyze-invoice', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const responseText = await response.text();
+                    if (!responseText || responseText.trim().length === 0) {
+                        statusDiv.innerHTML = '<small class="text-danger">API boş response döndü!</small>';
+                        return;
+                    }
+
+                    let result;
+                    try { result = JSON.parse(responseText); }
+                    catch { statusDiv.innerHTML = '<small class="text-danger">API response JSON değil!</small>'; return; }
+
+                    if (result.success) {
+                        if (result.amount > 0)
+                            document.getElementById('amount').value = parseFloat(result.amount).toFixed(2);
+                        if (result.date)
+                            document.getElementById('date').value = result.date;
+                        if (result.description)
+                            document.getElementById('description').value = result.description;
+                        if (result.category) {
+                            const categorySelect = document.getElementById('category');
+                            for (let option of categorySelect.options) {
+                                if (option.text.toLowerCase().includes(result.category.toLowerCase())) {
+                                    option.selected = true;
+                                    break;
+                                }
+                            }
+                        }
+                        statusDiv.innerHTML = '<small class="text-success"><i class="bi bi-check-circle me-1"></i>Fatura okundu! Kontrol edin.</small>';
+                        setTimeout(() => statusDiv.style.display = 'none', 5000);
+                    } else {
+                        statusDiv.innerHTML = '<small class="text-warning"><i class="bi bi-exclamation-triangle me-1\"></i>' + (result.message || 'Fatura okunamadı') + '</small>';
+                        setTimeout(() => statusDiv.style.display = 'none', 5000);
+                    }
+                } catch (error) {
+                    statusDiv.innerHTML = '<small class="text-danger"><i class="bi bi-x-circle me-1"></i>Bağlantı hatası: ' + error.message + '</small>';
+                    setTimeout(() => statusDiv.style.display = 'none', 5000);
+                }
+            });
+        }
+    </script>
+}

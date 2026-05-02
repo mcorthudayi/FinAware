@@ -18,16 +18,70 @@ namespace FinAware.MVC.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public async Task<IActionResult> Login()
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AuthToken")))
                 return RedirectToAction("Index", "Dashboard");
+
+            // Beni Hatırla cookie'si varsa session'ı yeniden doldur
+            var rememberToken = Request.Cookies["FinAware_RememberToken"];
+            if (!string.IsNullOrEmpty(rememberToken))
+            {
+                HttpContext.Session.SetString("AuthToken", rememberToken);
+
+                try
+                {
+                    var client = _httpClientFactory.CreateClient();
+                    client.BaseAddress = new Uri("https://localhost:7061");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", rememberToken);
+
+                    var profileResponse = await client.GetAsync("/api/user/profile");
+                    if (profileResponse.IsSuccessStatusCode)
+                    {
+                        var json = await profileResponse.Content.ReadAsStringAsync();
+                        var profile = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                        if (profile != null)
+                        {
+                            if (profile.ContainsKey("username"))
+                                HttpContext.Session.SetString("Username", profile["username"].GetString() ?? "");
+                            if (profile.ContainsKey("email"))
+                                HttpContext.Session.SetString("Email", profile["email"].GetString() ?? "");
+                            if (profile.ContainsKey("profilePhoto") &&
+                                profile["profilePhoto"].ValueKind != JsonValueKind.Null)
+                            {
+                                var photoFileName = profile["profilePhoto"].GetString();
+                                if (!string.IsNullOrEmpty(photoFileName))
+                                    HttpContext.Session.SetString("ProfilePhoto", $"https://localhost:7061/api/user/photo/{photoFileName}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Token geçersiz veya süresi dolmuş, temizle
+                        Response.Cookies.Delete("FinAware_RememberToken");
+                        HttpContext.Session.Clear();
+                        return View();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Remember me restore failed: {ex.Message}");
+                    Response.Cookies.Delete("FinAware_RememberToken");
+                    HttpContext.Session.Clear();
+                    return View();
+                }
+
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login(string email, string password, bool rememberMe = false)
         {
             try
             {
@@ -38,6 +92,18 @@ namespace FinAware.MVC.Controllers
                     HttpContext.Session.SetString("AuthToken", loginResponse.Token);
                     HttpContext.Session.SetString("Username", loginResponse.Username);
                     HttpContext.Session.SetString("Email", loginResponse.Email);
+
+                    // Beni Hatırla seçildiyse 30 günlük persistent cookie yaz
+                    if (rememberMe)
+                    {
+                        Response.Cookies.Append("FinAware_RememberToken", loginResponse.Token, new CookieOptions
+                        {
+                            HttpOnly = true,
+                            Secure = true,
+                            SameSite = SameSiteMode.Strict,
+                            Expires = DateTimeOffset.UtcNow.AddDays(30)
+                        });
+                    }
 
                     try
                     {
@@ -68,13 +134,10 @@ namespace FinAware.MVC.Controllers
                     return RedirectToAction("Index", "Dashboard");
                 }
 
-                
                 ViewBag.ErrorMessage = "E-posta veya şifre hatalı!";
 
-                
                 if (loginResponse == null)
                 {
-                    
                     try
                     {
                         var client = _httpClientFactory.CreateClient();
@@ -152,6 +215,7 @@ namespace FinAware.MVC.Controllers
                 return View();
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> VerifyEmail(string token)
         {
@@ -186,7 +250,6 @@ namespace FinAware.MVC.Controllers
             return View();
         }
 
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResendVerification(string email)
@@ -225,6 +288,7 @@ namespace FinAware.MVC.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
+            Response.Cookies.Delete("FinAware_RememberToken");
             return RedirectToAction("Login");
         }
     }

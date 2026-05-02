@@ -229,5 +229,57 @@ namespace FinAware.MVC.Controllers
 
             return RedirectToAction("Index");
         }
+        public async Task<IActionResult> Export(int? month, int? year, string? period)
+        {
+            if (!IsAuthenticated()) return RedirectToAction("Login", "Auth");
+
+            var client = CreateAuthClient();
+            string url = "/api/transaction/export";
+            var queryParams = new List<string>();
+
+            if (month.HasValue && year.HasValue)
+            {
+                queryParams.Add($"month={month}");
+                queryParams.Add($"year={year}");
+            }
+            else if (!string.IsNullOrEmpty(period))
+            {
+                var now = DateTime.Now;
+                switch (period)
+                {
+                    case "weekly":
+                        queryParams.Add($"startDate={now.AddDays(-7):yyyy-MM-dd}");
+                        break;
+                    case "monthly":
+                        queryParams.Add($"month={now.Month}");
+                        queryParams.Add($"year={now.Year}");
+                        break;
+                    case "6months":
+                        queryParams.Add($"startDate={now.AddMonths(-6):yyyy-MM-dd}");
+                        break;
+                    case "yearly":
+                        queryParams.Add($"year={now.Year}");
+                        break;
+                }
+            }
+
+            if (queryParams.Any())
+                url += "?" + string.Join("&", queryParams);
+
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["Error"] = "Excel dosyası oluşturulamadı.";
+                return RedirectToAction("Index");
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            string fileName = $"FinAware_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+
+            return File(bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
     }
-}
+    }

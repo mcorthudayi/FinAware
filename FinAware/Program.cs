@@ -1,5 +1,6 @@
 ﻿using FinAware.API.Data;
 using FinAware.API.Models;
+using FinAware.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -59,6 +60,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
         };
     });
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ExchangeRateService>();
+builder.Services.AddScoped<InvoiceService>();
+builder.Services.AddScoped<MonthlyReportService>();
+builder.Services.AddHostedService<MonthlyReportHostedService>();
+
 
 var app = builder.Build();
 
@@ -76,14 +84,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-Console.WriteLine("═══════════════════════════════════════");
+
 Console.WriteLine("🚀 FinAware API Started!");
 Console.WriteLine("📡 Listening on: https://localhost:7061");
 Console.WriteLine("📋 Swagger: https://localhost:7061/swagger");
 Console.WriteLine("🔓 CORS: Enabled (AllowAll for testing)");
 Console.WriteLine($"🔑 JWT Issuer: {jwtSettings["Issuer"]}");
 Console.WriteLine($"🔑 JWT Audience: {jwtSettings["Audience"]}");
-Console.WriteLine("═══════════════════════════════════════");
+
 
 // Seed default categories
 using (var scope = app.Services.CreateScope())
@@ -98,7 +106,7 @@ using (var scope = app.Services.CreateScope())
         // Kategoriler varsa ekleme
         if (!dbContext.Categories.Any())
         {
-            Console.WriteLine("═══════════════════════════════════════");
+           
             Console.WriteLine("🏷️ SEEDING DEFAULT CATEGORIES...");
 
             var defaultCategories = new List<Category>

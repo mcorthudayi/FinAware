@@ -11,5 +11,7 @@ namespace FinAware.MVC.Models.ViewModels
         [Required(ErrorMessage = "Şifre gereklidir")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
+
+        public bool RememberMe { get; set; }
     }
 }

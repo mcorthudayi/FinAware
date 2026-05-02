@@ -307,14 +307,23 @@
 </style>
 
 <!-- Ay Navigasyonu -->
-<div class="month-nav">
-    <a class="month-nav-btn" href="/Transaction/Index?month=@prevDate.Month&year=@prevDate.Year">
-        <i class="bi bi-chevron-left"></i>
-    </a>
-    <div class="month-title">@MonthName(selectedDate)</div>
-    <a class="month-nav-btn @(isCurrentMonth ? "disabled" : "")"
-       href="/Transaction/Index?month=@nextDate.Month&year=@nextDate.Year">
-        <i class="bi bi-chevron-right"></i>
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="month-nav" style="margin-bottom: 0;">
+        <a class="month-nav-btn" href="/Transaction/Index?month=@prevDate.Month&year=@prevDate.Year">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        <div class="month-title">@MonthName(selectedDate)</div>
+        <a class="month-nav-btn @(isCurrentMonth ? "disabled" : "")"
+           href="/Transaction/Index?month=@nextDate.Month&year=@nextDate.Year">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+    <a href="/Transaction/Create"
+       style="background: linear-gradient(135deg, #1AAFA3 0%, #0D7A71 100%);
+              color: white; border-radius: 10px; padding: 9px 18px;
+              font-weight: 600; font-size: 14px; text-decoration: none;
+              display: flex; align-items: center; gap: 6px;">
+        <i class="bi bi-plus-lg"></i>İşlem Ekle
     </a>
 </div>
 

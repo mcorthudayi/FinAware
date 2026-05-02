@@ -166,7 +166,7 @@ namespace FinAware.API.Services
             await SendEmailAsync(toEmail, subject, body);
         }
 
-        private async Task SendEmailAsync(string toEmail, string subject, string body)
+        public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             try
             {

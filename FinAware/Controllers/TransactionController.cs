@@ -22,7 +22,7 @@ namespace FinAware.API.Controllers
             _configuration = configuration;
         }
 
-        // GET: api/transaction endpointi, kullanıcının tüm işlemlerini getirir
+        
         [HttpGet]
         public async Task<IActionResult> GetTransactions()
         {
@@ -63,7 +63,7 @@ namespace FinAware.API.Controllers
             }
         }
 
-        // GET: api/transaction/{id} endpointi, kullanıcının belirli bir işlemini getirir
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTransactionById(int id)
         {
@@ -104,7 +104,7 @@ namespace FinAware.API.Controllers
             }
         }
 
-        // POST: api/transaction endpointi, yeni bir işlem oluşturur
+        
         [HttpPost]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionCreateDto dto)
         {
@@ -169,7 +169,7 @@ namespace FinAware.API.Controllers
             }
         }
 
-        // PUT: api/transaction/{id} endpointi, kullanıcının belirli bir işlemini günceller
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, [FromBody] TransactionCreateDto dto)
         {
@@ -214,7 +214,7 @@ namespace FinAware.API.Controllers
             }
         }
 
-        // DELETE: api/transaction/{id} endpointi, kullanıcının belirli bir işlemini siler
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTransaction(int id)
         {
@@ -240,7 +240,258 @@ namespace FinAware.API.Controllers
             }
         }
 
-        // POST: api/transaction/analyze-invoice endpointi, kullanıcının yüklediği fatura görselini analiz eder ve işlem bilgilerini döner
+
+
+        [HttpGet("monthly-report")]
+        public async Task<IActionResult> GetMonthlyReport(
+    [FromQuery] int year, [FromQuery] int month)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { message = "Kullanıcı bulunamadı" });
+
+                var reportService = HttpContext.RequestServices
+                    .GetRequiredService<MonthlyReportService>();
+
+                var data = await reportService.GetMonthlyReportDataAsync(
+                    int.Parse(userId), year, month);
+
+                return Ok(new
+                {
+                    year,
+                    month,
+                    income = data.Income,
+                    expense = data.Expense,
+                    balance = data.Balance,
+                    prevIncome = data.PrevIncome,
+                    prevExpense = data.PrevExpense,
+                    transactionCount = data.TransactionCount,
+                    categoryBreakdown = data.CategoryBreakdown.Select(c => new
+                    {
+                        c.CategoryName,
+                        c.Icon,
+                        c.Amount,
+                        c.Count
+                    }),
+                    expenseChange = data.PrevExpense > 0
+                        ? Math.Round((data.Expense - data.PrevExpense) / data.PrevExpense * 100, 1)
+                        : 0
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Rapor getirilirken hata oluştu", error = ex.Message });
+            }
+        }
+
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportToExcel(
+    [FromQuery] int? month,
+    [FromQuery] int? year)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var query = _context.Transactions
+                    .Include(t => t.Category)
+                    .Where(t => t.UserId == int.Parse(userId));
+
+                if (month.HasValue && year.HasValue)
+                {
+                    var start = new DateTime(year.Value, month.Value, 1);
+                    var end = start.AddMonths(1).AddDays(-1);
+                    query = query.Where(t => t.Date >= start && t.Date <= end);
+                }
+                else if (year.HasValue)
+                {
+                    query = query.Where(t => t.Date.Year == year.Value);
+                }
+
+                var transactions = await query
+                    .OrderByDescending(t => t.Date)
+                    .ToListAsync();
+
+                OfficeOpenXml.ExcelPackage.LicenseContext =
+                    OfficeOpenXml.LicenseContext.NonCommercial;
+
+                using var package = new OfficeOpenXml.ExcelPackage();
+                var ws = package.Workbook.Worksheets.Add("İşlemler");
+
+                // Başlık stili
+                var titleRow = ws.Cells["A1:H1"];
+                titleRow.Merge = true;
+                ws.Cells["A1"].Value = "FinAware – İşlem Raporu";
+                ws.Cells["A1"].Style.Font.Size = 16;
+                ws.Cells["A1"].Style.Font.Bold = true;
+                ws.Cells["A1"].Style.Font.Color.SetColor(System.Drawing.Color.White);
+                ws.Cells["A1"].Style.Fill.PatternType =
+                    OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                ws.Cells["A1"].Style.Fill.BackgroundColor
+                    .SetColor(System.Drawing.Color.FromArgb(26, 175, 163));
+                ws.Cells["A1"].Style.HorizontalAlignment =
+                    OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                ws.Row(1).Height = 30;
+
+                // Alt başlık
+                string period = month.HasValue && year.HasValue
+                    ? $"{new DateTime(year.Value, month.Value, 1):MMMM yyyy}"
+                    : year.HasValue ? year.Value.ToString() : "Tüm Zamanlar";
+
+                ws.Cells["A2:H2"].Merge = true;
+                ws.Cells["A2"].Value = $"Dönem: {period} | Toplam: {transactions.Count} işlem | Oluşturuldu: {DateTime.Now:dd.MM.yyyy HH:mm}";
+                ws.Cells["A2"].Style.Font.Italic = true;
+                ws.Cells["A2"].Style.Font.Color.SetColor(System.Drawing.Color.Gray);
+                ws.Cells["A2"].Style.HorizontalAlignment =
+                    OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                ws.Row(2).Height = 20;
+
+                // Sütun başlıkları
+                var headers = new[] { "Tarih", "Tip", "Kategori", "Açıklama",
+                              "Tutar (TL)", "Orijinal Tutar", "Para Birimi", "Kur" };
+                var headerColors = System.Drawing.Color.FromArgb(13, 122, 113);
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cells[3, i + 1];
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    cell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    cell.Style.Fill.BackgroundColor.SetColor(headerColors);
+                    cell.Style.HorizontalAlignment =
+                        OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    cell.Style.Border.Bottom.Style =
+                        OfficeOpenXml.Style.ExcelBorderStyle.Medium;
+                }
+                ws.Row(3).Height = 22;
+
+                // Veri satırları
+                decimal totalIncome = 0, totalExpense = 0;
+
+                for (int i = 0; i < transactions.Count; i++)
+                {
+                    var t = transactions[i];
+                    int row = i + 4;
+                    bool isIncome = t.Type == "Income";
+
+                    // Zebra
+                    if (i % 2 == 0)
+                    {
+                        ws.Cells[row, 1, row, 8].Style.Fill.PatternType =
+                            OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        ws.Cells[row, 1, row, 8].Style.Fill.BackgroundColor
+                            .SetColor(System.Drawing.Color.FromArgb(240, 253, 250));
+                    }
+
+                    ws.Cells[row, 1].Value = t.Date.ToString("dd.MM.yyyy");
+                    ws.Cells[row, 2].Value = isIncome ? "Gelir" : "Gider";
+                    ws.Cells[row, 2].Style.Font.Color.SetColor(
+                        isIncome
+                            ? System.Drawing.Color.FromArgb(16, 185, 129)
+                            : System.Drawing.Color.FromArgb(239, 68, 68));
+                    ws.Cells[row, 2].Style.Font.Bold = true;
+                    ws.Cells[row, 3].Value = t.Category?.Name ?? "Diğer";
+                    ws.Cells[row, 4].Value = t.Description;
+                    ws.Cells[row, 5].Value = t.Amount;
+                    ws.Cells[row, 5].Style.Numberformat.Format = "#,##0.00 ₺";
+                    ws.Cells[row, 5].Style.Font.Color.SetColor(
+                        isIncome
+                            ? System.Drawing.Color.FromArgb(16, 185, 129)
+                            : System.Drawing.Color.FromArgb(239, 68, 68));
+                    ws.Cells[row, 6].Value = t.OriginalAmount != t.Amount
+                        ? t.OriginalAmount : (object)"";
+                    ws.Cells[row, 7].Value = t.OriginalCurrency != "TRY"
+                        ? t.OriginalCurrency : "";
+                    ws.Cells[row, 8].Value = t.ExchangeRate != 1
+                        ? t.ExchangeRate : (object)"";
+                    ws.Cells[row, 8].Style.Numberformat.Format = "#,##0.0000";
+
+                    ws.Row(row).Height = 18;
+
+                    if (isIncome) totalIncome += t.Amount;
+                    else totalExpense += t.Amount;
+                }
+
+                // Özet satırı
+                int summaryRow = transactions.Count + 4;
+                ws.Cells[summaryRow, 1, summaryRow, 8].Style.Fill.PatternType =
+                    OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                ws.Cells[summaryRow, 1, summaryRow, 8].Style.Fill.BackgroundColor
+                    .SetColor(System.Drawing.Color.FromArgb(240, 253, 250));
+                ws.Cells[summaryRow, 1, summaryRow, 3].Merge = true;
+                ws.Cells[summaryRow, 1].Value = "ÖZET";
+                ws.Cells[summaryRow, 1].Style.Font.Bold = true;
+                ws.Cells[summaryRow, 1].Style.Font.Size = 11;
+                ws.Cells[summaryRow, 1].Style.HorizontalAlignment =
+                    OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                ws.Cells[summaryRow, 4].Value = "Toplam Gelir:";
+                ws.Cells[summaryRow, 4].Style.Font.Bold = true;
+                ws.Cells[summaryRow, 5].Value = totalIncome;
+                ws.Cells[summaryRow, 5].Style.Numberformat.Format = "#,##0.00 ₺";
+                ws.Cells[summaryRow, 5].Style.Font.Bold = true;
+                ws.Cells[summaryRow, 5].Style.Font.Color
+                    .SetColor(System.Drawing.Color.FromArgb(16, 185, 129));
+
+                ws.Cells[summaryRow + 1, 4].Value = "Toplam Gider:";
+                ws.Cells[summaryRow + 1, 4].Style.Font.Bold = true;
+                ws.Cells[summaryRow + 1, 5].Value = totalExpense;
+                ws.Cells[summaryRow + 1, 5].Style.Numberformat.Format = "#,##0.00 ₺";
+                ws.Cells[summaryRow + 1, 5].Style.Font.Bold = true;
+                ws.Cells[summaryRow + 1, 5].Style.Font.Color
+                    .SetColor(System.Drawing.Color.FromArgb(239, 68, 68));
+
+                decimal netBalance = totalIncome - totalExpense;
+                ws.Cells[summaryRow + 2, 4].Value = "Net Bakiye:";
+                ws.Cells[summaryRow + 2, 4].Style.Font.Bold = true;
+                ws.Cells[summaryRow + 2, 5].Value = netBalance;
+                ws.Cells[summaryRow + 2, 5].Style.Numberformat.Format = "#,##0.00 ₺";
+                ws.Cells[summaryRow + 2, 5].Style.Font.Bold = true;
+                ws.Cells[summaryRow + 2, 5].Style.Font.Color
+                    .SetColor(netBalance >= 0
+                        ? System.Drawing.Color.FromArgb(26, 175, 163)
+                        : System.Drawing.Color.FromArgb(239, 68, 68));
+
+                // Sütun genişlikleri
+                ws.Column(1).Width = 14;
+                ws.Column(2).Width = 10;
+                ws.Column(3).Width = 18;
+                ws.Column(4).Width = 30;
+                ws.Column(5).Width = 16;
+                ws.Column(6).Width = 16;
+                ws.Column(7).Width = 12;
+                ws.Column(8).Width = 14;
+
+                // Tüm hücrelere border
+                var dataRange = ws.Cells[3, 1, summaryRow + 2, 8];
+                dataRange.Style.Border.Top.Style =
+                dataRange.Style.Border.Bottom.Style =
+                dataRange.Style.Border.Left.Style =
+                dataRange.Style.Border.Right.Style =
+                    OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                dataRange.Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(229, 231, 235));
+                dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(229, 231, 235));
+
+                var excelBytes = package.GetAsByteArray();
+                string fileName = month.HasValue && year.HasValue
+                    ? $"FinAware_{year}_{month:D2}.xlsx"
+                    : $"FinAware_{DateTime.Now:yyyyMMdd}.xlsx";
+
+                return File(excelBytes,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Excel oluşturulamadı", error = ex.Message });
+            }
+        }
+
         [AllowAnonymous]
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("analyze-invoice")]

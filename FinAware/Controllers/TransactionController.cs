@@ -22,7 +22,6 @@ namespace FinAware.API.Controllers
             _configuration = configuration;
         }
 
-        
         [HttpGet]
         public async Task<IActionResult> GetTransactions()
         {
@@ -63,7 +62,6 @@ namespace FinAware.API.Controllers
             }
         }
 
-        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTransactionById(int id)
         {
@@ -104,7 +102,6 @@ namespace FinAware.API.Controllers
             }
         }
 
-        
         [HttpPost]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionCreateDto dto)
         {
@@ -114,14 +111,13 @@ namespace FinAware.API.Controllers
                 if (string.IsNullOrEmpty(userId))
                     return Unauthorized(new { message = "Kullanıcı bulunamadı" });
 
-                
                 var currency = dto.Currency?.ToUpper() ?? "TRY";
                 decimal exchangeRate = 1m;
                 decimal tryAmount = dto.Amount;
 
                 if (currency != "TRY")
                 {
-                    var exchangeService = new ExchangeRateService(); 
+                    var exchangeService = new ExchangeRateService();
 
                     if (dto.ManualRate.HasValue && dto.ManualRate.Value > 0)
                     {
@@ -169,7 +165,6 @@ namespace FinAware.API.Controllers
             }
         }
 
-        
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, [FromBody] TransactionCreateDto dto)
         {
@@ -201,7 +196,7 @@ namespace FinAware.API.Controllers
                 transaction.OriginalCurrency = currency;
                 transaction.ExchangeRate = exchangeRate;
                 transaction.Date = dto.Date;
-                transaction.Description = dto.Description;
+                transaction.Description = dto.Description ?? string.Empty;
                 transaction.Type = dto.Type;
                 transaction.CategoryId = dto.CategoryId;
 
@@ -214,7 +209,6 @@ namespace FinAware.API.Controllers
             }
         }
 
-        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTransaction(int id)
         {
@@ -240,11 +234,9 @@ namespace FinAware.API.Controllers
             }
         }
 
-
-
         [HttpGet("monthly-report")]
         public async Task<IActionResult> GetMonthlyReport(
-    [FromQuery] int year, [FromQuery] int month)
+            [FromQuery] int year, [FromQuery] int month)
         {
             try
             {
@@ -288,8 +280,10 @@ namespace FinAware.API.Controllers
 
         [HttpGet("export")]
         public async Task<IActionResult> ExportToExcel(
-    [FromQuery] int? month,
-    [FromQuery] int? year)
+            [FromQuery] int? month,
+            [FromQuery] int? year,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate)
         {
             try
             {
@@ -301,15 +295,30 @@ namespace FinAware.API.Controllers
                     .Include(t => t.Category)
                     .Where(t => t.UserId == int.Parse(userId));
 
-                if (month.HasValue && year.HasValue)
+                string period;
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    var rangeStart = startDate.Value.Date;
+                    var rangeEnd = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                    query = query.Where(t => t.Date >= rangeStart && t.Date <= rangeEnd);
+                    period = $"{startDate.Value:dd.MM.yyyy} – {endDate.Value:dd.MM.yyyy}";
+                }
+                else if (month.HasValue && year.HasValue)
                 {
                     var start = new DateTime(year.Value, month.Value, 1);
                     var end = start.AddMonths(1).AddDays(-1);
                     query = query.Where(t => t.Date >= start && t.Date <= end);
+                    period = $"{new DateTime(year.Value, month.Value, 1):MMMM yyyy}";
                 }
                 else if (year.HasValue)
                 {
                     query = query.Where(t => t.Date.Year == year.Value);
+                    period = year.Value.ToString();
+                }
+                else
+                {
+                    period = "Tüm Zamanlar";
                 }
 
                 var transactions = await query
@@ -322,38 +331,29 @@ namespace FinAware.API.Controllers
                 using var package = new OfficeOpenXml.ExcelPackage();
                 var ws = package.Workbook.Worksheets.Add("İşlemler");
 
-                // Başlık stili
+                // Başlık
                 var titleRow = ws.Cells["A1:H1"];
                 titleRow.Merge = true;
                 ws.Cells["A1"].Value = "FinAware – İşlem Raporu";
                 ws.Cells["A1"].Style.Font.Size = 16;
                 ws.Cells["A1"].Style.Font.Bold = true;
                 ws.Cells["A1"].Style.Font.Color.SetColor(System.Drawing.Color.White);
-                ws.Cells["A1"].Style.Fill.PatternType =
-                    OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                ws.Cells["A1"].Style.Fill.BackgroundColor
-                    .SetColor(System.Drawing.Color.FromArgb(26, 175, 163));
-                ws.Cells["A1"].Style.HorizontalAlignment =
-                    OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                ws.Cells["A1"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                ws.Cells["A1"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(26, 175, 163));
+                ws.Cells["A1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 ws.Row(1).Height = 30;
 
                 // Alt başlık
-                string period = month.HasValue && year.HasValue
-                    ? $"{new DateTime(year.Value, month.Value, 1):MMMM yyyy}"
-                    : year.HasValue ? year.Value.ToString() : "Tüm Zamanlar";
-
                 ws.Cells["A2:H2"].Merge = true;
                 ws.Cells["A2"].Value = $"Dönem: {period} | Toplam: {transactions.Count} işlem | Oluşturuldu: {DateTime.Now:dd.MM.yyyy HH:mm}";
                 ws.Cells["A2"].Style.Font.Italic = true;
                 ws.Cells["A2"].Style.Font.Color.SetColor(System.Drawing.Color.Gray);
-                ws.Cells["A2"].Style.HorizontalAlignment =
-                    OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                ws.Cells["A2"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 ws.Row(2).Height = 20;
 
                 // Sütun başlıkları
-                var headers = new[] { "Tarih", "Tip", "Kategori", "Açıklama",
-                              "Tutar (TL)", "Orijinal Tutar", "Para Birimi", "Kur" };
-                var headerColors = System.Drawing.Color.FromArgb(13, 122, 113);
+                var headers = new[] { "Tarih", "Tip", "Kategori", "Açıklama", "Tutar (TL)", "Orijinal Tutar", "Para Birimi", "Kur" };
+                var headerColor = System.Drawing.Color.FromArgb(13, 122, 113);
 
                 for (int i = 0; i < headers.Length; i++)
                 {
@@ -362,11 +362,9 @@ namespace FinAware.API.Controllers
                     cell.Style.Font.Bold = true;
                     cell.Style.Font.Color.SetColor(System.Drawing.Color.White);
                     cell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                    cell.Style.Fill.BackgroundColor.SetColor(headerColors);
-                    cell.Style.HorizontalAlignment =
-                        OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                    cell.Style.Border.Bottom.Style =
-                        OfficeOpenXml.Style.ExcelBorderStyle.Medium;
+                    cell.Style.Fill.BackgroundColor.SetColor(headerColor);
+                    cell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    cell.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Medium;
                 }
                 ws.Row(3).Height = 22;
 
@@ -379,72 +377,58 @@ namespace FinAware.API.Controllers
                     int row = i + 4;
                     bool isIncome = t.Type == "Income";
 
-                    // Zebra
                     if (i % 2 == 0)
                     {
-                        ws.Cells[row, 1, row, 8].Style.Fill.PatternType =
-                            OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        ws.Cells[row, 1, row, 8].Style.Fill.BackgroundColor
-                            .SetColor(System.Drawing.Color.FromArgb(240, 253, 250));
+                        ws.Cells[row, 1, row, 8].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        ws.Cells[row, 1, row, 8].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(240, 253, 250));
                     }
 
                     ws.Cells[row, 1].Value = t.Date.ToString("dd.MM.yyyy");
                     ws.Cells[row, 2].Value = isIncome ? "Gelir" : "Gider";
-                    ws.Cells[row, 2].Style.Font.Color.SetColor(
-                        isIncome
-                            ? System.Drawing.Color.FromArgb(16, 185, 129)
-                            : System.Drawing.Color.FromArgb(239, 68, 68));
+                    ws.Cells[row, 2].Style.Font.Color.SetColor(isIncome
+                        ? System.Drawing.Color.FromArgb(16, 185, 129)
+                        : System.Drawing.Color.FromArgb(239, 68, 68));
                     ws.Cells[row, 2].Style.Font.Bold = true;
                     ws.Cells[row, 3].Value = t.Category?.Name ?? "Diğer";
                     ws.Cells[row, 4].Value = t.Description;
                     ws.Cells[row, 5].Value = t.Amount;
                     ws.Cells[row, 5].Style.Numberformat.Format = "#,##0.00 ₺";
-                    ws.Cells[row, 5].Style.Font.Color.SetColor(
-                        isIncome
-                            ? System.Drawing.Color.FromArgb(16, 185, 129)
-                            : System.Drawing.Color.FromArgb(239, 68, 68));
-                    ws.Cells[row, 6].Value = t.OriginalAmount != t.Amount
-                        ? t.OriginalAmount : (object)"";
-                    ws.Cells[row, 7].Value = t.OriginalCurrency != "TRY"
-                        ? t.OriginalCurrency : "";
-                    ws.Cells[row, 8].Value = t.ExchangeRate != 1
-                        ? t.ExchangeRate : (object)"";
+                    ws.Cells[row, 5].Style.Font.Color.SetColor(isIncome
+                        ? System.Drawing.Color.FromArgb(16, 185, 129)
+                        : System.Drawing.Color.FromArgb(239, 68, 68));
+                    ws.Cells[row, 6].Value = t.OriginalAmount != t.Amount ? t.OriginalAmount : (object)"";
+                    ws.Cells[row, 7].Value = t.OriginalCurrency != "TRY" ? t.OriginalCurrency : "";
+                    ws.Cells[row, 8].Value = t.ExchangeRate != 1 ? t.ExchangeRate : (object)"";
                     ws.Cells[row, 8].Style.Numberformat.Format = "#,##0.0000";
-
                     ws.Row(row).Height = 18;
 
                     if (isIncome) totalIncome += t.Amount;
                     else totalExpense += t.Amount;
                 }
 
-                // Özet satırı
+                // Özet
                 int summaryRow = transactions.Count + 4;
-                ws.Cells[summaryRow, 1, summaryRow, 8].Style.Fill.PatternType =
-                    OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                ws.Cells[summaryRow, 1, summaryRow, 8].Style.Fill.BackgroundColor
-                    .SetColor(System.Drawing.Color.FromArgb(240, 253, 250));
+                ws.Cells[summaryRow, 1, summaryRow, 8].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                ws.Cells[summaryRow, 1, summaryRow, 8].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(240, 253, 250));
                 ws.Cells[summaryRow, 1, summaryRow, 3].Merge = true;
                 ws.Cells[summaryRow, 1].Value = "ÖZET";
                 ws.Cells[summaryRow, 1].Style.Font.Bold = true;
                 ws.Cells[summaryRow, 1].Style.Font.Size = 11;
-                ws.Cells[summaryRow, 1].Style.HorizontalAlignment =
-                    OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                ws.Cells[summaryRow, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
                 ws.Cells[summaryRow, 4].Value = "Toplam Gelir:";
                 ws.Cells[summaryRow, 4].Style.Font.Bold = true;
                 ws.Cells[summaryRow, 5].Value = totalIncome;
                 ws.Cells[summaryRow, 5].Style.Numberformat.Format = "#,##0.00 ₺";
                 ws.Cells[summaryRow, 5].Style.Font.Bold = true;
-                ws.Cells[summaryRow, 5].Style.Font.Color
-                    .SetColor(System.Drawing.Color.FromArgb(16, 185, 129));
+                ws.Cells[summaryRow, 5].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(16, 185, 129));
 
                 ws.Cells[summaryRow + 1, 4].Value = "Toplam Gider:";
                 ws.Cells[summaryRow + 1, 4].Style.Font.Bold = true;
                 ws.Cells[summaryRow + 1, 5].Value = totalExpense;
                 ws.Cells[summaryRow + 1, 5].Style.Numberformat.Format = "#,##0.00 ₺";
                 ws.Cells[summaryRow + 1, 5].Style.Font.Bold = true;
-                ws.Cells[summaryRow + 1, 5].Style.Font.Color
-                    .SetColor(System.Drawing.Color.FromArgb(239, 68, 68));
+                ws.Cells[summaryRow + 1, 5].Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(239, 68, 68));
 
                 decimal netBalance = totalIncome - totalExpense;
                 ws.Cells[summaryRow + 2, 4].Value = "Net Bakiye:";
@@ -452,10 +436,9 @@ namespace FinAware.API.Controllers
                 ws.Cells[summaryRow + 2, 5].Value = netBalance;
                 ws.Cells[summaryRow + 2, 5].Style.Numberformat.Format = "#,##0.00 ₺";
                 ws.Cells[summaryRow + 2, 5].Style.Font.Bold = true;
-                ws.Cells[summaryRow + 2, 5].Style.Font.Color
-                    .SetColor(netBalance >= 0
-                        ? System.Drawing.Color.FromArgb(26, 175, 163)
-                        : System.Drawing.Color.FromArgb(239, 68, 68));
+                ws.Cells[summaryRow + 2, 5].Style.Font.Color.SetColor(netBalance >= 0
+                    ? System.Drawing.Color.FromArgb(26, 175, 163)
+                    : System.Drawing.Color.FromArgb(239, 68, 68));
 
                 // Sütun genişlikleri
                 ws.Column(1).Width = 14;
@@ -467,20 +450,22 @@ namespace FinAware.API.Controllers
                 ws.Column(7).Width = 12;
                 ws.Column(8).Width = 14;
 
-                // Tüm hücrelere border
+                // Border
                 var dataRange = ws.Cells[3, 1, summaryRow + 2, 8];
                 dataRange.Style.Border.Top.Style =
                 dataRange.Style.Border.Bottom.Style =
                 dataRange.Style.Border.Left.Style =
-                dataRange.Style.Border.Right.Style =
-                    OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                dataRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                 dataRange.Style.Border.Top.Color.SetColor(System.Drawing.Color.FromArgb(229, 231, 235));
                 dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.FromArgb(229, 231, 235));
 
                 var excelBytes = package.GetAsByteArray();
-                string fileName = month.HasValue && year.HasValue
-                    ? $"FinAware_{year}_{month:D2}.xlsx"
-                    : $"FinAware_{DateTime.Now:yyyyMMdd}.xlsx";
+
+                string fileName = startDate.HasValue && endDate.HasValue
+                    ? $"FinAware_{startDate.Value:yyyyMMdd}_{endDate.Value:yyyyMMdd}.xlsx"
+                    : month.HasValue && year.HasValue
+                        ? $"FinAware_{year}_{month:D2}.xlsx"
+                        : $"FinAware_{DateTime.Now:yyyyMMdd}.xlsx";
 
                 return File(excelBytes,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -499,7 +484,7 @@ namespace FinAware.API.Controllers
         {
             try
             {
-                Console.WriteLine("═══════════════════════════════════════");
+               
                 Console.WriteLine("📸 INVOICE UPLOAD REQUEST");
 
                 if (file == null || file.Length == 0)
@@ -525,7 +510,7 @@ namespace FinAware.API.Controllers
 
                 try { System.IO.File.Delete(filePath); } catch { }
 
-                Console.WriteLine("═══════════════════════════════════════");
+                
 
                 if (result.Success)
                 {

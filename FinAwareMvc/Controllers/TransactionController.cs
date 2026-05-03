@@ -80,7 +80,7 @@ namespace FinAware.MVC.Controllers
                 if (responseData.TryGetProperty("tryAmount", out var tryEl))
                     displayAmount = tryEl.GetDecimal();
 
-                // ── Site içi işlem bildirimi ──────────────────────────────
+                // Site içi işlem bildirimi
                 try
                 {
                     var typeText = model.Type == "Income" ? "Gelir" : "Gider";
@@ -103,7 +103,7 @@ namespace FinAware.MVC.Controllers
                 }
                 catch (Exception ex) { Console.WriteLine($"⚠️ Notification failed: {ex.Message}"); }
 
-                // ── Hatırlatıcı bildirimi ─────────────────────────────────
+                // Hatırlatıcı bildirimi
                 if (model.ReminderDate.HasValue)
                 {
                     try
@@ -123,15 +123,10 @@ namespace FinAware.MVC.Controllers
                     catch (Exception ex) { Console.WriteLine($"⚠️ Reminder failed: {ex.Message}"); }
                 }
 
-                // ── Bütçe kontrolü (%50 / %80 / %100) ───────────────────
-                try
-                {
-                    await _apiService.CheckBudgetAsync();
-                    Console.WriteLine("✅ Budget check yapıldı");
-                }
+                // Bütçe kontrolü
+                try { await _apiService.CheckBudgetAsync(); }
                 catch (Exception ex) { Console.WriteLine($"⚠️ Budget check failed: {ex.Message}"); }
 
-                // ── Başarı mesajı ─────────────────────────────────────────
                 if (!string.IsNullOrEmpty(displayCurrency) && displayCurrency != "TRY")
                     TempData["Success"] = $"{model.Amount} {displayCurrency} = ₺{displayAmount:N2} olarak eklendi!";
                 else
@@ -159,7 +154,6 @@ namespace FinAware.MVC.Controllers
                 var transaction = JsonSerializer.Deserialize<TransactionViewModel>(json,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                // Kategori nested object'ten düzleştir
                 if (transaction?.Category != null)
                 {
                     transaction.CategoryId = transaction.Category.CategoryId;
@@ -200,11 +194,7 @@ namespace FinAware.MVC.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                try
-                {
-                    await _apiService.CheckBudgetAsync();
-                    Console.WriteLine("✅ Budget check yapıldı (edit)");
-                }
+                try { await _apiService.CheckBudgetAsync(); }
                 catch (Exception ex) { Console.WriteLine($"⚠️ Budget check failed: {ex.Message}"); }
 
                 TempData["Success"] = "İşlem başarıyla güncellendi!";
@@ -229,57 +219,42 @@ namespace FinAware.MVC.Controllers
 
             return RedirectToAction("Index");
         }
-        public async Task<IActionResult> Export(int? month, int? year, string? period)
+
+        public async Task<IActionResult> Export(
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate)
         {
             if (!IsAuthenticated()) return RedirectToAction("Login", "Auth");
 
+            if (!startDate.HasValue || !endDate.HasValue)
+            {
+                TempData["Error"] = "Lütfen tarih aralığı seçin.";
+                return RedirectToAction("Index", "Analysis");
+            }
+
+            if (startDate > endDate)
+            {
+                TempData["Error"] = "Başlangıç tarihi bitiş tarihinden büyük olamaz.";
+                return RedirectToAction("Index", "Analysis");
+            }
+
             var client = CreateAuthClient();
-            string url = "/api/transaction/export";
-            var queryParams = new List<string>();
-
-            if (month.HasValue && year.HasValue)
-            {
-                queryParams.Add($"month={month}");
-                queryParams.Add($"year={year}");
-            }
-            else if (!string.IsNullOrEmpty(period))
-            {
-                var now = DateTime.Now;
-                switch (period)
-                {
-                    case "weekly":
-                        queryParams.Add($"startDate={now.AddDays(-7):yyyy-MM-dd}");
-                        break;
-                    case "monthly":
-                        queryParams.Add($"month={now.Month}");
-                        queryParams.Add($"year={now.Year}");
-                        break;
-                    case "6months":
-                        queryParams.Add($"startDate={now.AddMonths(-6):yyyy-MM-dd}");
-                        break;
-                    case "yearly":
-                        queryParams.Add($"year={now.Year}");
-                        break;
-                }
-            }
-
-            if (queryParams.Any())
-                url += "?" + string.Join("&", queryParams);
+            var url = $"/api/transaction/export?startDate={startDate.Value:yyyy-MM-dd}&endDate={endDate.Value:yyyy-MM-dd}";
 
             var response = await client.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
             {
                 TempData["Error"] = "Excel dosyası oluşturulamadı.";
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Analysis");
             }
 
             var bytes = await response.Content.ReadAsByteArrayAsync();
-            string fileName = $"FinAware_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+            string fileName = $"FinAware_{startDate.Value:yyyyMMdd}_{endDate.Value:yyyyMMdd}.xlsx";
 
             return File(bytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 fileName);
         }
     }
-    }
+}

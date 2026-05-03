@@ -17,7 +17,6 @@
         gap: 12px;
         align-items: center;
     }
-
     .period-btn {
         padding: 8px 16px;
         border-radius: 10px;
@@ -29,18 +28,15 @@
         text-decoration: none;
         transition: all 0.18s;
     }
-
     .period-btn.active {
         background: linear-gradient(135deg, #1AAFA3 0%, #0D7A71 100%);
         border-color: #1AAFA3;
         color: white;
     }
-
     .period-btn:hover:not(.active) {
         border-color: #1AAFA3;
         color: #1AAFA3;
     }
-
     .stat-card {
         background: white;
         border-radius: 14px;
@@ -51,21 +47,18 @@
         justify-content: space-between;
         gap: 16px;
     }
-
     .stat-icon {
         width: 48px; height: 48px;
         border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
         font-size: 22px; flex-shrink: 0;
     }
-
     .chart-card {
         background: white;
         border-radius: 14px;
         border: 1px solid #e5e7eb;
         padding: 20px;
     }
-
     .firm-item {
         display: flex;
         align-items: center;
@@ -74,9 +67,7 @@
         border-bottom: 1px solid #f3f4f6;
         gap: 12px;
     }
-
     .firm-item:last-child { border-bottom: none; }
-
     .firm-bar-bg {
         flex: 1;
         height: 6px;
@@ -84,14 +75,12 @@
         border-radius: 3px;
         overflow: hidden;
     }
-
     .firm-bar-fill {
         height: 100%;
         background: linear-gradient(135deg, #1AAFA3, #0D7A71);
         border-radius: 3px;
         transition: width 0.5s ease;
     }
-
     .filter-select {
         padding: 8px 12px;
         border: 1.5px solid #e5e7eb;
@@ -101,13 +90,11 @@
         background: white;
         cursor: pointer;
     }
-
     .filter-select:focus {
         outline: none;
         border-color: #1AAFA3;
         box-shadow: 0 0 0 3px rgba(26,175,163,0.1);
     }
-
     .search-input {
         padding: 8px 12px 8px 34px;
         border: 1.5px solid #e5e7eb;
@@ -117,13 +104,11 @@
         background: white;
         width: 200px;
     }
-
     .search-input:focus {
         outline: none;
         border-color: #1AAFA3;
         box-shadow: 0 0 0 3px rgba(26,175,163,0.1);
     }
-
     .export-btn {
         padding: 8px 16px;
         border-radius: 10px;
@@ -132,19 +117,14 @@
         color: #0D7A71;
         font-size: 13px;
         font-weight: 600;
-        text-decoration: none;
+        cursor: pointer;
         display: flex;
         align-items: center;
         gap: 6px;
         transition: all 0.18s;
         margin-left: auto;
     }
-
-    .export-btn:hover {
-        background: #1AAFA3;
-        color: white;
-    }
-
+    .export-btn:hover { background: #1AAFA3; color: white; }
     .tx-row {
         display: flex;
         align-items: center;
@@ -154,9 +134,7 @@
         margin-bottom: 4px;
         transition: background 0.15s;
     }
-
     .tx-row:hover { background: #f9fafb; }
-
     .tx-icon {
         width: 38px; height: 38px;
         border-radius: 9px;
@@ -164,9 +142,24 @@
         display: flex; align-items: center; justify-content: center;
         font-size: 17px; flex-shrink: 0;
     }
-
     .badge-income { background: #ecfdf5; color: #065f46; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .badge-expense { background: #fef2f2; color: #991b1b; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .quick-range-btn {
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: 1.5px solid #e5e7eb;
+        background: white;
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.18s;
+    }
+    .quick-range-btn:hover, .quick-range-btn.active {
+        background: #1AAFA3;
+        border-color: #1AAFA3;
+        color: white;
+    }
 </style>
 
 <!-- Sayfa Başlığı + Export -->
@@ -175,12 +168,12 @@
         <h1 class="display-6 fw-bold mb-1">Analiz & İstatistikler</h1>
         <p class="text-muted mb-0">Gelir, gider ve harcama analizleriniz</p>
     </div>
-    <a href="/Transaction/Export?period=@Model.Period" class="export-btn">
+    <button type="button" class="export-btn" data-bs-toggle="modal" data-bs-target="#exportModal">
         <i class="bi bi-file-earmark-excel"></i>Excel İndir
-    </a>
+    </button>
 </div>
 
-<!-- Period Filtre + Kategori Filtre -->
+<!-- Period Filtre -->
 <div class="filter-card">
     <div class="d-flex gap-2 flex-wrap">
         <a href="/Analysis/Index?period=weekly"  class="period-btn @(Model.Period == "weekly"  ? "active" : "")">
@@ -197,30 +190,27 @@
         </a>
     </div>
 
-    <div style="width: 1px; height: 30px; background: #e5e7eb; margin: 0 4px;"></div>
+    <div style="width:1px; height:30px; background:#e5e7eb; margin:0 4px;"></div>
 
-    <!-- Kategori filtre -->
     <select class="filter-select" id="categoryFilter" onchange="filterTable()">
         <option value="">Tüm Kategoriler</option>
         @if (Model.Transactions != null)
         {
-            foreach (var cat in Model.Transactions
-                .GroupBy(t => t.CategoryName)
-                .OrderBy(g => g.Key))
+            foreach (var cat in Model.Transactions.GroupBy(t => t.CategoryName).OrderBy(g => g.Key))
             {
-                <option value="@cat.Key">@(Model.Transactions.FirstOrDefault(t => t.CategoryName == cat.Key)?.CategoryIcon) @cat.Key</option>
+                <option value="@cat.Key">
+                    @(Model.Transactions.FirstOrDefault(t => t.CategoryName == cat.Key)?.CategoryIcon) @cat.Key
+                </option>
             }
         }
     </select>
 
-    <!-- Tip filtre -->
     <select class="filter-select" id="typeFilter" onchange="filterTable()">
         <option value="">Gelir & Gider</option>
         <option value="Income">💰 Sadece Gelir</option>
         <option value="Expense">💸 Sadece Gider</option>
     </select>
 
-    <!-- Arama -->
     <div style="position: relative;">
         <i class="bi bi-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:13px;"></i>
         <input type="text" class="search-input" id="searchFilter"
@@ -288,7 +278,7 @@
             }
             else
             {
-                <div style="height: 280px; display:flex; align-items:center; justify-content:center;">
+                <div style="height:280px; display:flex; align-items:center; justify-content:center;">
                     <p class="text-muted">Bu dönemde gider yok</p>
                 </div>
             }
@@ -310,29 +300,27 @@
     if (firmGroups.Any())
     {
         decimal maxFirm = firmGroups.Max(f => f.Total);
-
         <div class="chart-card mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold mb-0">🏢 Firma / Açıklama Bazlı Harcamalar</h6>
                 <span style="font-size:12px; color:#9ca3af;">Top 10</span>
             </div>
-
             @foreach (var firm in firmGroups)
             {
                 double pct = maxFirm > 0 ? (double)(firm.Total / maxFirm * 100) : 0;
-                double totalPct = Model.TotalExpenses > 0
-                    ? (double)(firm.Total / Model.TotalExpenses * 100) : 0;
-
+                double totalPct = Model.TotalExpenses > 0 ? (double)(firm.Total / Model.TotalExpenses * 100) : 0;
                 <div class="firm-item">
                     <div style="min-width:180px; max-width:220px;">
                         <div style="font-weight:600; font-size:13px; color:#111827;
                                     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                             @firm.Name
                         </div>
-                        <div style="font-size:11px; color:#9ca3af;">@firm.Count işlem · %@totalPct.ToString("N1") toplam</div>
+                        <div style="font-size:11px; color:#9ca3af;">
+                            @firm.Count işlem · %@totalPct.ToString("N1") toplam
+                        </div>
                     </div>
                     <div class="firm-bar-bg">
-                        <div class="firm-bar-fill" style="width: @pct.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                        <div class="firm-bar-fill" style="width:@pct.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)%"></div>
                     </div>
                     <div style="font-weight:700; color:#ef4444; font-size:13px; min-width:90px; text-align:right;">
                         ₺@firm.Total.ToString("N2")
@@ -349,7 +337,6 @@
         <h6 class="fw-bold mb-0">📋 İşlem Geçmişi</h6>
         <span id="txCount" style="font-size:12px; color:#9ca3af;"></span>
     </div>
-
     @if (Model.Transactions != null && Model.Transactions.Any())
     {
         <div id="transactionList">
@@ -393,10 +380,80 @@
     }
 </div>
 
+<!-- ══ EXPORT MODAL ══ -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; border:none; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="border:none; padding:24px 24px 0;">
+                <h5 class="modal-title fw-bold" style="font-size:17px;">
+                    <i class="bi bi-file-earmark-excel me-2" style="color:#1AAFA3;"></i>Excel'e Aktar
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:20px 24px 8px;">
+                <p class="text-muted mb-4" style="font-size:13px;">
+                    İndirmek istediğiniz tarih aralığını seçin. Seçilen dönemdeki tüm gelir ve giderler Excel dosyasına aktarılır.
+                </p>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold mb-2" style="font-size:13px;">Hızlı Seçim</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="quick-range-btn" data-range="thismonth">Bu Ay</button>
+                        <button type="button" class="quick-range-btn" data-range="lastmonth">Geçen Ay</button>
+                        <button type="button" class="quick-range-btn" data-range="last3">Son 3 Ay</button>
+                        <button type="button" class="quick-range-btn" data-range="thisyear">Bu Yıl</button>
+                        <button type="button" class="quick-range-btn" data-range="all">Tümü</button>
+                    </div>
+                </div>
+
+                <form method="get" action="/Transaction/Export" id="exportForm">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Başlangıç</label>
+                            <input type="date" class="form-control" name="startDate" id="exportStartDate"
+                                   required style="border-radius:10px; font-size:13px;"
+                                   max="@DateTime.Now.ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Bitiş</label>
+                            <input type="date" class="form-control" name="endDate" id="exportEndDate"
+                                   required style="border-radius:10px; font-size:13px;"
+                                   max="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                   value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                        </div>
+                    </div>
+
+                    <div id="exportPreview" class="p-3 mb-2"
+                         style="background:#f0fdf4; border-radius:10px; font-size:13px; display:none; border:1px solid #d1fae5;">
+                        <i class="bi bi-info-circle me-1" style="color:#1AAFA3;"></i>
+                        <span id="exportPreviewText"></span>
+                    </div>
+
+                    <div id="exportError" class="p-3 mb-2"
+                         style="background:#fef2f2; border-radius:10px; font-size:13px; display:none; border:1px solid #fecaca;">
+                        <i class="bi bi-exclamation-triangle me-1" style="color:#ef4444;"></i>
+                        <span id="exportErrorText"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border:none; padding:12px 24px 24px;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        style="border-radius:10px; font-size:13px;">İptal</button>
+                <button type="button" class="btn" id="exportSubmitBtn"
+                        style="background:linear-gradient(135deg,#1AAFA3 0%,#0D7A71 100%);
+                               color:white; border:none; border-radius:10px;
+                               font-size:13px; padding:9px 22px;">
+                    <i class="bi bi-download me-1"></i>Excel İndir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        // ── Chartlar ────────────────────────────────────────────────
+        // ── Chartlar ──────────────────────────────────────────────────
         const incomeValue  = @Model.TotalIncome.ToString(System.Globalization.CultureInfo.InvariantCulture);
         const expenseValue = @Model.TotalExpenses.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
@@ -414,9 +471,11 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false },
+                plugins: {
+                    legend: { display: false },
                     tooltip: { callbacks: { label: ctx =>
-                        '₺' + ctx.parsed.y.toLocaleString('tr-TR', {minimumFractionDigits:2}) } } },
+                        '₺' + ctx.parsed.y.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) } }
+                },
                 scales: { y: { beginAtZero: true,
                     ticks: { callback: v => '₺' + v.toLocaleString('tr-TR') } } }
             }
@@ -447,27 +506,25 @@
                     plugins: {
                         legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } },
                         tooltip: { callbacks: { label: ctx =>
-                            ctx.label + ': ₺' + ctx.parsed.toLocaleString('tr-TR', {minimumFractionDigits:2}) } }
+                            ctx.label + ': ₺' + ctx.parsed.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) } }
                     }
                 }
             });
             </text>
         }
 
-        // ── Filtre ──────────────────────────────────────────────────
+        // ── Tablo Filtresi ────────────────────────────────────────────
         function filterTable() {
             const cat    = document.getElementById('categoryFilter').value;
             const type   = document.getElementById('typeFilter').value;
             const search = document.getElementById('searchFilter').value.toLowerCase();
-
-            const rows = document.querySelectorAll('.tx-row');
-            let visible = 0;
+            const rows   = document.querySelectorAll('.tx-row');
+            let visible  = 0;
 
             rows.forEach(row => {
-                const catMatch    = !cat    || row.dataset.category === cat;
-                const typeMatch   = !type   || row.dataset.type     === type;
-                const searchMatch = !search || row.dataset.search.includes(search);
-                const show = catMatch && typeMatch && searchMatch;
+                const show = (!cat    || row.dataset.category === cat)
+                          && (!type   || row.dataset.type     === type)
+                          && (!search || row.dataset.search.includes(search));
                 row.style.display = show ? 'flex' : 'none';
                 if (show) visible++;
             });
@@ -477,10 +534,107 @@
             if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
         }
 
-        // Sayfa yüklenince count'u set et
         document.addEventListener('DOMContentLoaded', () => {
             const rows = document.querySelectorAll('.tx-row');
             document.getElementById('txCount').textContent = rows.length + ' işlem';
+        });
+
+        // ── Export Modal ──────────────────────────────────────────────
+        function formatDate(d) {
+            return d.toISOString().split('T')[0];
+        }
+
+        function setDateRange(start, end) {
+            document.getElementById('exportStartDate').value = formatDate(start);
+            document.getElementById('exportEndDate').value   = formatDate(end);
+            updateExportPreview();
+        }
+
+        document.querySelectorAll('.quick-range-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.quick-range-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const now   = new Date();
+                const range = this.dataset.range;
+                if (range === 'thismonth') {
+                    setDateRange(new Date(now.getFullYear(), now.getMonth(), 1), now);
+                } else if (range === 'lastmonth') {
+                    setDateRange(
+                        new Date(now.getFullYear(), now.getMonth() - 1, 1),
+                        new Date(now.getFullYear(), now.getMonth(), 0)
+                    );
+                } else if (range === 'last3') {
+                    setDateRange(new Date(now.getFullYear(), now.getMonth() - 2, 1), now);
+                } else if (range === 'thisyear') {
+                    setDateRange(new Date(now.getFullYear(), 0, 1), now);
+                } else if (range === 'all') {
+                    setDateRange(new Date(2020, 0, 1), now);
+                }
+            });
+        });
+
+        function updateExportPreview() {
+            const start       = document.getElementById('exportStartDate').value;
+            const end         = document.getElementById('exportEndDate').value;
+            const preview     = document.getElementById('exportPreview');
+            const previewText = document.getElementById('exportPreviewText');
+            const errorDiv    = document.getElementById('exportError');
+            const errorText   = document.getElementById('exportErrorText');
+            const submitBtn   = document.getElementById('exportSubmitBtn');
+
+            preview.style.display  = 'none';
+            errorDiv.style.display = 'none';
+            if (!start || !end) return;
+
+            const s = new Date(start);
+            const e = new Date(end);
+
+            if (s > e) {
+                errorText.textContent   = 'Başlangıç tarihi bitiş tarihinden büyük olamaz.';
+                errorDiv.style.display  = 'block';
+                submitBtn.disabled      = true;
+                return;
+            }
+
+            const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
+            previewText.textContent  = `${s.toLocaleDateString('tr-TR')} – ${e.toLocaleDateString('tr-TR')} (${diff} gün) indirilecek.`;
+            preview.style.display    = 'block';
+            submitBtn.disabled       = false;
+        }
+
+        document.getElementById('exportStartDate').addEventListener('change', updateExportPreview);
+        document.getElementById('exportEndDate').addEventListener('change', updateExportPreview);
+
+        document.getElementById('exportSubmitBtn').addEventListener('click', function () {
+            const start = document.getElementById('exportStartDate').value;
+            const end   = document.getElementById('exportEndDate').value;
+
+            if (!start || !end) {
+                document.getElementById('exportErrorText').textContent = 'Lütfen tarih aralığı seçin.';
+                document.getElementById('exportError').style.display   = 'block';
+                return;
+            }
+
+            this.disabled   = true;
+            this.innerHTML  = '<span class="spinner-border spinner-border-sm me-1"></span>Hazırlanıyor...';
+            document.getElementById('exportForm').submit();
+
+            setTimeout(() => {
+                this.disabled  = false;
+                this.innerHTML = '<i class="bi bi-download me-1"></i>Excel İndir';
+                const modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+                if (modal) modal.hide();
+            }, 3000);
+        });
+
+        document.getElementById('exportModal').addEventListener('show.bs.modal', function () {
+            const now      = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            document.getElementById('exportStartDate').value = formatDate(firstDay);
+            document.getElementById('exportEndDate').value   = formatDate(now);
+            document.querySelectorAll('.quick-range-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-range="thismonth"]').classList.add('active');
+            updateExportPreview();
         });
     </script>
 }

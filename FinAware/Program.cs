@@ -9,7 +9,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -70,7 +70,7 @@ builder.Services.AddHostedService<MonthlyReportHostedService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -93,17 +93,17 @@ Console.WriteLine($"🔑 JWT Issuer: {jwtSettings["Issuer"]}");
 Console.WriteLine($"🔑 JWT Audience: {jwtSettings["Audience"]}");
 
 
-// Seed default categories
+
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
     try
     {
-        // Database'in oluşturulduğundan emin ol
+        
         dbContext.Database.EnsureCreated();
 
-        // Kategoriler varsa ekleme
+       
         if (!dbContext.Categories.Any())
         {
            

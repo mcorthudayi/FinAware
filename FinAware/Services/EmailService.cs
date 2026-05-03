@@ -14,10 +14,17 @@ namespace FinAware.API.Services
 
         private SmtpClient CreateSmtpClient()
         {
-            var host = _configuration["EmailSettings:SmtpHost"]!;
-            var port = int.Parse(_configuration["EmailSettings:SmtpPort"]!);
-            var user = _configuration["EmailSettings:SmtpUser"]!;
-            var password = _configuration["EmailSettings:SmtpPassword"]!;
+            var host = _configuration["EmailSettings__SmtpHost"]
+                       ?? _configuration["EmailSettings:SmtpHost"]
+                       ?? "smtp.gmail.com";
+            var portStr = _configuration["EmailSettings__SmtpPort"]
+                          ?? _configuration["EmailSettings:SmtpPort"]
+                          ?? "587";
+            var port = int.Parse(portStr);
+            var user = _configuration["EmailSettings__SmtpUser"]
+                       ?? _configuration["EmailSettings:SmtpUser"]!;
+            var password = _configuration["EmailSettings__SmtpPassword"]
+                           ?? _configuration["EmailSettings:SmtpPassword"]!;
 
             return new SmtpClient(host, port)
             {
@@ -52,6 +59,11 @@ namespace FinAware.API.Services
 </html>";
 
             await SendEmailAsync(toEmail, subject, body);
+            var fromEmail = _configuration["EmailSettings__FromEmail"]
+                ?? _configuration["EmailSettings:FromEmail"]!;
+            var fromName = _configuration["EmailSettings__FromName"]
+                           ?? _configuration["EmailSettings:FromName"]
+                           ?? "FinAware";
         }
 
         public async Task SendWelcomeEmailAsync(string toEmail, string username)

@@ -261,7 +261,7 @@
                 formData.append('file', file);
 
                 try {
-                    const response = await fetch('https://localhost:7061/api/transaction/analyze-invoice', {
+                    const response = await fetch('@(Configuration["ApiBaseUrl"] ?? "https://localhost:7061")/api/transaction/analyze-invoice', {
                         method: 'POST',
                         body: formData
                     });

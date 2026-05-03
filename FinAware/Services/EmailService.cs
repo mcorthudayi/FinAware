@@ -29,7 +29,9 @@ namespace FinAware.API.Services
             return new SmtpClient(host, port)
             {
                 EnableSsl = true,
-                Credentials = new NetworkCredential(user, password)
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(user, password),
+                DeliveryMethod = SmtpDeliveryMethod.Network
             };
         }
 

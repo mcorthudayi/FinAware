@@ -1,8 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-
-// SMTP için gerekli using'ler - Azure deploy'da kullanılacak
+﻿// SMTP için gerekli using'ler - Azure deploy'da kullanılacak
 // using System.Net;
 // using System.Net.Mail;
 
@@ -11,54 +7,14 @@ namespace FinAware.API.Services
     public class EmailService
     {
         private readonly IConfiguration _configuration;
-        private readonly HttpClient _httpClient;
 
         public EmailService(IConfiguration configuration)
         {
             _configuration = configuration;
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("https://api.resend.com");
-            var apiKey = _configuration["Resend__ApiKey"] ?? _configuration["Resend:ApiKey"];
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", apiKey);
-        }
-
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
-        {
-            try
-            {
-                var payload = new
-                {
-                    from = "FinAware <onboarding@resend.dev>",
-                    to = new[] { toEmail },
-                    subject = subject,
-                    html = body
-                };
-
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync("/emails", content);
-                var responseText = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                    Console.WriteLine($"✅ Email sent to: {toEmail}");
-                else
-                {
-                    Console.WriteLine($"❌ Email send error: {response.StatusCode}");
-                    Console.WriteLine($"❌ Response: {responseText}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Email send error: {ex.Message}");
-                Console.WriteLine($"❌ Inner: {ex.InnerException?.Message}");
-            }
         }
 
         /*
-        // =============================================
         // SMTP İMPLEMENTASYONU - Azure deploy için
-        // =============================================
         private SmtpClient CreateSmtpClient()
         {
             var host = _configuration["EmailSettings:SmtpHost"]!;
@@ -102,6 +58,13 @@ namespace FinAware.API.Services
             }
         }
         */
+
+        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        {
+            // Railway'de SMTP devre dışı - Azure deploy'da SMTP aktif edilecek
+            Console.WriteLine($"📧 Email skipped (Railway): {toEmail} - {subject}");
+            await Task.CompletedTask;
+        }
 
         public async Task SendEmailVerificationAsync(string toEmail, string username, string verificationLink)
         {

@@ -29,7 +29,8 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                     mvcUrl,
                     "https://localhost:7023",
-                    "http://localhost:5285"
+                    "http://localhost:5285",
+                    "https://finawaremvc-production.up.railway.app"
               )
               .AllowAnyHeader()
               .AllowAnyMethod()
@@ -77,7 +78,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 app.UseCors("AllowAll");
 app.UseAuthentication();

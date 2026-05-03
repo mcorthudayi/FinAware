@@ -10,11 +10,20 @@ namespace FinAware.MVC.Controllers
     {
         private readonly IApiService _apiService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IApiService apiService, IHttpClientFactory httpClientFactory)
+        public AuthController(IApiService apiService, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _apiService = apiService;
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+        }
+
+        private HttpClient CreateClient()
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(_configuration["ApiBaseUrl"] ?? "https://localhost:7061");
+            return client;
         }
 
         [HttpGet]
@@ -23,7 +32,6 @@ namespace FinAware.MVC.Controllers
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AuthToken")))
                 return RedirectToAction("Index", "Dashboard");
 
-            // Beni Hatırla cookie'si varsa session'ı yeniden doldur
             var rememberToken = Request.Cookies["FinAware_RememberToken"];
             if (!string.IsNullOrEmpty(rememberToken))
             {
@@ -31,8 +39,7 @@ namespace FinAware.MVC.Controllers
 
                 try
                 {
-                    var client = _httpClientFactory.CreateClient();
-                    client.BaseAddress = new Uri("https://localhost:7061");
+                    var client = CreateClient();
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", rememberToken);
 
                     var profileResponse = await client.GetAsync("/api/user/profile");
@@ -53,13 +60,15 @@ namespace FinAware.MVC.Controllers
                             {
                                 var photoFileName = profile["profilePhoto"].GetString();
                                 if (!string.IsNullOrEmpty(photoFileName))
-                                    HttpContext.Session.SetString("ProfilePhoto", $"https://localhost:7061/api/user/photo/{photoFileName}");
+                                {
+                                    var apiBaseUrl = _configuration["ApiBaseUrl"] ?? "https://localhost:7061";
+                                    HttpContext.Session.SetString("ProfilePhoto", $"{apiBaseUrl}/api/user/photo/{photoFileName}");
+                                }
                             }
                         }
                     }
                     else
                     {
-                        // Token geçersiz veya süresi dolmuş, temizle
                         Response.Cookies.Delete("FinAware_RememberToken");
                         HttpContext.Session.Clear();
                         return View();
@@ -93,7 +102,6 @@ namespace FinAware.MVC.Controllers
                     HttpContext.Session.SetString("Username", loginResponse.Username);
                     HttpContext.Session.SetString("Email", loginResponse.Email);
 
-                    // Beni Hatırla seçildiyse 30 günlük persistent cookie yaz
                     if (rememberMe)
                     {
                         Response.Cookies.Append("FinAware_RememberToken", loginResponse.Token, new CookieOptions
@@ -107,22 +115,25 @@ namespace FinAware.MVC.Controllers
 
                     try
                     {
-                        var client = _httpClientFactory.CreateClient();
-                        client.BaseAddress = new Uri("https://localhost:7061");
+                        var client = CreateClient();
                         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
 
                         var profileResponse = await client.GetAsync("/api/user/profile");
                         if (profileResponse.IsSuccessStatusCode)
                         {
                             var json = await profileResponse.Content.ReadAsStringAsync();
-                            var profile = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            var profile = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json,
+                                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                             if (profile != null && profile.ContainsKey("profilePhoto") &&
                                 profile["profilePhoto"].ValueKind != JsonValueKind.Null)
                             {
                                 var photoFileName = profile["profilePhoto"].GetString();
                                 if (!string.IsNullOrEmpty(photoFileName))
-                                    HttpContext.Session.SetString("ProfilePhoto", $"https://localhost:7061/api/user/photo/{photoFileName}");
+                                {
+                                    var apiBaseUrl = _configuration["ApiBaseUrl"] ?? "https://localhost:7061";
+                                    HttpContext.Session.SetString("ProfilePhoto", $"{apiBaseUrl}/api/user/photo/{photoFileName}");
+                                }
                             }
                         }
                     }
@@ -140,9 +151,7 @@ namespace FinAware.MVC.Controllers
                 {
                     try
                     {
-                        var client = _httpClientFactory.CreateClient();
-                        client.BaseAddress = new Uri("https://localhost:7061");
-
+                        var client = CreateClient();
                         var payload = new { email, password };
                         var json = JsonSerializer.Serialize(payload);
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -199,7 +208,7 @@ namespace FinAware.MVC.Controllers
 
                 if (result)
                 {
-                    ViewBag.SuccessMessage = $"Kayıt başarılı! {email} adresine doğrulama maili gönderildi. Lütfen gelen kutunuzu kontrol edin.";
+                    ViewBag.SuccessMessage = $"Kayıt başarılı! {email} adresine doğrulama maili gönderildi.";
                     ViewBag.ShowResendButton = true;
                     ViewBag.UnverifiedEmail = email;
                     return View("Login");
@@ -221,9 +230,7 @@ namespace FinAware.MVC.Controllers
         {
             try
             {
-                var client = _httpClientFactory.CreateClient();
-                client.BaseAddress = new Uri("https://localhost:7061");
-
+                var client = CreateClient();
                 var response = await client.GetAsync($"/api/auth/verify-email?token={token}");
                 var responseText = await response.Content.ReadAsStringAsync();
                 var responseJson = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseText,
@@ -256,23 +263,16 @@ namespace FinAware.MVC.Controllers
         {
             try
             {
-                var client = _httpClientFactory.CreateClient();
-                client.BaseAddress = new Uri("https://localhost:7061");
-
+                var client = CreateClient();
                 var payload = new { email };
                 var json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-
                 var response = await client.PostAsync("/api/auth/resend-verification", content);
 
                 if (response.IsSuccessStatusCode)
-                {
                     ViewBag.SuccessMessage = $"Doğrulama maili {email} adresine tekrar gönderildi.";
-                }
                 else
-                {
                     ViewBag.ErrorMessage = "Mail gönderilemedi. Lütfen tekrar deneyin.";
-                }
             }
             catch (Exception ex)
             {

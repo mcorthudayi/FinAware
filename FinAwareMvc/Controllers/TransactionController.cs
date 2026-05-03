@@ -21,7 +21,9 @@ namespace FinAware.MVC.Controllers
         private HttpClient CreateAuthClient()
         {
             var client = _httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri("https://localhost:7061");
+            var config = HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+            var apiBaseUrl = config["ApiBaseUrl"] ?? "https://localhost:7061";
+            client.BaseAddress = new Uri(apiBaseUrl);
             var token = HttpContext.Session.GetString("AuthToken");
             if (!string.IsNullOrEmpty(token))
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

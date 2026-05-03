@@ -7,7 +7,8 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddHttpClient<IApiService, ApiService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7061/");
+    var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7061/";
+    client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 })
 .ConfigurePrimaryHttpMessageHandler(() =>

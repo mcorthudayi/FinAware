@@ -36,5 +36,12 @@ namespace FinAware.MVC.Services
         Task<bool> CreateBudgetAsync(int? categoryId, decimal limitAmount, int month, int year);
         Task<bool> DeleteBudgetAsync(int id);
         Task CheckBudgetAsync();
+
+        // Admin
+        Task<dynamic?> GetAdminStatsAsync();
+        Task<List<dynamic>> GetAdminUsersAsync();
+        Task<bool> AdminFreezeUserAsync(int id);
+        Task<bool> AdminUnfreezeUserAsync(int id);
+        Task<bool> AdminDeleteUserAsync(int id);
     }
 }

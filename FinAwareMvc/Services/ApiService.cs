@@ -408,5 +408,87 @@ namespace FinAware.MVC.Services
                 Console.WriteLine($"Check budget error: {ex.Message}");
             }
         }
+    public async Task<dynamic?> GetAdminStatsAsync()
+        {
+            try
+            {
+                AddAuthorizationHeader();
+                var response = await _httpClient.GetAsync("api/admin/stats");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<dynamic>(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Admin stats error: {ex.Message}");
+            }
+            return null;
+        }
+
+        public async Task<List<dynamic>> GetAdminUsersAsync()
+        {
+            try
+            {
+                AddAuthorizationHeader();
+                var response = await _httpClient.GetAsync("api/admin/users");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<dynamic>>(json) ?? new();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Admin users error: {ex.Message}");
+            }
+            return new List<dynamic>();
+        }
+
+        public async Task<bool> AdminFreezeUserAsync(int id)
+        {
+            try
+            {
+                AddAuthorizationHeader();
+                var response = await _httpClient.PostAsync($"api/admin/users/{id}/freeze", null);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Freeze user error: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> AdminUnfreezeUserAsync(int id)
+        {
+            try
+            {
+                AddAuthorizationHeader();
+                var response = await _httpClient.PostAsync($"api/admin/users/{id}/unfreeze", null);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unfreeze user error: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> AdminDeleteUserAsync(int id)
+        {
+            try
+            {
+                AddAuthorizationHeader();
+                var response = await _httpClient.DeleteAsync($"api/admin/users/{id}");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Admin delete user error: {ex.Message}");
+                return false;
+            }
+        }
     }
-}
+    }

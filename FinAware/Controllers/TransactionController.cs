@@ -325,8 +325,7 @@ namespace FinAware.API.Controllers
                     .OrderByDescending(t => t.Date)
                     .ToListAsync();
 
-                OfficeOpenXml.ExcelPackage.LicenseContext =
-                    OfficeOpenXml.LicenseContext.NonCommercial;
+                OfficeOpenXml.ExcelPackage.License.SetNonCommercialPersonal("FinAware");
 
                 using var package = new OfficeOpenXml.ExcelPackage();
                 var ws = package.Workbook.Worksheets.Add("İşlemler");
@@ -473,6 +472,8 @@ namespace FinAware.API.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"❌ EXPORT HATA: {ex.Message}");
+                Console.WriteLine($"❌ STACK: {ex.StackTrace}");
                 return StatusCode(500, new { message = "Excel oluşturulamadı", error = ex.Message });
             }
         }

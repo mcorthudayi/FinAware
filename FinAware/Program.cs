@@ -129,7 +129,6 @@ using (var scope = app.Services.CreateScope())
             dbContext.SaveChanges();
 
             Console.WriteLine($"✅ {defaultCategories.Count} default categories added!");
-            Console.WriteLine("═══════════════════════════════════════");
         }
         else
         {

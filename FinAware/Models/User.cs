@@ -19,7 +19,7 @@ namespace FinAware.API.Models
         public string PasswordHash { get; set; } = string.Empty;
 
         public string? ProfilePhoto { get; set; } = "";
-
+        public string Role { get; set; } = "User";
         public bool IsEmailVerified { get; set; } = false;
         public string? EmailVerificationToken { get; set; }
         public DateTime? EmailVerificationTokenExpiry { get; set; }

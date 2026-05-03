@@ -102,7 +102,6 @@ namespace FinAware.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            Console.WriteLine("═══════════════════════════════════════");
             Console.WriteLine($"🔐 LOGIN REQUEST: {dto.Email}");
 
             try
@@ -121,7 +120,7 @@ namespace FinAware.API.Controllers
                 var token = GenerateJwtToken(user);
 
                 Console.WriteLine($"✅ Login successful: {user.Username}");
-                Console.WriteLine("═══════════════════════════════════════");
+             
 
                 return Ok(new { token, username = user.Username, email = user.Email });
             }
@@ -356,7 +355,8 @@ namespace FinAware.API.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var token = new JwtSecurityToken(

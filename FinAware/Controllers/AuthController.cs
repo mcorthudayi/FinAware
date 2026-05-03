@@ -26,7 +26,6 @@ namespace FinAware.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            Console.WriteLine("═══════════════════════════════════════");
             Console.WriteLine($"📝 REGISTER REQUEST: {dto.Email}");
 
             try
@@ -45,7 +44,7 @@ namespace FinAware.API.Controllers
                     Username = dto.Username,
                     Email = dto.Email,
                     PasswordHash = hashedPassword,
-                    IsEmailVerified = false,
+                    IsEmailVerified = true,
                     EmailVerificationToken = verificationToken,
                     EmailVerificationTokenExpiry = DateTime.Now.AddHours(24),
                     CreatedAt = DateTime.Now

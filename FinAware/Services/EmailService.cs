@@ -203,6 +203,8 @@ namespace FinAware.API.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Email send error: {ex.Message}");
+                Console.WriteLine($"❌ Inner exception: {ex.InnerException?.Message}");
+                Console.WriteLine($"❌ Stack trace: {ex.StackTrace}");
                 throw;
             }
         }

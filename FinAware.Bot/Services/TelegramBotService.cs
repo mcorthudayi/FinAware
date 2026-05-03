@@ -37,10 +37,8 @@ namespace FinAware.Bot.Services
         {
             var me = await _botClient.GetMe(stoppingToken);
 
-            Console.WriteLine("═══════════════════════════════════════");
             Console.WriteLine($"✅ Bot bağlandı: @{me.Username}");
             Console.WriteLine("📡 Mesajlar dinleniyor (long polling)...");
-            Console.WriteLine("═══════════════════════════════════════");
 
             var receiverOptions = new ReceiverOptions
             {
@@ -114,10 +112,6 @@ namespace FinAware.Bot.Services
                 cancellationToken: ct
             );
         }
-
-        // ════════════════════════════════════════════════════════════════
-        // FOTOĞRAF İŞLEME
-        // ════════════════════════════════════════════════════════════════
         private async Task HandlePhotoMessage(
             ITelegramBotClient botClient,
             long chatId,

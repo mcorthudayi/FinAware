@@ -368,6 +368,13 @@ namespace FinAware.API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        // Health check – Keep-alive ve MAUI için
+        [HttpGet("/api/health")]
+        [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+        public IActionResult Health()
+        {
+            return Ok(new { status = "alive", time = DateTime.Now });
+        }
     }
 
     public class RegisterDto { public string Username { get; set; } = ""; public string Email { get; set; } = ""; public string Password { get; set; } = ""; }

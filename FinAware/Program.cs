@@ -72,6 +72,7 @@ builder.Services.AddScoped<ExchangeRateService>();
 builder.Services.AddScoped<InvoiceService>();
 builder.Services.AddScoped<MonthlyReportService>();
 builder.Services.AddHostedService<MonthlyReportHostedService>();
+builder.Services.AddHostedService<KeepAliveService>();
 
 var app = builder.Build();
 
@@ -94,7 +95,8 @@ app.MapControllers();
 
 Console.WriteLine("🚀 FinAware API Started!");
 Console.WriteLine($"📡 Listening on: {(app.Environment.IsProduction() ? "http://0.0.0.0:8080" : "https://localhost:7061")}");
-Console.WriteLine("🔓 CORS: Enabled (AllowAll for testing)");
+Console.WriteLine("🏓 Keep-alive: Aktif (10 dakikada bir ping)");
+Console.WriteLine("🔓 CORS: Enabled");
 Console.WriteLine($"🔑 JWT Issuer: {jwtSettings["Issuer"]}");
 Console.WriteLine($"🔑 JWT Audience: {jwtSettings["Audience"]}");
 

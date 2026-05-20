@@ -208,7 +208,9 @@ namespace FinAware.MVC.Controllers
 
                 if (result)
                 {
-                    ViewBag.SuccessMessage = $"Kayıt başarılı! {email} adresine doğrulama maili gönderildi.";
+                    //SMTP kapalı olduğu için yorum satırı yapıldı, doğrulama maili gönderilemiyor.Açıldığında aktif hale getirilebilir.
+                    //ViewBag.SuccessMessage = $"Kayıt başarılı! {email} adresine doğrulama maili gönderildi.";
+                    ViewBag.SuccessMessage = "Kayıt başarılı! Giriş yapabilirsiniz.";
                     ViewBag.ShowResendButton = true;
                     ViewBag.UnverifiedEmail = email;
                     return View("Login");

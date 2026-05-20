@@ -14,41 +14,46 @@ namespace FinAware.API.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            try
-            {
-                var host = _configuration["EmailSettings:SmtpHost"]!;
-                var port = int.Parse(_configuration["EmailSettings:SmtpPort"]!);
-                var user = _configuration["EmailSettings:SmtpUser"]!;
-                var password = _configuration["EmailSettings:SmtpPassword"]!;
-                var fromEmail = _configuration["EmailSettings:FromEmail"]!;
-                var fromName = _configuration["EmailSettings:FromName"] ?? "FinAware";
-
-                using var client = new SmtpClient(host, port)
-                {
-                    EnableSsl = true,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(user, password),
-                    DeliveryMethod = SmtpDeliveryMethod.Network
-                };
-
-                using var message = new MailMessage
-                {
-                    From = new MailAddress(fromEmail, fromName),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true
-                };
-
-                message.To.Add(toEmail);
-                await client.SendMailAsync(message);
-                Console.WriteLine($"✅ Email sent to: {toEmail}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Email send error: {ex.Message}");
-                Console.WriteLine($"❌ Inner: {ex.InnerException?.Message}");
-            }
+            // SMTP devre dışı - Resend veya Google SMTP ile aktif edilecek
+            Console.WriteLine($"📧 Email skipped: {toEmail} - {subject}");
+            await Task.CompletedTask;
         }
+        /*
+        try
+        {
+            var host = _configuration["EmailSettings:SmtpHost"]!;
+            var port = int.Parse(_configuration["EmailSettings:SmtpPort"]!);
+            var user = _configuration["EmailSettings:SmtpUser"]!;
+            var password = _configuration["EmailSettings:SmtpPassword"]!;
+            var fromEmail = _configuration["EmailSettings:FromEmail"]!;
+            var fromName = _configuration["EmailSettings:FromName"] ?? "FinAware";
+
+            using var client = new SmtpClient(host, port)
+            {
+                EnableSsl = true,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(user, password),
+                DeliveryMethod = SmtpDeliveryMethod.Network
+            };
+
+            using var message = new MailMessage
+            {
+                From = new MailAddress(fromEmail, fromName),
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            };
+
+            message.To.Add(toEmail);
+            await client.SendMailAsync(message);
+            Console.WriteLine($"✅ Email sent to: {toEmail}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Email send error: {ex.Message}");
+            Console.WriteLine($"❌ Inner: {ex.InnerException?.Message}");
+        }
+    }  */
 
 
         // ORTAK ŞABLON 

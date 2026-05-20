@@ -87,9 +87,8 @@ namespace FinAware.API.Controllers
                 }
 
                 Console.WriteLine($"✅ User registered: {user.Username} (ID: {user.UserId})");
-                Console.WriteLine("═══════════════════════════════════════");
 
-                return Ok(new { message = "Kayıt başarılı! Lütfen e-posta adresinizi doğrulayın." });
+                return Ok(new { message = "Kayıt başarılı! Giriş yapabilirsiniz." });
             }
             catch (Exception ex)
             {
@@ -260,7 +259,7 @@ namespace FinAware.API.Controllers
                 // Bağlantıyı kaydet
                 user.TelegramChatId = dto.TelegramChatId;
                 user.TelegramLinkedAt = DateTime.Now;
-                user.TelegramLinkToken = null;  // Token'ı temizle, tek kullanımlık
+                user.TelegramLinkToken = null;  
                 await _context.SaveChangesAsync();
 
                 // Bot için JWT üret

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:FinAware.Mobile.ViewModels"
+             xmlns:models="clr-namespace:FinAware.Mobile.Models"
+             x:Class="FinAware.Mobile.Views.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             BackgroundColor="#F5F5F5"
+             Title="Ana Sayfa">
+
+    <RefreshView Command="{Binding RefreshCommand}"
+                 IsRefreshing="{Binding IsBusy}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="16">
+
+                <!-- Hoş Geldin -->
+                <HorizontalStackLayout>
+                    <VerticalStackLayout>
+                        <Label Text="Hoş geldin 👋"
+                               FontSize="13" TextColor="#9E9E9E"/>
+                        <Label Text="{Binding Username}"
+                               FontSize="22" FontAttributes="Bold"
+                               TextColor="#1A1A2E"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <!-- Bakiye Kartı -->
+                <Frame BackgroundColor="#1AAFA3"
+                       CornerRadius="20" Padding="24"
+                       HasShadow="True">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Toplam Bakiye"
+                               FontSize="14" TextColor="White"
+                               Opacity="0.85"/>
+                        <Label Text="{Binding TotalBalance, StringFormat='₺{0:N2}'}"
+                               FontSize="36" FontAttributes="Bold"
+                               TextColor="White"/>
+                        <BoxView HeightRequest="1"
+                                 Color="White" Opacity="0.3"
+                                 Margin="0,8"/>
+                        <Grid ColumnDefinitions="*,*">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="💰 Gelir"
+                                       FontSize="12" TextColor="White"
+                                       Opacity="0.8"/>
+                                <Label Text="{Binding TotalIncome, StringFormat='₺{0:N2}'}"
+                                       FontSize="18" FontAttributes="Bold"
+                                       TextColor="White"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="💸 Gider"
+                                       FontSize="12" TextColor="White"
+                                       Opacity="0.8"/>
+                                <Label Text="{Binding TotalExpense, StringFormat='₺{0:N2}'}"
+                                       FontSize="18" FontAttributes="Bold"
+                                       TextColor="White"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Son İşlemler Başlık -->
+                <Label Text="Son İşlemler"
+                       FontSize="18" FontAttributes="Bold"
+                       TextColor="#1A1A2E"/>
+
+                <!-- Loading -->
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="#1AAFA3"
+                                   HorizontalOptions="Center"/>
+
+                <!-- İşlem Listesi -->
+                <CollectionView ItemsSource="{Binding RecentTransactions}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:TransactionModel">
+                            <Frame Margin="0,4" Padding="16"
+                                   CornerRadius="16" HasShadow="False"
+                                   BackgroundColor="White">
+                                <Grid ColumnDefinitions="48,*,Auto">
+                                    <!-- İkon -->
+                                    <Frame Grid.Column="0"
+                                           BackgroundColor="#E8F8F7"
+                                           CornerRadius="12"
+                                           Padding="8"
+                                           HeightRequest="44" WidthRequest="44">
+                                        <Label Text="{Binding CategoryIcon}"
+                                               FontSize="20"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+                                    </Frame>
+
+                                    <!-- Bilgi -->
+                                    <VerticalStackLayout Grid.Column="1"
+                                                         Margin="12,0"
+                                                         VerticalOptions="Center">
+                                        <Label Text="{Binding CategoryName}"
+                                               FontSize="15" FontAttributes="Bold"
+                                               TextColor="#1A1A2E"/>
+                                        <Label Text="{Binding Description}"
+                                               FontSize="12" TextColor="#9E9E9E"/>
+                                        <Label Text="{Binding DateDisplay}"
+                                               FontSize="11" TextColor="#BDBDBD"/>
+                                    </VerticalStackLayout>
+
+                                    <!-- Tutar -->
+                                    <Label Grid.Column="2"
+                                           Text="{Binding AmountDisplay}"
+                                           TextColor="{Binding AmountColor}"
+                                           FontSize="16" FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                             Margin="0,32">
+                            <Label Text="📊" FontSize="48"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Henüz işlem yok"
+                                   FontSize="16" TextColor="#9E9E9E"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

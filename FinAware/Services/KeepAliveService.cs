@@ -14,8 +14,6 @@
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("🏓 Keep-alive servisi başlatıldı");
-
-           
             await Task.Delay(30000, stoppingToken);
 
             using var client = new HttpClient();
@@ -26,7 +24,7 @@
                 try
                 {
                     var baseUrl = _configuration["AppSettings:ApiBaseUrl"]
-                                  ?? "https://localhost:7061";
+                                  ?? "https://finaware-uq2x.onrender.com";
                     await client.GetAsync($"{baseUrl}/api/health", stoppingToken);
                     _logger.LogInformation("🏓 Keep-alive ping gönderildi");
                 }

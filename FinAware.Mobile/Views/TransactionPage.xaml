@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:FinAware.Mobile.ViewModels"
+             xmlns:models="clr-namespace:FinAware.Mobile.Models"
+             x:Class="FinAware.Mobile.Views.TransactionPage"
+             x:DataType="vm:TransactionViewModel"
+             BackgroundColor="#F5F5F5"
+             Title="İşlemler">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Form -->
+        <Frame Grid.Row="0" Margin="16,16,16,8"
+               CornerRadius="16" Padding="16"
+               BackgroundColor="White">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Yeni İşlem" FontSize="16"
+                       FontAttributes="Bold" TextColor="#1A1A2E"/>
+
+                <!-- Hata -->
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#F44336" FontSize="13"
+                       IsVisible="{Binding HasError}"/>
+
+                <!-- Tür -->
+                <Picker Title="Tür seçin"
+                        ItemsSource="{Binding Types}"
+                        SelectedItem="{Binding SelectedType}"
+                        TextColor="#1A1A2E"/>
+
+                <!-- Tutar -->
+                <Border Stroke="#E0E0E0" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10">
+                    <Entry Placeholder="Tutar (₺)"
+                           Text="{Binding Amount}"
+                           Keyboard="Numeric"
+                           BackgroundColor="Transparent"
+                           Margin="12,0"/>
+                </Border>
+
+                <!-- Kategori -->
+                <Picker Title="Kategori seçin"
+                        ItemsSource="{Binding Categories}"
+                        SelectedItem="{Binding SelectedCategory}"
+                        ItemDisplayBinding="{Binding DisplayName}"
+                        TextColor="#1A1A2E"/>
+
+                <!-- Açıklama -->
+                <Border Stroke="#E0E0E0" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10">
+                    <Entry Placeholder="Açıklama (opsiyonel)"
+                           Text="{Binding Description}"
+                           BackgroundColor="Transparent"
+                           Margin="12,0"/>
+                </Border>
+
+                <!-- Tarih -->
+                <DatePicker Date="{Binding SelectedDate}"
+                            TextColor="#1A1A2E"/>
+
+                <Button Text="Ekle"
+                        Command="{Binding AddTransactionCommand}"
+                        IsEnabled="{Binding IsNotBusy}"
+                        HeightRequest="46"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Liste -->
+        <RefreshView Grid.Row="1"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Transactions}"
+                            Margin="16,0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TransactionModel">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Sil"
+                                               BackgroundColor="#F44336"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TransactionViewModel}}, Path=DeleteTransactionCommand}"
+                                               CommandParameter="{Binding}"/>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <Frame Margin="0,4" Padding="14"
+                                   CornerRadius="14" HasShadow="False"
+                                   BackgroundColor="White">
+                                <Grid ColumnDefinitions="44,*,Auto">
+                                    <Frame Grid.Column="0"
+                                           BackgroundColor="#E8F8F7"
+                                           CornerRadius="10" Padding="6"
+                                           HeightRequest="40" WidthRequest="40">
+                                        <Label Text="{Binding CategoryIcon}"
+                                               FontSize="18"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+                                    </Frame>
+                                    <VerticalStackLayout Grid.Column="1"
+                                                         Margin="10,0"
+                                                         VerticalOptions="Center">
+                                        <Label Text="{Binding CategoryName}"
+                                               FontSize="14" FontAttributes="Bold"
+                                               TextColor="#1A1A2E"/>
+                                        <Label Text="{Binding Description}"
+                                               FontSize="12" TextColor="#9E9E9E"/>
+                                        <Label Text="{Binding DateDisplay}"
+                                               FontSize="11" TextColor="#BDBDBD"/>
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2"
+                                           Text="{Binding AmountDisplay}"
+                                           TextColor="{Binding AmountColor}"
+                                           FontSize="15" FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+                                </Grid>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

@@ -93,6 +93,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+    Console.WriteLine("✅ Database migration tamamlandı");
+}
+
 Console.WriteLine("🚀 FinAware API Started!");
 Console.WriteLine($"📡 Listening on: {(app.Environment.IsProduction() ? "http://0.0.0.0:8080" : "https://localhost:7061")}");
 Console.WriteLine("🏓 Keep-alive: Aktif (10 dakikada bir ping)");

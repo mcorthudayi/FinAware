@@ -5,7 +5,7 @@ using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Telegram Bot Client ───────────────────────────────────
+// Telegram Bot Client 
 var telegramToken = builder.Configuration["TelegramBot__Token"]
                    ?? builder.Configuration["TelegramBot:Token"];
 
@@ -15,7 +15,7 @@ if (string.IsNullOrEmpty(telegramToken))
 builder.Services.AddSingleton<ITelegramBotClient>(
     new TelegramBotClient(telegramToken));
 
-// ── FinAware API için HttpClient ──────────────────────────
+// FinAware API için HttpClient 
 var apiBaseUrl = builder.Configuration["FinAwareApi__BaseUrl"]
               ?? builder.Configuration["FinAwareApi:BaseUrl"]
               ?? "https://finaware-uq2x.onrender.com";
@@ -33,11 +33,11 @@ builder.Services.AddHttpClient("FinAwareApi", client =>
 
 builder.Services.AddHttpClient();
 
-// ── SQLite ────────────────────────────────────────────────
+//  SQLite 
 builder.Services.AddDbContext<BotDbContext>(options =>
     options.UseSqlite("Data Source=finaware_bot.db"));
 
-// ── Servisler ─────────────────────────────────────────────
+//  Servisler 
 builder.Services.AddScoped<OpenAiService>();
 builder.Services.AddSingleton<TelegramBotService>();
 builder.Services.AddHostedService(sp =>
@@ -47,7 +47,7 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// ── DB oluştur ────────────────────────────────────────────
+//  DB oluştur 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
@@ -57,9 +57,7 @@ using (var scope = app.Services.CreateScope())
 
 app.MapControllers();
 
-Console.WriteLine("═══════════════════════════════════════");
 Console.WriteLine("🤖 FinAware Bot başlatılıyor...");
 Console.WriteLine($"📡 FinAware API: {apiBaseUrl}");
-Console.WriteLine("═══════════════════════════════════════");
 
 app.Run();

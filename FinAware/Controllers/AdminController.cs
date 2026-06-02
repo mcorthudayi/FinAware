@@ -32,6 +32,10 @@ namespace FinAware.API.Controllers
                     u.EmailNotificationsEnabled,
                     u.CreatedAt,
                     u.TelegramChatId,
+                    u.SubscriptionPlan,          
+                    u.SubscriptionExpiry,        
+                    u.OcrUsageThisMonth,         
+                    u.ArisUsageThisMonth,        
                     TransactionCount = _context.Transactions.Count(t => t.UserId == u.UserId),
                     IsFrozen = u.Role == "Frozen"
                 })
@@ -39,6 +43,37 @@ namespace FinAware.API.Controllers
                 .ToListAsync();
 
             return Ok(users);
+        }
+
+        [HttpPost("users/{id}/change-plan")]
+        public async Task<IActionResult> ChangePlan(int id, [FromBody] ChangePlanDto dto)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            var validPlans = new[] { "Free", "Gold", "Platinum" };
+            if (!validPlans.Contains(dto.Plan))
+                return BadRequest(new { message = "Geçersiz plan" });
+
+            user.SubscriptionPlan = dto.Plan;
+            user.SubscriptionExpiry = dto.Plan == "Free"
+                ? null
+                : DateTime.Now.AddMonths(dto.Months);
+
+            await _context.SaveChangesAsync();
+            Console.WriteLine($"✅ Plan changed: {user.Email} → {dto.Plan}");
+            return Ok(new { message = $"{user.Username} planı {dto.Plan} olarak güncellendi" });
+        }
+
+        [HttpGet("subscription-stats")]
+        public async Task<IActionResult> GetSubscriptionStats()
+        {
+            var total = await _context.Users.CountAsync();
+            var free = await _context.Users.CountAsync(u => u.SubscriptionPlan == "Free");
+            var gold = await _context.Users.CountAsync(u => u.SubscriptionPlan == "Gold");
+            var platinum = await _context.Users.CountAsync(u => u.SubscriptionPlan == "Platinum");
+
+            return Ok(new { total, free, gold, platinum });
         }
 
         [HttpGet("stats")]
@@ -146,5 +181,10 @@ namespace FinAware.API.Controllers
 
             return Ok(new { user = new { user.Username, user.Email }, transactions });
         }
+    }
+    public class ChangePlanDto
+    {
+        public string Plan { get; set; } = "Free";
+        public int Months { get; set; } = 1;
     }
 }

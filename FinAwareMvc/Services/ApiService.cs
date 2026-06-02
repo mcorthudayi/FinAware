@@ -426,7 +426,18 @@ namespace FinAware.MVC.Services
             }
             return null;
         }
-
+        public async Task<bool> AdminChangePlanAsync(int id, string plan, int months)
+        {
+            try
+            {
+                AddAuthorizationHeader();
+                var json = JsonConvert.SerializeObject(new { plan, months });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync($"api/admin/users/{id}/change-plan", content);
+                return response.IsSuccessStatusCode;
+            }
+            catch { return false; }
+        }
         public async Task<List<dynamic>> GetAdminUsersAsync()
         {
             try

@@ -28,10 +28,15 @@ namespace FinAware.API.Models
         public string? TelegramLinkToken { get; set; } = null;
         public DateTime? TelegramLinkedAt { get; set; } = null;
 
+        public string SubscriptionPlan { get; set; } = "Free"; 
+        public DateTime? SubscriptionExpiry { get; set; } = null;
+        public int OcrUsageThisMonth { get; set; } = 0;
+        public int ArisUsageThisMonth { get; set; } = 0;
+        public DateTime UsageResetDate { get; set; } = DateTime.Now;
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
-        
         public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
         public ICollection<Category> Categories { get; set; } = new List<Category>();
         public ICollection<Notification>? Notifications { get; set; }

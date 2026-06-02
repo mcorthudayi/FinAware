@@ -38,6 +38,7 @@ namespace FinAware.MVC.Services
         Task CheckBudgetAsync();
 
         // Admin
+        Task<bool> AdminChangePlanAsync(int id, string plan, int months);
         Task<dynamic?> GetAdminStatsAsync();
         Task<List<dynamic>> GetAdminUsersAsync();
         Task<bool> AdminFreezeUserAsync(int id);

@@ -1,122 +1,474 @@
 ﻿@{
     ViewData["Title"] = "Admin Paneli";
     var stats = ViewBag.Stats;
+    var subStats = ViewBag.SubStats;
     var users = ViewBag.Users as List<dynamic> ?? new List<dynamic>();
 }
 
-<div class="container-fluid py-4">
-    <h2 class="mb-4">🛡️ Admin Paneli</h2>
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px 24px;
+        border: none;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        transition: transform 0.2s;
+    }
 
- 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <div class="fs-1">👥</div>
-                <div class="fs-3 fw-bold text-primary">@stats?.totalUsers</div>
-                <div class="text-muted">Toplam Kullanıcı</div>
-            </div>
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 12px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #111827;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .plan-badge {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .plan-free {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .plan-gold {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .plan-platinum {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+
+    .role-badge {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .role-admin {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .role-frozen {
+        background: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .role-user {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .admin-table th {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #9ca3af;
+        font-weight: 600;
+        border-bottom: 1px solid #f3f4f6;
+        padding: 10px 16px;
+    }
+
+    .admin-table td {
+        padding: 12px 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f9fafb;
+        font-size: 13px;
+    }
+
+    .admin-table tr:hover td {
+        background: #fafafa;
+    }
+
+    .action-btn {
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+        .action-btn:hover {
+            opacity: 0.85;
+        }
+
+    .btn-freeze {
+        background: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .btn-unfreeze {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-plan {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+
+    .search-box {
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 13px;
+        outline: none;
+        width: 240px;
+    }
+
+        .search-box:focus {
+            border-color: #1AAFA3;
+        }
+
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+    }
+
+    .plan-option {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+        .plan-option:hover {
+            border-color: #1AAFA3;
+        }
+
+        .plan-option.selected {
+            border-color: #1AAFA3;
+            background: #f0fdf9;
+        }
+</style>
+
+<!-- Sayfa Başlığı -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 style="font-weight:700;color:#111827;margin:0;">Admin Paneli</h4>
+        <p style="color:#6b7280;font-size:13px;margin:4px 0 0;">Kullanıcı ve abonelik yönetimi</p>
+    </div>
+    <span style="font-size:12px;color:#9ca3af;">
+        Son güncelleme: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
+    </span>
+</div>
+
+<!-- İstatistik Kartları -->
+<div class="row g-3 mb-4">
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f0fdf9;">👥</div>
+            <div class="stat-value">@stats?.totalUsers</div>
+            <div class="stat-label">Toplam Kullanıcı</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <div class="fs-1">✅</div>
-                <div class="fs-3 fw-bold text-success">@stats?.verifiedUsers</div>
-                <div class="text-muted">Doğrulanmış</div>
-            </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f3f4f6;">🆓</div>
+            <div class="stat-value" style="color:#6b7280;">@(subStats?.free ?? 0)</div>
+            <div class="stat-label">Free Plan</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <div class="fs-1">💳</div>
-                <div class="fs-3 fw-bold text-warning">@stats?.totalTransactions</div>
-                <div class="text-muted">Toplam İşlem</div>
-            </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7;">🥇</div>
+            <div class="stat-value" style="color:#d97706;">@(subStats?.gold ?? 0)</div>
+            <div class="stat-label">Gold Plan</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <div class="fs-1">🤖</div>
-                <div class="fs-3 fw-bold text-info">@stats?.telegramLinked</div>
-                <div class="text-muted">Telegram Bağlı</div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#ede9fe;">💎</div>
+            <div class="stat-value" style="color:#7c3aed;">@(subStats?.platinum ?? 0)</div>
+            <div class="stat-label">Platinum Plan</div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#dcfce7;">✅</div>
+            <div class="stat-value" style="color:#16a34a;">@stats?.verifiedUsers</div>
+            <div class="stat-label">Doğrulanmış</div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e0f2fe;">📊</div>
+            <div class="stat-value" style="color:#0284c7;">@stats?.totalTransactions</div>
+            <div class="stat-label">Toplam İşlem</div>
+        </div>
+    </div>
+</div>
+
+<!-- Gelir Özeti -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:#f0fdf9;margin:0;">💰</div>
+            <div>
+                <div class="stat-value" style="font-size:20px;color:#1AAFA3;">₺@(((subStats?.gold ?? 0) * 49 + (subStats?.platinum ?? 0) * 99).ToString("N0"))</div>
+                <div class="stat-label">Tahmini Aylık Gelir</div>
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:#fef3c7;margin:0;">📅</div>
+            <div>
+                <div class="stat-value" style="font-size:20px;color:#d97706;">@stats?.newUsersThisMonth</div>
+                <div class="stat-label">Bu Ay Yeni Kayıt</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:#e0f2fe;margin:0;">🤖</div>
+            <div>
+                <div class="stat-value" style="font-size:20px;color:#0284c7;">@stats?.telegramLinked</div>
+                <div class="stat-label">Telegram Bağlı</div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Kullanıcı Tablosu -->
+<div style="background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-weight:700;font-size:15px;color:#111827;">Kullanıcılar</span>
+        <input type="text" class="search-box" id="userSearch" placeholder="Kullanıcı ara..." oninput="filterUsers()" />
+    </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white fw-bold">👤 Kullanıcılar</div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Kullanıcı</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Durum</th>
-                        <th>İşlem Sayısı</th>
-                        <th>Kayıt</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in users)
-                    {
-                        <tr>
-                            <td>@user.userId</td>
-                            <td><strong>@user.username</strong></td>
-                            <td>@user.email</td>
-                            <td>
-                                @if (user.role == "Admin")
+    <div style="overflow-x:auto;">
+        <table class="admin-table w-100" id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kullanıcı</th>
+                    <th>E-posta</th>
+                    <th>Plan</th>
+                    <th>Rol</th>
+                    <th>E-posta</th>
+                    <th>OCR</th>
+                    <th>ARİS</th>
+                    <th>İşlem</th>
+                    <th>Kayıt</th>
+                    <th>Aksiyon</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in users)
+                {
+                    var plan = (string)(user.subscriptionPlan ?? "Free");
+                    var planClass = plan == "Platinum" ? "plan-platinum" : plan == "Gold" ? "plan-gold" : "plan-free";
+                    var roleClass = (string)(user.role ?? "") == "Admin" ? "role-admin" : (string)(user.role ?? "") == "Frozen" ? "role-frozen" : "role-user";
+
+                    <tr class="user-row" data-name="@user.username" data-email="@user.email">
+                        <td style="color:#9ca3af;">#@user.userId</td>
+                        <td>
+                            <div style="font-weight:600;color:#111827;">@user.username</div>
+                            @if (user.telegramChatId != null)
+                            {
+                                <div style="font-size:11px;color:#0284c7;">Telegram bağlı</div>
+                            }
+                        </td>
+                        <td style="color:#4b5563;">@user.email</td>
+                        <td>
+                            <span class="plan-badge @planClass">@plan</span>
+                            @if (user.subscriptionExpiry != null)
+                            {
+                                <div style="font-size:10px;color:#9ca3af;margin-top:2px;">
+                                    @(((DateTime)user.subscriptionExpiry).ToString("dd.MM.yyyy"))
+                                </div>
+                            }
+                        </td>
+                        <td><span class="role-badge @roleClass">@user.role</span></td>
+                        <td>
+                            @if (user.isEmailVerified == true)
+                            {
+                                <span style="color:#16a34a;font-size:13px;">✓ Doğru</span>
+                            }
+                            else
+                            {
+                                <span style="color:#d97706;font-size:13px;">⏳ Bekliyor</span>
+                            }
+                        </td>
+                        <td style="color:#6b7280;">@(user.ocrUsageThisMonth ?? 0)</td>
+                        <td style="color:#6b7280;">@(user.arisUsageThisMonth ?? 0)</td>
+                        <td style="color:#6b7280;">@user.transactionCount</td>
+                        <td style="color:#9ca3af;font-size:12px;">@(((DateTime)user.createdAt).ToString("dd.MM.yy"))</td>
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                @if ((string)(user.role ?? "") != "Admin")
                                 {
-                                    <span class="badge bg-danger">Admin</span>
-                                }
-                                else if (user.role == "Frozen")
-                                {
-                                    <span class="badge bg-secondary">Dondurulmuş</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-success">User</span>
-                                }
-                            </td>
-                            <td>
-                                @if (user.isEmailVerified == true)
-                                {
-                                    <span class="text-success">✅ Doğrulandı</span>
-                                }
-                                else
-                                {
-                                    <span class="text-warning">⏳ Bekliyor</span>
-                                }
-                            </td>
-                            <td>@user.transactionCount</td>
-                            <td>@(((DateTime)user.createdAt).ToString("dd.MM.yyyy"))</td>
-                            <td>
-                                @if (user.role != "Admin")
-                                {
-                                    if (user.role == "Frozen")
+                                    <!-- Plan Değiştir -->
+                                    <button class="action-btn btn-plan"
+                                            onclick="openPlanModal(@user.userId, '@user.username', '@plan')">
+                                        Plan
+                                    </button>
+
+                                    <!-- Dondur / Aktif Et -->
+                                    @if ((string)(user.role ?? "") == "Frozen")
                                     {
                                         <form method="post" asp-action="UnfreezeUser" class="d-inline">
+                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@user.userId" />
-                                            <button class="btn btn-sm btn-success">▶ Aktif Et</button>
+                                            <button type="submit" class="action-btn btn-unfreeze">Aktif</button>
                                         </form>
                                     }
                                     else
                                     {
                                         <form method="post" asp-action="FreezeUser" class="d-inline">
+                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@user.userId" />
-                                            <button class="btn btn-sm btn-warning">❄ Dondur</button>
+                                            <button type="submit" class="action-btn btn-freeze">Dondur</button>
                                         </form>
                                     }
+
+                                    <!-- Sil -->
                                     <form method="post" asp-action="DeleteUser" class="d-inline"
-                                          onsubmit="return confirm('@user.username kullanıcısını silmek istediğinize emin misiniz?')">
+                                          onsubmit="return confirm('@user.username kullanıcısını silmek istediğine emin misin?')">
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@user.userId" />
-                                        <button class="btn btn-sm btn-danger">🗑 Sil</button>
+                                        <button type="submit" class="action-btn btn-delete">Sil</button>
                                     </form>
                                 }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                else
+                                {
+                                    <span style="font-size:12px;color:#9ca3af;">—</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Plan Değiştir Modal -->
+<div class="modal fade" id="planModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="border:none;padding:24px 24px 0;">
+                <div>
+                    <h5 class="modal-title fw-bold" style="font-size:17px;">Plan Değiştir</h5>
+                    <p class="text-muted" style="font-size:13px;margin:4px 0 0;" id="planModalUsername"></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:20px 24px;">
+                <form method="post" asp-action="ChangePlan" id="planForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="planUserId" />
+                    <input type="hidden" name="plan" id="planValue" value="Free" />
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="plan-option selected" onclick="selectPlan('Free', this)">
+                                <div style="font-weight:700;font-size:14px;color:#6b7280;">Free</div>
+                                <div style="font-size:12px;color:#9ca3af;">₺0/ay</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="plan-option" onclick="selectPlan('Gold', this)">
+                                <div style="font-weight:700;font-size:14px;color:#d97706;">Gold</div>
+                                <div style="font-size:12px;color:#9ca3af;">₺49/ay</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="plan-option" onclick="selectPlan('Platinum', this)">
+                                <div style="font-weight:700;font-size:14px;color:#7c3aed;">Platinum</div>
+                                <div style="font-size:12px;color:#9ca3af;">₺99/ay</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="monthsGroup">
+                        <label style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block;">Süre</label>
+                        <select name="months" class="form-select" style="border-radius:10px;font-size:13px;">
+                            <option value="1">1 Ay</option>
+                            <option value="3">3 Ay</option>
+                            <option value="6">6 Ay</option>
+                            <option value="12">12 Ay</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn w-100 mt-3"
+                            style="background:linear-gradient(135deg,#1AAFA3,#0D7A71);color:white;border-radius:10px;font-weight:600;padding:11px;">
+                        Planı Güncelle
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function openPlanModal(userId, username, currentPlan) {
+            document.getElementById('planUserId').value = userId;
+            document.getElementById('planModalUsername').textContent = username;
+            document.getElementById('planValue').value = currentPlan;
+
+            document.querySelectorAll('.plan-option').forEach(el => el.classList.remove('selected'));
+            const opts = document.querySelectorAll('.plan-option');
+            const idx = currentPlan === 'Platinum' ? 2 : currentPlan === 'Gold' ? 1 : 0;
+            opts[idx]?.classList.add('selected');
+
+            document.getElementById('monthsGroup').style.display = currentPlan === 'Free' ? 'none' : 'block';
+            new bootstrap.Modal(document.getElementById('planModal')).show();
+        }
+
+        function selectPlan(plan, el) {
+            document.querySelectorAll('.plan-option').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('planValue').value = plan;
+            document.getElementById('monthsGroup').style.display = plan === 'Free' ? 'none' : 'block';
+        }
+
+        function filterUsers() {
+            const q = document.getElementById('userSearch').value.toLowerCase();
+            document.querySelectorAll('.user-row').forEach(row => {
+                const name  = row.dataset.name?.toLowerCase() ?? '';
+                const email = row.dataset.email?.toLowerCase() ?? '';
+                row.style.display = name.includes(q) || email.includes(q) ? '' : 'none';
+            });
+        }
+    </script>
+}

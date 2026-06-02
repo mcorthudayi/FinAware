@@ -208,6 +208,7 @@
             overflow-x: hidden;
             position: relative;
             z-index: 1;
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Subscription" ? "active" : "")" href="/Subscription/Index"> <i class="bi bi-gem"></i><span>Planlar</span> </a>
         }
 
             .nav-menu::-webkit-scrollbar {

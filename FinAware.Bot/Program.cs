@@ -6,15 +6,20 @@ using Telegram.Bot;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Telegram Bot Client ───────────────────────────────────
-var telegramToken = builder.Configuration["TelegramBot:Token"];
+var telegramToken = builder.Configuration["TelegramBot__Token"]
+                   ?? builder.Configuration["TelegramBot:Token"];
+
 if (string.IsNullOrEmpty(telegramToken))
-    throw new Exception("❌ TelegramBot:Token eksik!");
+    throw new Exception("❌ TelegramBot Token eksik!");
 
 builder.Services.AddSingleton<ITelegramBotClient>(
     new TelegramBotClient(telegramToken));
 
 // ── FinAware API için HttpClient ──────────────────────────
-var apiBaseUrl = builder.Configuration["FinAwareApi:BaseUrl"]!;
+var apiBaseUrl = builder.Configuration["FinAwareApi__BaseUrl"]
+              ?? builder.Configuration["FinAwareApi:BaseUrl"]
+              ?? "https://finaware-uq2x.onrender.com";
+
 builder.Services.AddHttpClient("FinAwareApi", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
@@ -50,7 +55,6 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine("✅ Bot DB hazır");
 }
 
-app.UseHttpsRedirection();
 app.MapControllers();
 
 Console.WriteLine("═══════════════════════════════════════");

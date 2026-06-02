@@ -34,8 +34,13 @@ builder.Services.AddHttpClient("FinAwareApi", client =>
 builder.Services.AddHttpClient();
 
 //  SQLite 
+// Bununla değiştir
 builder.Services.AddDbContext<BotDbContext>(options =>
-    options.UseSqlite("Data Source=finaware_bot.db"));
+    options.UseSqlServer(
+        builder.Configuration["ConnectionStrings__DefaultConnection"]
+        ?? builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+    ));
 
 //  Servisler 
 builder.Services.AddScoped<OpenAiService>();

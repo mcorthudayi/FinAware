@@ -49,8 +49,10 @@ namespace FinAwareMvc.Controllers
                 if (res.IsSuccessStatusCode)
                 {
                     var json = await res.Content.ReadAsStringAsync();
-                    ViewBag.SubStats = System.Text.Json.JsonSerializer.Deserialize<dynamic>(json,
-                        new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var subEl = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
+                    ViewBag.SubFree = subEl.TryGetProperty("free", out var f) ? f.GetInt32() : 0;
+                    ViewBag.SubGold = subEl.TryGetProperty("gold", out var g) ? g.GetInt32() : 0;
+                    ViewBag.SubPlatinum = subEl.TryGetProperty("platinum", out var p) ? p.GetInt32() : 0;
                 }
             }
             catch { }

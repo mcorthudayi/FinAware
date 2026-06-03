@@ -15,7 +15,6 @@ if (string.IsNullOrEmpty(telegramToken))
 var botClient = new TelegramBotClient(telegramToken);
 
 // Başlamadan önce eski instance'ları temizle
-// MakeRequestAsync yerine bunu dene:
 using var http = new HttpClient();
 await http.GetAsync($"https://api.telegram.org/bot{telegramToken}/deleteWebhook?drop_pending_updates=true");
 Console.WriteLine("🧹 Webhook temizlendi");

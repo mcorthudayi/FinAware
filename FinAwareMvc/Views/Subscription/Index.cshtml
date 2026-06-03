@@ -160,6 +160,36 @@
         color: #9ca3af;
     }
 
+    /* Tooltip */
+    .feat-tip {
+        position: relative;
+        cursor: help;
+        border-bottom: 1px dashed #d1d5db;
+    }
+
+        .feat-tip::after {
+            content: attr(data-tip);
+            position: absolute;
+            left: 0;
+            top: 120%;
+            background: #111827;
+            color: white;
+            font-size: 12px;
+            line-height: 1.5;
+            padding: 8px 12px;
+            border-radius: 10px;
+            white-space: normal;
+            width: 220px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 999;
+        }
+
+        .feat-tip:hover::after {
+            opacity: 1;
+        }
+
     .btn-subscribe {
         width: 100%;
         padding: 13px;
@@ -239,6 +269,17 @@
         line-height: 1.7;
     }
 
+    .secure-badge {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 12px;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
     @@media (max-width:768px) {
         .pricing-grid {
             grid-template-columns: 1fr;
@@ -301,13 +342,34 @@
         <div class="plan-price">₺0 <span>/ ay</span></div>
         <div class="plan-desc">Başlamak için mükemmel</div>
         <ul class="plan-features">
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız manuel işlem</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız bütçe planı</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız birikim hedefi</li>
-            <li><i class="bi bi-x-circle-fill feat-cross"></i><span class="feat-text-muted">Excel dışa aktarma</span></li>
-            <li><i class="bi bi-x-circle-fill feat-cross"></i><span class="feat-text-muted">Telegram Bot</span></li>
-            <li><i class="bi bi-x-circle-fill feat-cross"></i><span class="feat-text-muted">Fatura OCR</span></li>
-            <li><i class="bi bi-x-circle-fill feat-cross"></i><span class="feat-text-muted">ARİS Asistan</span></li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Gelir, gider ve transfer işlemlerini dilediğin kadar ekleyebilirsin.">Sınırsız manuel işlem</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Aylık harcama limitleri belirle, bütçeni takip et.">Sınırsız bütçe planı</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Tatil, araba, ev gibi hedefler koy ve düzenli birikim yap.">Sınırsız birikim hedefi</span>
+            </li>
+            <li>
+                <i class="bi bi-x-circle-fill feat-cross"></i>
+                <span class="feat-tip feat-text-muted" data-tip="Tüm işlemlerini .xlsx formatında dışa aktarıp bilgisayarına indirebilirsin.">Excel dışa aktarma</span>
+            </li>
+            <li>
+                <i class="bi bi-x-circle-fill feat-cross"></i>
+                <span class="feat-tip feat-text-muted" data-tip="Telegram'dan bakiye sorgula, işlem ekle, bütçe ve birikim takibi yap.">Telegram Bot</span>
+            </li>
+            <li>
+                <i class="bi bi-x-circle-fill feat-cross"></i>
+                <span class="feat-tip feat-text-muted" data-tip="Fatura veya fiş fotoğrafı gönder, yapay zeka tutarı ve kategoriyi otomatik okusun.">Fatura OCR</span>
+            </li>
+            <li>
+                <i class="bi bi-x-circle-fill feat-cross"></i>
+                <span class="feat-tip feat-text-muted" data-tip="ARİS finansal asistanına harcama analizi, tasarruf önerisi ve daha fazlasını sorabilirsin.">ARİS Asistan</span>
+            </li>
         </ul>
         <button class="btn-subscribe btn-current" disabled>
             @(currentPlan == "Free" ? "Mevcut Planın" : "Ücretsiz")
@@ -322,6 +384,7 @@
         }
         else
         {
+
             <div class="top-badge badge-popular">En Popüler</div>
         }
         <div class="plan-icon">🥇</div>
@@ -329,13 +392,34 @@
         <div class="plan-price">₺75 <span>/ ay</span></div>
         <div class="plan-desc">Aktif kullanıcılar için ideal</div>
         <ul class="plan-features">
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız manuel işlem</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız bütçe planı</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız birikim hedefi</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Excel dışa aktarma</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Telegram Bot</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Fatura OCR (60/ay)</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>ARİS Asistan (30 soru/ay)</li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Gelir, gider ve transfer işlemlerini dilediğin kadar ekleyebilirsin.">Sınırsız manuel işlem</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Aylık harcama limitleri belirle, bütçeni takip et.">Sınırsız bütçe planı</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Tatil, araba, ev gibi hedefler koy ve düzenli birikim yap.">Sınırsız birikim hedefi</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Tüm işlemlerini .xlsx formatında dışa aktarıp bilgisayarına indirebilirsin.">Excel dışa aktarma</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Telegram'dan bakiye sorgula, işlem ekle, bütçe ve birikim takibi yap.">Telegram Bot</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Ayda 60 fatura/fiş fotoğrafı analiz edebilirsin. Yapay zeka tutarı ve kategoriyi otomatik algılar.">Fatura OCR (60/ay)</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="ARİS'e ayda 30 soru sorabilirsin. Harcama analizi, tasarruf önerisi, işlem ekleme ve daha fazlası.">ARİS Asistan (30 soru/ay)</span>
+            </li>
         </ul>
         @if (currentPlan == "Gold")
         {
@@ -353,9 +437,7 @@
             <form method="post" action="/Subscription/Subscribe" onsubmit="handleSubmit(this,'gold-btn')">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="plan" value="Gold" />
-                <button type="submit" id="gold-btn" class="btn-subscribe btn-gold">
-                    <span>Gold'a Geç →</span>
-                </button>
+                <button type="submit" id="gold-btn" class="btn-subscribe btn-gold">Gold'a Geç →</button>
             </form>
         }
     </div>
@@ -371,13 +453,34 @@
         <div class="plan-price">₺200 <span>/ ay</span></div>
         <div class="plan-desc">Her şey sınırsız, pro seviye</div>
         <ul class="plan-features">
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız manuel işlem</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız bütçe planı</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Sınırsız birikim hedefi</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Excel dışa aktarma</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Telegram Bot</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>Fatura OCR (sınırsız)</li>
-            <li><i class="bi bi-check-circle-fill feat-check"></i>ARİS Asistan (sınırsız)</li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Gelir, gider ve transfer işlemlerini dilediğin kadar ekleyebilirsin.">Sınırsız manuel işlem</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Aylık harcama limitleri belirle, bütçeni takip et.">Sınırsız bütçe planı</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Tatil, araba, ev gibi hedefler koy ve düzenli birikim yap.">Sınırsız birikim hedefi</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Tüm işlemlerini .xlsx formatında dışa aktarıp bilgisayarına indirebilirsin.">Excel dışa aktarma</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Telegram'dan bakiye sorgula, işlem ekle, bütçe ve birikim takibi yap.">Telegram Bot</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="Sınırsız fatura/fiş analizi. Yapay zeka tutarı ve kategoriyi otomatik algılar, işlemi ekler.">Fatura OCR (sınırsız)</span>
+            </li>
+            <li>
+                <i class="bi bi-check-circle-fill feat-check"></i>
+                <span class="feat-tip" data-tip="ARİS'e sınırsız soru sor. İşlem ekle, bütçe kur, analiz al, sayfalar arası gezin.">ARİS Asistan (sınırsız)</span>
+            </li>
         </ul>
         @if (currentPlan == "Platinum")
         {
@@ -395,12 +498,16 @@
             <form method="post" action="/Subscription/Subscribe" onsubmit="handleSubmit(this,'plat-btn')">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="plan" value="Platinum" />
-                <button type="submit" id="plat-btn" class="btn-subscribe btn-platinum">
-                    <span>Platinum'a Geç →</span>
-                </button>
+                <button type="submit" id="plat-btn" class="btn-subscribe btn-platinum">Platinum'a Geç →</button>
             </form>
         }
     </div>
+</div>
+
+<!-- Güvenlik badgei -->
+<div class="secure-badge">
+    <i class="bi bi-shield-check" style="color:#1AAFA3;font-size:14px;"></i>
+    Ödemeler İyzico altyapısı ile güvenle işleniyor. Kart bilgileri FinAware'e iletilmez.
 </div>
 
 <!-- FAQ -->
@@ -415,12 +522,20 @@
         <div class="faq-a">Her ayın başında otomatik olarak sıfırlanır.</div>
     </div>
     <div class="faq-item">
-        <div class="faq-q">Ödeme güvenli mi?</div>
-        <div class="faq-a">Tüm ödemeler Iyzico altyapısı üzerinden SSL korumalı olarak gerçekleştirilir. Kart bilgilerin bizde saklanmaz.</div>
+        <div class="faq-q">Fatura OCR tam olarak nasıl çalışıyor?</div>
+        <div class="faq-a">Fatura veya fiş fotoğrafını yükle ya da Telegram'dan gönder. Yapay zeka tutarı, tarihi ve kategoriyi otomatik algılar ve işlemi hesabına ekler. Onaylamandan eklemez.</div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-q">ARİS ne yapabilir?</div>
+        <div class="faq-a">ARİS finansal asistanın; harcama analizi yapar, tasarruf önerir, işlem ekler, bütçe ve birikim oluşturur, istediğin sayfaya götürür. Doğal dille konuşarak finansını yönetebilirsin.</div>
     </div>
     <div class="faq-item">
         <div class="faq-q">Gold'dan Platinum'a geçebilir miyim?</div>
         <div class="faq-a">Evet, istediğin zaman planını yükseltebilirsin.</div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-q">Ödeme güvenli mi?</div>
+        <div class="faq-a">Tüm ödemeler İyzico altyapısı üzerinden SSL korumalı olarak gerçekleştirilir. Kart bilgilerin bizde saklanmaz.</div>
     </div>
 </div>
 

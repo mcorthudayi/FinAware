@@ -69,6 +69,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ExchangeRateService>();
+builder.Services.AddScoped<IyzicoService>();
 builder.Services.AddScoped<InvoiceService>();
 builder.Services.AddScoped<MonthlyReportService>();
 builder.Services.AddHostedService<MonthlyReportHostedService>();

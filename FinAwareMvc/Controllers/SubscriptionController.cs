@@ -40,12 +40,14 @@ namespace FinAware.MVC.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    ViewBag.MyPlan = JsonSerializer.Deserialize<JsonElement>(json,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    // string olarak at, view'da parse ederiz
+                    ViewBag.MyPlanJson = json;
                 }
             }
-            catch { }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ MyPlan error: {ex.Message}");
+            }
             return View();
         }
 

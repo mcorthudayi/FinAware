@@ -1,17 +1,22 @@
 ﻿@{
     ViewData["Title"] = "Planlar";
-    var myPlan = ViewBag.MyPlan;
     string currentPlan = "Free";
     string? expiry = null;
-    int ocrUsage = 0, arisUsage = 0;
+    int ocrUsage = 0;
+    int arisUsage = 0;
 
-    if (myPlan != null)
+    var myPlanJson = ViewBag.MyPlanJson as string;
+    if (!string.IsNullOrEmpty(myPlanJson))
     {
-        var el = (System.Text.Json.JsonElement)myPlan;
-        currentPlan = el.TryGetProperty("plan", out var p) ? p.GetString() ?? "Free" : "Free";
-        expiry = el.TryGetProperty("expiry", out var ex) ? ex.GetString() : null;
-        ocrUsage = el.TryGetProperty("ocrUsage", out var ou) ? ou.GetInt32() : 0;
-        arisUsage = el.TryGetProperty("arisUsage", out var au) ? au.GetInt32() : 0;
+        try
+        {
+            var el = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(myPlanJson);
+            currentPlan = el.TryGetProperty("plan", out var p) ? p.GetString() ?? "Free" : "Free";
+            expiry = el.TryGetProperty("expiry", out var ex) ? ex.GetString() : null;
+            ocrUsage = el.TryGetProperty("ocrUsage", out var ou) ? ou.GetInt32() : 0;
+            arisUsage = el.TryGetProperty("arisUsage", out var au) ? au.GetInt32() : 0;
+        }
+        catch { }
     }
 }
 

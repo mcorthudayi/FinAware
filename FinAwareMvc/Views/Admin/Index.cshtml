@@ -634,13 +634,21 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        // Tab sistemi 
-        function switchTab(name, btn) {
+        // Tab sistemi
+                function switchTab(name, btn) {
             document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
             btn.classList.add('active');
-            if (name === 'activity') loadActivityData();
+            if (name === 'activity' && !chartsInitialized) {
+                try {
+                    const data = @Html.Raw(ViewBag.MonthlyActivity ?? "[]");
+                    renderCharts(data);
+                    chartsInitialized = true;
+                } catch(e) {
+                    console.error('Chart error:', e);
+                }
+            }
         }
 
         // Kullanıcı arama 

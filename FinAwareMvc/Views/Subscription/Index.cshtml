@@ -1,9 +1,18 @@
 ﻿@{
     ViewData["Title"] = "Planlar";
     var myPlan = ViewBag.MyPlan;
-    string currentPlan = myPlan != null
-        ? ((System.Text.Json.JsonElement)myPlan).GetProperty("plan").GetString() ?? "Free"
-        : "Free";
+    string currentPlan = "Free";
+    string? expiry = null;
+    int ocrUsage = 0, arisUsage = 0;
+
+    if (myPlan != null)
+    {
+        var el = (System.Text.Json.JsonElement)myPlan;
+        currentPlan = el.TryGetProperty("plan", out var p) ? p.GetString() ?? "Free" : "Free";
+        expiry = el.TryGetProperty("expiry", out var ex) ? ex.GetString() : null;
+        ocrUsage = el.TryGetProperty("ocrUsage", out var ou) ? ou.GetInt32() : 0;
+        arisUsage = el.TryGetProperty("arisUsage", out var au) ? au.GetInt32() : 0;
+    }
 }
 
 <style>
@@ -28,7 +37,7 @@
 
     .pricing-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3,1fr);
         gap: 24px;
         max-width: 960px;
         margin: 0 auto;
@@ -53,16 +62,15 @@
             box-shadow: 0 8px 32px rgba(26,175,163,0.15);
         }
 
-        .pricing-card.current {
+        .pricing-card.current-plan {
             border-color: #7c3aed;
         }
 
-    .popular-badge {
+    .top-badge {
         position: absolute;
         top: -14px;
         left: 50%;
         transform: translateX(-50%);
-        background: linear-gradient(135deg, #1AAFA3, #0D7A71);
         color: white;
         font-size: 11px;
         font-weight: 700;
@@ -72,18 +80,12 @@
         letter-spacing: 0.5px;
     }
 
-    .current-badge {
-        position: absolute;
-        top: -14px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #7c3aed, #4f46e5);
-        color: white;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 4px 14px;
-        border-radius: 20px;
-        white-space: nowrap;
+    .badge-popular {
+        background: linear-gradient(135deg,#1AAFA3,#0D7A71);
+    }
+
+    .badge-current {
+        background: linear-gradient(135deg,#7c3aed,#4f46e5);
     }
 
     .plan-icon {
@@ -162,9 +164,13 @@
         border: none;
         cursor: pointer;
         transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
-        .btn-subscribe:hover {
+        .btn-subscribe:hover:not(:disabled) {
             opacity: 0.9;
             transform: translateY(-1px);
         }
@@ -175,12 +181,12 @@
     }
 
     .btn-gold {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
+        background: linear-gradient(135deg,#f59e0b,#d97706);
         color: white;
     }
 
     .btn-platinum {
-        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        background: linear-gradient(135deg,#7c3aed,#4f46e5);
         color: white;
     }
 
@@ -201,7 +207,7 @@
     .usage-fill {
         height: 100%;
         border-radius: 8px;
-        background: linear-gradient(90deg, #1AAFA3, #0D7A71);
+        background: linear-gradient(90deg,#1AAFA3,#0D7A71);
         transition: width 0.5s;
     }
 
@@ -228,7 +234,7 @@
         line-height: 1.7;
     }
 
-    @@media (max-width: 768px) {
+    @@media (max-width:768px) {
         .pricing-grid {
             grid-template-columns: 1fr;
         }
@@ -239,47 +245,39 @@
     }
 </style>
 
+<!-- Hero -->
 <div class="pricing-hero">
     <h1>Sana Uygun Planı Seç</h1>
     <p>Finansal hedeflerine ulaşmak için ihtiyacın olan her şey burada.</p>
 
-    @if (myPlan != null)
-    {
-        var expiry = ((System.Text.Json.JsonElement)myPlan).TryGetProperty("expiry", out var e)
-        ? e.GetString() : null;
-        <div style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;
-                        background:#f0fdf9;border:1px solid #1AAFA3;border-radius:20px;
-                        padding:6px 16px;font-size:13px;color:#1AAFA3;font-weight:600;">
-            <i class="bi bi-check-circle-fill"></i>
-            Mevcut planın: @currentPlan
-            @if (!string.IsNullOrEmpty(expiry))
-            {
-                <span style="color:#6b7280;font-weight:400;">— @expiry tarihine kadar</span>
-            }
-        </div>
-    }
+    <div style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;
+                background:#f0fdf9;border:1px solid #1AAFA3;border-radius:20px;
+                padding:6px 16px;font-size:13px;color:#1AAFA3;font-weight:600;">
+        <i class="bi bi-check-circle-fill"></i>
+        Mevcut planın: @currentPlan
+        @if (!string.IsNullOrEmpty(expiry))
+        {
+            <span style="color:#6b7280;font-weight:400;">— @expiry tarihine kadar</span>
+        }
+    </div>
 </div>
 
-<!-- Kullanım göstergesi (Gold için) -->
-@if (currentPlan == "Gold" && myPlan != null)
+<!-- Gold kullanım göstergesi -->
+@if (currentPlan == "Gold")
 {
-    var me = (System.Text.Json.JsonElement)myPlan;
-    int ocrUsage = me.TryGetProperty("ocrUsage", out var ou) ? ou.GetInt32() : 0;
-    int arisUsage = me.TryGetProperty("arisUsage", out var au) ? au.GetInt32() : 0;
-    <div style="max-width:480px;margin:0 auto 32px;background:white;
-                    border-radius:16px;padding:20px;border:1px solid #e5e7eb;">
+    <div style="max-width:480px;margin:0 auto 32px;background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;">
         <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;">Bu Ayki Kullanımın</div>
         <div style="margin-bottom:10px;">
             <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px;">
                 <span>Fatura OCR</span><span>@ocrUsage / 60</span>
             </div>
-            <div class="usage-bar"><div class="usage-fill" style="width:@(ocrUsage * 100 / 60)%"></div></div>
+            <div class="usage-bar"><div class="usage-fill" style="width:@(Math.Min(ocrUsage * 100 / 60, 100))%"></div></div>
         </div>
         <div>
             <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px;">
                 <span>ARİS Soru</span><span>@arisUsage / 30</span>
             </div>
-            <div class="usage-bar"><div class="usage-fill" style="width:@(arisUsage * 100 / 30)%"></div></div>
+            <div class="usage-bar"><div class="usage-fill" style="width:@(Math.Min(arisUsage * 100 / 30, 100))%"></div></div>
         </div>
     </div>
 }
@@ -288,10 +286,10 @@
 <div class="pricing-grid">
 
     <!-- FREE -->
-    <div class="pricing-card @(currentPlan == "Free" ? "current" : "")">
+    <div class="pricing-card @(currentPlan == "Free" ? "current-plan" : "")">
         @if (currentPlan == "Free")
         {
-            <div class="current-badge">Mevcut Planın</div>
+            <div class="top-badge badge-current">Mevcut Planın</div>
         }
         <div class="plan-icon">🆓</div>
         <div class="plan-name">Free</div>
@@ -306,21 +304,20 @@
             <li><i class="bi bi-x-circle-fill feat-cross"></i><span class="feat-text-muted">Fatura OCR</span></li>
             <li><i class="bi bi-x-circle-fill feat-cross"></i><span class="feat-text-muted">ARİS Asistan</span></li>
         </ul>
-        <button class="btn-subscribe @(currentPlan == "Free" ? "btn-current" : "btn-free")"
-                disabled="@(currentPlan == "Free")">
-            @(currentPlan == "Free" ? "Mevcut Planın" : "Ücretsiz Başla")
+        <button class="btn-subscribe btn-current" disabled>
+            @(currentPlan == "Free" ? "Mevcut Planın" : "Ücretsiz")
         </button>
     </div>
 
     <!-- GOLD -->
-    <div class="pricing-card popular @(currentPlan == "Gold" ? "current" : "")">
+    <div class="pricing-card popular @(currentPlan == "Gold" ? "current-plan" : "")">
         @if (currentPlan == "Gold")
         {
-            <div class="current-badge">Mevcut Planın</div>
+            <div class="top-badge badge-current">Mevcut Planın</div>
         }
         else
         {
-            <div class="popular-badge">En Popüler</div>
+            <div class="top-badge badge-popular">En Popüler</div>
         }
         <div class="plan-icon">🥇</div>
         <div class="plan-name" style="color:#d97706;">Gold</div>
@@ -338,7 +335,7 @@
         @if (currentPlan == "Gold")
         {
             <button class="btn-subscribe btn-current" disabled>Mevcut Planın</button>
-            <form method="post" asp-action="Cancel" class="mt-2">
+            <form method="post" action="/Subscription/Cancel" style="margin-top:8px;">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn-subscribe btn-free"
                         onclick="return confirm('Aboneliğini iptal etmek istediğine emin misin?')">
@@ -348,21 +345,21 @@
         }
         else
         {
-            <form method="post" asp-action="Subscribe">
+            <form method="post" action="/Subscription/Subscribe" onsubmit="handleSubmit(this,'gold-btn')">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="plan" value="Gold" />
-                <button type="submit" class="btn-subscribe btn-gold">
-                    Gold'a Geç
+                <button type="submit" id="gold-btn" class="btn-subscribe btn-gold">
+                    <span>Gold'a Geç →</span>
                 </button>
             </form>
         }
     </div>
 
     <!-- PLATINUM -->
-    <div class="pricing-card @(currentPlan == "Platinum" ? "current" : "")">
+    <div class="pricing-card @(currentPlan == "Platinum" ? "current-plan" : "")">
         @if (currentPlan == "Platinum")
         {
-            <div class="current-badge">Mevcut Planın</div>
+            <div class="top-badge badge-current">Mevcut Planın</div>
         }
         <div class="plan-icon">💎</div>
         <div class="plan-name" style="color:#7c3aed;">Platinum</div>
@@ -380,7 +377,7 @@
         @if (currentPlan == "Platinum")
         {
             <button class="btn-subscribe btn-current" disabled>Mevcut Planın</button>
-            <form method="post" asp-action="Cancel" class="mt-2">
+            <form method="post" action="/Subscription/Cancel" style="margin-top:8px;">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn-subscribe btn-free"
                         onclick="return confirm('Aboneliğini iptal etmek istediğine emin misin?')">
@@ -390,11 +387,11 @@
         }
         else
         {
-            <form method="post" asp-action="Subscribe">
+            <form method="post" action="/Subscription/Subscribe" onsubmit="handleSubmit(this,'plat-btn')">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="plan" value="Platinum" />
-                <button type="submit" class="btn-subscribe btn-platinum">
-                    Platinum'a Geç
+                <button type="submit" id="plat-btn" class="btn-subscribe btn-platinum">
+                    <span>Platinum'a Geç →</span>
                 </button>
             </form>
         }
@@ -404,7 +401,6 @@
 <!-- FAQ -->
 <div class="faq-section">
     <h3 style="font-size:22px;font-weight:700;color:#111827;text-align:center;margin-bottom:24px;">Sık Sorulan Sorular</h3>
-
     <div class="faq-item">
         <div class="faq-q">Aboneliğimi istediğim zaman iptal edebilir miyim?</div>
         <div class="faq-a">Evet, aboneliğini her zaman iptal edebilirsin. İptal ettiğinde mevcut dönem sonuna kadar planın aktif kalmaya devam eder.</div>
@@ -422,3 +418,16 @@
         <div class="faq-a">Evet, istediğin zaman planını yükseltebilirsin.</div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function handleSubmit(form, btnId) {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Yönlendiriliyor...';
+            }
+            return true;
+        }
+    </script>
+}

@@ -51,6 +51,7 @@ namespace FinAware.MVC.Controllers
 
         //  Ödeme başlat 
         [HttpPost]
+        // [ValidateAntiForgeryToken] 
         public async Task<IActionResult> Subscribe(string plan)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AuthToken")))

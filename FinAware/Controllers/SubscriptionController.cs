@@ -114,19 +114,36 @@ namespace FinAware.API.Controllers
         {
             try
             {
+                Console.WriteLine($"📡 Callback token geldi: {dto.Token}");
+
                 var result = await _iyzico.RetrieveCheckoutFormAsync(dto.Token);
+                Console.WriteLine($"📡 Retrieve: status={result.Status} convId={result.ConversationId}");
 
                 if (!result.Success)
                     return Ok(new { success = false, message = "Ödeme başarısız." });
 
-                // ConversationId: finaware_{userId}_{plan}_{timestamp}
-                var parts = result.ConversationId.Split('_');
-                if (parts.Length < 3 || !int.TryParse(parts[1], out int userId))
-                    return BadRequest(new { message = "Geçersiz conversationId." });
+                // Token'ı DB'den bul — iyzico_{token}_{plan} formatında sakladık
+                var tokenKey = $"iyzico_{dto.Token}";
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.TelegramLinkToken != null &&
+                                              u.TelegramLinkToken.StartsWith(tokenKey));
 
-                var plan = parts[2]; // Gold veya Platinum
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null) return NotFound();
+                if (user == null)
+                {
+                    // Fallback: conversationId'den parse et
+                    var parts = result.ConversationId?.Split('_');
+                    if (parts == null || parts.Length < 3 || !int.TryParse(parts[1], out int uid))
+                        return BadRequest(new { message = "Kullanıcı bulunamadı." });
+                    user = await _context.Users.FindAsync(uid);
+                    if (user == null) return NotFound();
+                }
+
+                // Plan'ı token'dan çıkar
+                var plan = "Gold";
+                if (user.TelegramLinkToken?.Contains("_Platinum") == true)
+                    plan = "Platinum";
+                else if (result.ConversationId?.Contains("_Platinum_") == true)
+                    plan = "Platinum";
 
                 user.SubscriptionPlan = plan;
                 user.SubscriptionExpiry = DateTime.Now.AddMonths(1);
@@ -138,7 +155,7 @@ namespace FinAware.API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Subscription callback error: {ex.Message}");
+                Console.WriteLine($"❌ Callback error: {ex.Message}");
                 return StatusCode(500, new { message = "Sunucu hatası." });
             }
         }

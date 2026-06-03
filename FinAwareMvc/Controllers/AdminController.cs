@@ -55,15 +55,11 @@ namespace FinAwareMvc.Controllers
                     ViewBag.SubPlatinum = subEl.TryGetProperty("platinum", out var p) ? p.GetInt32() : 0;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ SubStats error: {ex.Message}");
-            }
+            catch (Exception ex) { Console.WriteLine($"⚠️ SubStats error: {ex.Message}"); }
 
             return View();
         }
 
-        // Aylık aktivite verisini JSON olarak döndür (JS fetch ile çağrılır)
         [HttpGet]
         public async Task<IActionResult> GetMonthlyActivityData()
         {
@@ -86,30 +82,58 @@ namespace FinAwareMvc.Controllers
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> FreezeUser(int id)
         {
-            await _apiService.AdminFreezeUserAsync(id);
-            TempData["Success"] = "Kullanıcı donduruldu.";
+            try
+            {
+                await _apiService.AdminFreezeUserAsync(id);
+                TempData["Success"] = "Kullanıcı donduruldu.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ FreezeUser error: {ex.Message}");
+                TempData["Error"] = "İşlem başarısız.";
+            }
             return RedirectToAction("Index");
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> UnfreezeUser(int id)
         {
-            await _apiService.AdminUnfreezeUserAsync(id);
-            TempData["Success"] = "Kullanıcı aktif edildi.";
+            try
+            {
+                await _apiService.AdminUnfreezeUserAsync(id);
+                TempData["Success"] = "Kullanıcı aktif edildi.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ UnfreezeUser error: {ex.Message}");
+                TempData["Error"] = "İşlem başarısız.";
+            }
             return RedirectToAction("Index");
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            await _apiService.AdminDeleteUserAsync(id);
-            TempData["Success"] = "Kullanıcı silindi.";
+            try
+            {
+                await _apiService.AdminDeleteUserAsync(id);
+                TempData["Success"] = "Kullanıcı silindi.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ DeleteUser error: {ex.Message}");
+                TempData["Error"] = "İşlem başarısız.";
+            }
             return RedirectToAction("Index");
         }
 
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> ChangePlan(int id, string plan, int months = 1)
         {
             try
@@ -123,7 +147,11 @@ namespace FinAwareMvc.Controllers
                 if (response.IsSuccessStatusCode)
                     TempData["Success"] = $"Plan güncellendi: {plan}";
                 else
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ ChangePlan API error: {err}");
                     TempData["Error"] = "Plan güncellenemedi.";
+                }
             }
             catch (Exception ex)
             {

@@ -2,279 +2,62 @@
     ViewData["Title"] = "Admin Paneli";
     var stats = ViewBag.Stats;
     var users = ViewBag.Users as List<dynamic> ?? new List<dynamic>();
-    int subFree = ViewBag.SubFree ?? 0;
-    int subGold = ViewBag.SubGold ?? 0;
+    int subFree     = ViewBag.SubFree     ?? 0;
+    int subGold     = ViewBag.SubGold     ?? 0;
     int subPlatinum = ViewBag.SubPlatinum ?? 0;
 }
 
 <style>
-    .admin-tab-nav {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 24px;
-        border-bottom: 2px solid #e5e7eb;
-        padding-bottom: 0;
-    }
+    .admin-tab-nav { display:flex; gap:8px; margin-bottom:24px; border-bottom:2px solid #e5e7eb; padding-bottom:0; }
+    .admin-tab-btn { padding:10px 20px; border:none; background:none; font-size:14px; font-weight:600; color:#6b7280; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
+    .admin-tab-btn.active { color:#1AAFA3; border-bottom-color:#1AAFA3; }
+    .admin-tab-btn:hover  { color:#1AAFA3; }
+    .admin-tab-pane { display:none; }
+    .admin-tab-pane.active { display:block; }
 
-    .admin-tab-btn {
-        padding: 10px 20px;
-        border: none;
-        background: none;
-        font-size: 14px;
-        font-weight: 600;
-        color: #6b7280;
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-        transition: all 0.15s;
-    }
+    .stat-card { background:white; border-radius:16px; padding:20px 24px; box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid #f3f4f6; transition:transform 0.2s; }
+    .stat-card:hover { transform:translateY(-2px); }
+    .stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:12px; }
+    .stat-value { font-size:28px; font-weight:700; color:#111827; line-height:1; }
+    .stat-label { font-size:13px; color:#6b7280; margin-top:4px; }
 
-        .admin-tab-btn.active {
-            color: #1AAFA3;
-            border-bottom-color: #1AAFA3;
-        }
+    .plan-badge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+    .plan-free     { background:#f3f4f6; color:#6b7280; }
+    .plan-gold     { background:#fef3c7; color:#d97706; }
+    .plan-platinum { background:#ede9fe; color:#7c3aed; }
+    .role-badge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+    .role-admin  { background:#fee2e2; color:#dc2626; }
+    .role-frozen { background:#e0f2fe; color:#0284c7; }
+    .role-user   { background:#dcfce7; color:#16a34a; }
 
-        .admin-tab-btn:hover {
-            color: #1AAFA3;
-        }
+    .admin-table { width:100%; border-collapse:collapse; }
+    .admin-table th { font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:#9ca3af; font-weight:600; border-bottom:1px solid #f3f4f6; padding:10px 14px; text-align:left; }
+    .admin-table td { padding:11px 14px; vertical-align:middle; border-bottom:1px solid #f9fafb; font-size:13px; }
+    .admin-table tr:hover td { background:#fafafa; }
 
-    .admin-tab-pane {
-        display: none;
-    }
+    .action-btn { padding:4px 10px; border-radius:8px; font-size:11px; font-weight:600; border:none; cursor:pointer; transition:opacity 0.15s; }
+    .action-btn:hover { opacity:0.8; }
+    .btn-freeze   { background:#e0f2fe; color:#0284c7; }
+    .btn-unfreeze { background:#dcfce7; color:#16a34a; }
+    .btn-delete   { background:#fee2e2; color:#dc2626; }
+    .btn-plan     { background:#ede9fe; color:#7c3aed; }
 
-        .admin-tab-pane.active {
-            display: block;
-        }
+    .search-box { border:1.5px solid #e5e7eb; border-radius:10px; padding:7px 14px; font-size:13px; outline:none; width:300px; }
+    .search-box:focus { border-color:#1AAFA3; }
 
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px 24px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        border: 1px solid #f3f4f6;
-        transition: transform 0.2s;
-    }
+    .plan-option { border:2px solid #e5e7eb; border-radius:12px; padding:12px; cursor:pointer; transition:all 0.15s; }
+    .plan-option:hover, .plan-option.selected { border-color:#1AAFA3; background:#f0fdf9; }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
+    .act-card { background:white; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid #f3f4f6; }
+    .act-card h6 { font-size:14px; font-weight:700; color:#111827; margin-bottom:16px; }
+    .chart-wrap { position:relative; height:260px; }
 
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        margin-bottom: 12px;
-    }
-
-    .stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 13px;
-        color: #6b7280;
-        margin-top: 4px;
-    }
-
-    .plan-badge {
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-
-    .plan-free {
-        background: #f3f4f6;
-        color: #6b7280;
-    }
-
-    .plan-gold {
-        background: #fef3c7;
-        color: #d97706;
-    }
-
-    .plan-platinum {
-        background: #ede9fe;
-        color: #7c3aed;
-    }
-
-    .role-badge {
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-
-    .role-admin {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    .role-frozen {
-        background: #e0f2fe;
-        color: #0284c7;
-    }
-
-    .role-user {
-        background: #dcfce7;
-        color: #16a34a;
-    }
-
-    .admin-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-        .admin-table th {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #9ca3af;
-            font-weight: 600;
-            border-bottom: 1px solid #f3f4f6;
-            padding: 10px 14px;
-            text-align: left;
-        }
-
-        .admin-table td {
-            padding: 11px 14px;
-            vertical-align: middle;
-            border-bottom: 1px solid #f9fafb;
-            font-size: 13px;
-        }
-
-        .admin-table tr:hover td {
-            background: #fafafa;
-        }
-
-    .action-btn {
-        padding: 4px 10px;
-        border-radius: 8px;
-        font-size: 11px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: opacity 0.15s;
-    }
-
-        .action-btn:hover {
-            opacity: 0.8;
-        }
-
-    .btn-freeze {
-        background: #e0f2fe;
-        color: #0284c7;
-    }
-
-    .btn-unfreeze {
-        background: #dcfce7;
-        color: #16a34a;
-    }
-
-    .btn-delete {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    .btn-plan {
-        background: #ede9fe;
-        color: #7c3aed;
-    }
-
-    .search-box {
-        border: 1.5px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 7px 14px;
-        font-size: 13px;
-        outline: none;
-        width: 300px;
-    }
-
-        .search-box:focus {
-            border-color: #1AAFA3;
-        }
-
-    .plan-option {
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 12px;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-
-        .plan-option:hover, .plan-option.selected {
-            border-color: #1AAFA3;
-            background: #f0fdf9;
-        }
-
-    .act-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        border: 1px solid #f3f4f6;
-    }
-
-        .act-card h6 {
-            font-size: 14px;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 16px;
-        }
-
-    .chart-wrap {
-        position: relative;
-        height: 260px;
-    }
-
-    .month-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 0;
-        border-bottom: 1px solid #f9fafb;
-    }
-
-        .month-row:last-child {
-            border: none;
-        }
-
-    .month-label {
-        font-size: 12px;
-        color: #6b7280;
-        width: 70px;
-        flex-shrink: 0;
-    }
-
-    .month-bar-wrap {
-        flex: 1;
-        background: #f3f4f6;
-        border-radius: 20px;
-        height: 10px;
-        overflow: hidden;
-    }
-
-    .month-bar {
-        height: 100%;
-        border-radius: 20px;
-        transition: width 0.6s ease;
-    }
-
-    .month-val {
-        font-size: 12px;
-        font-weight: 600;
-        color: #111827;
-        width: 30px;
-        text-align: right;
-        flex-shrink: 0;
-    }
+    .month-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f9fafb; }
+    .month-row:last-child { border:none; }
+    .month-label { font-size:12px; color:#6b7280; width:70px; flex-shrink:0; }
+    .month-bar-wrap { flex:1; background:#f3f4f6; border-radius:20px; height:10px; overflow:hidden; }
+    .month-bar { height:100%; border-radius:20px; transition:width 0.6s ease; }
+    .month-val { font-size:12px; font-weight:600; color:#111827; width:30px; text-align:right; flex-shrink:0; }
 </style>
 
 <!-- Başlık -->
@@ -288,79 +71,61 @@
 
 <!-- Stat Row 1 -->
 <div class="row g-3 mb-3">
-    <div class="col-md-2">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#f0fdf9;">👥</div>
-            <div class="stat-value">@(stats?.totalUsers ?? 0)</div>
-            <div class="stat-label">Toplam Kullanıcı</div>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#f3f4f6;">🆓</div>
-            <div class="stat-value" style="color:#6b7280;">@subFree</div>
-            <div class="stat-label">Free Plan</div>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#fef3c7;">🥇</div>
-            <div class="stat-value" style="color:#d97706;">@subGold</div>
-            <div class="stat-label">Gold Plan</div>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#ede9fe;">💎</div>
-            <div class="stat-value" style="color:#7c3aed;">@subPlatinum</div>
-            <div class="stat-label">Platinum Plan</div>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#dcfce7;">✅</div>
-            <div class="stat-value" style="color:#16a34a;">@(stats?.verifiedUsers ?? 0)</div>
-            <div class="stat-label">Doğrulanmış</div>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#e0f2fe;">📊</div>
-            <div class="stat-value" style="color:#0284c7;">@(stats?.totalTransactions ?? 0)</div>
-            <div class="stat-label">Toplam İşlem</div>
-        </div>
-    </div>
+    <div class="col-md-2"><div class="stat-card">
+        <div class="stat-icon" style="background:#f0fdf9;">👥</div>
+        <div class="stat-value">@(stats?.totalUsers ?? 0)</div>
+        <div class="stat-label">Toplam Kullanıcı</div>
+    </div></div>
+    <div class="col-md-2"><div class="stat-card">
+        <div class="stat-icon" style="background:#f3f4f6;">🆓</div>
+        <div class="stat-value" style="color:#6b7280;">@subFree</div>
+        <div class="stat-label">Free Plan</div>
+    </div></div>
+    <div class="col-md-2"><div class="stat-card">
+        <div class="stat-icon" style="background:#fef3c7;">🥇</div>
+        <div class="stat-value" style="color:#d97706;">@subGold</div>
+        <div class="stat-label">Gold Plan</div>
+    </div></div>
+    <div class="col-md-2"><div class="stat-card">
+        <div class="stat-icon" style="background:#ede9fe;">💎</div>
+        <div class="stat-value" style="color:#7c3aed;">@subPlatinum</div>
+        <div class="stat-label">Platinum Plan</div>
+    </div></div>
+    <div class="col-md-2"><div class="stat-card">
+        <div class="stat-icon" style="background:#dcfce7;">✅</div>
+        <div class="stat-value" style="color:#16a34a;">@(stats?.verifiedUsers ?? 0)</div>
+        <div class="stat-label">Doğrulanmış</div>
+    </div></div>
+    <div class="col-md-2"><div class="stat-card">
+        <div class="stat-icon" style="background:#e0f2fe;">📊</div>
+        <div class="stat-value" style="color:#0284c7;">@(stats?.totalTransactions ?? 0)</div>
+        <div class="stat-label">Toplam İşlem</div>
+    </div></div>
 </div>
 
 <!-- Stat Row 2 -->
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="stat-card d-flex align-items-center gap-3">
-            <div class="stat-icon" style="background:#f0fdf9;margin:0;flex-shrink:0;">💰</div>
-            <div>
-                <div style="font-size:20px;font-weight:700;color:#1AAFA3;">₺@((subGold * 75 + subPlatinum * 200).ToString("N0"))</div>
-                <div class="stat-label">Tahmini Aylık Gelir</div>
-            </div>
+    <div class="col-md-4"><div class="stat-card d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#f0fdf9;margin:0;flex-shrink:0;">💰</div>
+        <div>
+            <div style="font-size:20px;font-weight:700;color:#1AAFA3;">₺@((subGold * 75 + subPlatinum * 200).ToString("N0"))</div>
+            <div class="stat-label">Tahmini Aylık Gelir</div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-card d-flex align-items-center gap-3">
-            <div class="stat-icon" style="background:#fef3c7;margin:0;flex-shrink:0;">📅</div>
-            <div>
-                <div style="font-size:20px;font-weight:700;color:#d97706;">@(stats?.newUsersThisMonth ?? 0)</div>
-                <div class="stat-label">Bu Ay Yeni Kayıt</div>
-            </div>
+    </div></div>
+    <div class="col-md-4"><div class="stat-card d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#fef3c7;margin:0;flex-shrink:0;">📅</div>
+        <div>
+            <div style="font-size:20px;font-weight:700;color:#d97706;">@(stats?.newUsersThisMonth ?? 0)</div>
+            <div class="stat-label">Bu Ay Yeni Kayıt</div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-card d-flex align-items-center gap-3">
-            <div class="stat-icon" style="background:#e0f2fe;margin:0;flex-shrink:0;">🤖</div>
-            <div>
-                <div style="font-size:20px;font-weight:700;color:#0284c7;">@(stats?.telegramLinked ?? 0)</div>
-                <div class="stat-label">Telegram Bağlı</div>
-            </div>
+    </div></div>
+    <div class="col-md-4"><div class="stat-card d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#e0f2fe;margin:0;flex-shrink:0;">🤖</div>
+        <div>
+            <div style="font-size:20px;font-weight:700;color:#0284c7;">@(stats?.telegramLinked ?? 0)</div>
+            <div class="stat-label">Telegram Bağlı</div>
         </div>
-    </div>
+    </div></div>
 </div>
 
 <!-- Tab Nav -->
@@ -385,37 +150,26 @@
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Kullanıcı</th>
-                        <th>E-posta</th>
-                        <th>Plan</th>
-                        <th>Rol</th>
-                        <th>Doğrulama</th>
-                        <th>OCR</th>
-                        <th>ARİS</th>
-                        <th>İşlem</th>
-                        <th>Kayıt</th>
-                        <th>Aksiyon</th>
+                        <th>ID</th><th>Kullanıcı</th><th>E-posta</th><th>Plan</th>
+                        <th>Rol</th><th>Doğrulama</th><th>OCR</th><th>ARİS</th>
+                        <th>İşlem</th><th>Kayıt</th><th>Aksiyon</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var user in users)
                     {
-                        string plan = (string)(user.subscriptionPlan ?? "Free");
-                        string role = (string)(user.role ?? "User");
+                        string plan    = (string)(user.subscriptionPlan ?? "Free");
+                        string role    = (string)(user.role ?? "User");
                         string planCls = plan == "Platinum" ? "plan-platinum" : plan == "Gold" ? "plan-gold" : "plan-free";
                         string roleCls = role == "Admin" ? "role-admin" : role == "Frozen" ? "role-frozen" : "role-user";
-                        bool isFrozen = (bool)(user.isFrozen ?? false);
-                        bool isAdmin = role == "Admin";
+                        bool isFrozen  = (bool)(user.isFrozen ?? false);
+                        bool isAdmin   = role == "Admin";
 
                         <tr class="user-row" data-name="@user.username" data-email="@user.email" data-id="@user.userId">
                             <td style="color:#9ca3af;font-size:12px;">#@user.userId</td>
                             <td>
                                 <div style="font-weight:600;color:#111827;font-size:13px;">@user.username</div>
-                                @if (user.telegramChatId != null)
-                                {
-                                    <div style="font-size:10px;color:#0284c7;">📱 Telegram</div>
-                                }
+                                @if (user.telegramChatId != null) { <div style="font-size:10px;color:#0284c7;">📱 Telegram</div> }
                             </td>
                             <td style="color:#4b5563;font-size:12px;">@user.email</td>
                             <td>
@@ -428,14 +182,9 @@
                             <td><span class="role-badge @roleCls">@role</span></td>
                             <td>
                                 @if ((bool)(user.isEmailVerified ?? false))
-                                {
-                                    <span style="color:#16a34a;font-size:13px;">✓ Doğru</span>
-                                }
+                                { <span style="color:#16a34a;font-size:13px;">✓ Doğru</span> }
                                 else
-                                {
-
-                                    <span style="color:#d97706;font-size:13px;">⏳ Bekliyor</span>
-                                }
+                                { <span style="color:#d97706;font-size:13px;">⏳ Bekliyor</span> }
                             </td>
                             <td style="color:#6b7280;font-size:12px;">@(user.ocrUsageThisMonth ?? 0)</td>
                             <td style="color:#6b7280;font-size:12px;">@(user.arisUsageThisMonth ?? 0)</td>
@@ -445,36 +194,30 @@
                                 @if (!isAdmin)
                                 {
                                     <div class="d-flex gap-1 flex-wrap">
-                                        <button class="action-btn btn-plan" onclick="openPlanModal(@user.userId, '@user.username', '@plan')">Plan</button>
+                                        <button class="action-btn btn-plan"
+                                                onclick="openPlanModal(@user.userId, '@user.username', '@plan')">Plan</button>
                                         @if (isFrozen)
                                         {
-                                            <form method="post" asp-action="UnfreezeUser" class="d-inline">
-                                                @Html.AntiForgeryToken()
+                                            <form method="post" action="/Admin/UnfreezeUser" class="d-inline">
                                                 <input type="hidden" name="id" value="@user.userId" />
-                                                <button type="submit" class="action-btn btn-unfreeze">Aktif</button>
+                                                <button type="submit" class="action-btn btn-unfreeze">Aktif Et</button>
                                             </form>
                                         }
                                         else
                                         {
-                                            <form method="post" asp-action="FreezeUser" class="d-inline">
-                                                @Html.AntiForgeryToken()
+                                            <form method="post" action="/Admin/FreezeUser" class="d-inline">
                                                 <input type="hidden" name="id" value="@user.userId" />
                                                 <button type="submit" class="action-btn btn-freeze">Dondur</button>
                                             </form>
                                         }
-                                        <form method="post" asp-action="DeleteUser" class="d-inline"
+                                        <form method="post" action="/Admin/DeleteUser" class="d-inline"
                                               onsubmit="return confirm('@user.username kullanıcısını silmek istediğine emin misin?')">
-                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@user.userId" />
                                             <button type="submit" class="action-btn btn-delete">Sil</button>
                                         </form>
                                     </div>
                                 }
-                                else
-                                {
-
-                                    <span style="font-size:11px;color:#9ca3af;">—</span>
-                                }
+                                else { <span style="font-size:11px;color:#9ca3af;">—</span> }
                             </td>
                         </tr>
                     }
@@ -493,44 +236,36 @@
         </div>
     </div>
     <div class="row g-4">
-        <div class="col-md-6">
-            <div class="act-card">
-                <h6><i class="bi bi-person-plus me-2" style="color:#1AAFA3;"></i>Son 6 Ay — Yeni Kayıt</h6>
-                <div class="chart-wrap"><canvas id="newUsersChart"></canvas></div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="act-card">
-                <h6><i class="bi bi-arrow-left-right me-2" style="color:#4F46E5;"></i>Son 6 Ay — İşlem Sayısı</h6>
-                <div class="chart-wrap"><canvas id="transactionsChart"></canvas></div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="act-card">
-                <h6><i class="bi bi-calendar3 me-2" style="color:#d97706;"></i>Aylık Yeni Kayıt Detayı</h6>
-                <div id="newUsersBarDetail"></div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="act-card">
-                <h6><i class="bi bi-gem me-2" style="color:#7c3aed;"></i>Abonelik Dağılımı</h6>
-                <div class="chart-wrap" style="height:220px;"><canvas id="planChart"></canvas></div>
-                <div class="d-flex justify-content-center gap-4 mt-3">
-                    <div style="text-align:center;">
-                        <div style="font-size:22px;font-weight:700;color:#6b7280;">@subFree</div>
-                        <div style="font-size:11px;color:#9ca3af;">Free</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div style="font-size:22px;font-weight:700;color:#d97706;">@subGold</div>
-                        <div style="font-size:11px;color:#9ca3af;">Gold</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div style="font-size:22px;font-weight:700;color:#7c3aed;">@subPlatinum</div>
-                        <div style="font-size:11px;color:#9ca3af;">Platinum</div>
-                    </div>
+        <div class="col-md-6"><div class="act-card">
+            <h6><i class="bi bi-person-plus me-2" style="color:#1AAFA3;"></i>Son 6 Ay — Yeni Kayıt</h6>
+            <div class="chart-wrap"><canvas id="newUsersChart"></canvas></div>
+        </div></div>
+        <div class="col-md-6"><div class="act-card">
+            <h6><i class="bi bi-arrow-left-right me-2" style="color:#4F46E5;"></i>Son 6 Ay — İşlem Sayısı</h6>
+            <div class="chart-wrap"><canvas id="transactionsChart"></canvas></div>
+        </div></div>
+        <div class="col-md-6"><div class="act-card">
+            <h6><i class="bi bi-calendar3 me-2" style="color:#d97706;"></i>Aylık Yeni Kayıt Detayı</h6>
+            <div id="newUsersBarDetail"></div>
+        </div></div>
+        <div class="col-md-6"><div class="act-card">
+            <h6><i class="bi bi-gem me-2" style="color:#7c3aed;"></i>Abonelik Dağılımı</h6>
+            <div class="chart-wrap" style="height:220px;"><canvas id="planChart"></canvas></div>
+            <div class="d-flex justify-content-center gap-4 mt-3">
+                <div style="text-align:center;">
+                    <div style="font-size:22px;font-weight:700;color:#6b7280;">@subFree</div>
+                    <div style="font-size:11px;color:#9ca3af;">Free</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:22px;font-weight:700;color:#d97706;">@subGold</div>
+                    <div style="font-size:11px;color:#9ca3af;">Gold</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:22px;font-weight:700;color:#7c3aed;">@subPlatinum</div>
+                    <div style="font-size:11px;color:#9ca3af;">Platinum</div>
                 </div>
             </div>
-        </div>
+        </div></div>
     </div>
 </div>
 
@@ -546,9 +281,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" style="padding:20px 24px 28px;">
-                <form method="post" asp-action="ChangePlan">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" id="planUserId" />
+                <form method="post" action="/Admin/ChangePlan" id="planForm">
+                    <input type="hidden" name="id"   id="planUserId" />
                     <input type="hidden" name="plan" id="planValue" value="Free" />
                     <div class="row g-2 mb-3">
                         <div class="col-4">
@@ -590,146 +324,140 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-        let chartsInitialized = false;
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+let chartsInitialized = false;
 
-        function switchTab(name, btn) {
-            document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-' + name).classList.add('active');
-            btn.classList.add('active');
-            if (name === 'activity' && !chartsInitialized) loadActivityData();
-        }
+function switchTab(name, btn) {
+    document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'activity' && !chartsInitialized) loadActivityData();
+}
 
-        function filterUsers() {
-            const q = document.getElementById('userSearch').value.toLowerCase().trim();
-            document.querySelectorAll('.user-row').forEach(row => {
-                const name  = (row.dataset.name  || '').toLowerCase();
-                const email = (row.dataset.email || '').toLowerCase();
-                const id    = (row.dataset.id    || '').toLowerCase();
-                row.style.display = (!q || name.includes(q) || email.includes(q) || id.includes(q)) ? '' : 'none';
-            });
-        }
+function filterUsers() {
+    const q = document.getElementById('userSearch').value.toLowerCase().trim();
+    document.querySelectorAll('.user-row').forEach(row => {
+        const name  = (row.dataset.name  || '').toLowerCase();
+        const email = (row.dataset.email || '').toLowerCase();
+        const id    = (row.dataset.id    || '').toLowerCase();
+        row.style.display = (!q || name.includes(q) || email.includes(q) || id.includes(q)) ? '' : 'none';
+    });
+}
 
-        function openPlanModal(userId, username, currentPlan) {
-            document.getElementById('planUserId').value = userId;
-            document.getElementById('planModalUsername').textContent = username;
-            document.getElementById('planValue').value = currentPlan;
-            document.querySelectorAll('.plan-option').forEach(el => el.classList.remove('selected'));
-            const idx = currentPlan === 'Platinum' ? 2 : currentPlan === 'Gold' ? 1 : 0;
-            document.querySelectorAll('.plan-option')[idx]?.classList.add('selected');
-            document.getElementById('monthsGroup').style.display = currentPlan === 'Free' ? 'none' : 'block';
-            new bootstrap.Modal(document.getElementById('planModal')).show();
-        }
+function openPlanModal(userId, username, currentPlan) {
+    document.getElementById('planUserId').value = userId;
+    document.getElementById('planModalUsername').textContent = username;
+    document.getElementById('planValue').value = currentPlan;
+    document.querySelectorAll('.plan-option').forEach(el => el.classList.remove('selected'));
+    const idx = currentPlan === 'Platinum' ? 2 : currentPlan === 'Gold' ? 1 : 0;
+    document.querySelectorAll('.plan-option')[idx]?.classList.add('selected');
+    document.getElementById('monthsGroup').style.display = currentPlan === 'Free' ? 'none' : 'block';
+    new bootstrap.Modal(document.getElementById('planModal')).show();
+}
 
-        function selectPlan(plan, el) {
-            document.querySelectorAll('.plan-option').forEach(e => e.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('planValue').value = plan;
-            document.getElementById('monthsGroup').style.display = plan === 'Free' ? 'none' : 'block';
-        }
+function selectPlan(plan, el) {
+    document.querySelectorAll('.plan-option').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('planValue').value = plan;
+    document.getElementById('monthsGroup').style.display = plan === 'Free' ? 'none' : 'block';
+}
 
-        async function loadActivityData() {
-            try {
-                const res  = await fetch('/Admin/GetMonthlyActivityData');
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const data = await res.json();
-                chartsInitialized = true;
-                renderCharts(data);
-            } catch(e) {
-                document.getElementById('actSummaryRow').innerHTML =
-                    '<div class="col-12"><div class="alert alert-warning">Veri yuklenemedi: ' + e.message + '</div></div>';
-            }
-        }
+async function loadActivityData() {
+    try {
+        const res  = await fetch('/Admin/GetMonthlyActivityData');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        chartsInitialized = true;
+        renderCharts(data);
+    } catch(e) {
+        document.getElementById('actSummaryRow').innerHTML =
+            '<div class="col-12"><div class="alert alert-warning">Veri yuklenemedi: ' + e.message + '</div></div>';
+    }
+}
 
-        function renderCharts(data) {
-            if (!data || data.length === 0) {
-                document.getElementById('actSummaryRow').innerHTML =
-                    '<div class="col-12 text-center text-muted py-4">Henuz veri yok</div>';
-                return;
-            }
+function renderCharts(data) {
+    if (!data || data.length === 0) {
+        document.getElementById('actSummaryRow').innerHTML =
+            '<div class="col-12 text-center text-muted py-4">Henuz veri yok</div>';
+        return;
+    }
 
-            const labels   = data.map(d => d.shortMonth);
-            const newUsers = data.map(d => d.newUsers);
-            const txCounts = data.map(d => d.transactions);
-            const maxUsers = Math.max(...newUsers, 1);
+    const labels   = data.map(d => d.shortMonth);
+    const newUsers = data.map(d => d.newUsers);
+    const txCounts = data.map(d => d.transactions);
+    const maxUsers = Math.max(...newUsers, 1);
 
-            const last  = data[data.length - 1];
-            const prev  = data[data.length - 2] || { newUsers: 0, transactions: 0 };
-            const uDiff = last.newUsers      - prev.newUsers;
-            const tDiff = last.transactions  - prev.transactions;
-            const totU  = newUsers.reduce((a,b) => a+b, 0);
-            const totT  = txCounts.reduce((a,b) => a+b, 0);
+    const last  = data[data.length - 1];
+    const prev  = data[data.length - 2] || { newUsers: 0, transactions: 0 };
+    const uDiff = last.newUsers     - prev.newUsers;
+    const tDiff = last.transactions - prev.transactions;
+    const totU  = newUsers.reduce((a,b) => a+b, 0);
+    const totT  = txCounts.reduce((a,b) => a+b, 0);
 
-            document.getElementById('actSummaryRow').innerHTML = `
-                <div class="col-md-3"><div class="stat-card">
-                    <div class="stat-icon" style="background:#f0fdf9;">📅</div>
-                    <div class="stat-value">${last.newUsers}</div>
-                    <div class="stat-label">Bu Ay Yeni Kayıt
-                        <span style="color:${uDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">${uDiff>=0?'+':''}${uDiff}</span>
-                    </div>
-                </div></div>
-                <div class="col-md-3"><div class="stat-card">
-                    <div class="stat-icon" style="background:#e0f2fe;">📊</div>
-                    <div class="stat-value">${last.transactions}</div>
-                    <div class="stat-label">Bu Ay İşlem
-                        <span style="color:${tDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">${tDiff>=0?'+':''}${tDiff}</span>
-                    </div>
-                </div></div>
-                <div class="col-md-3"><div class="stat-card">
-                    <div class="stat-icon" style="background:#fef3c7;">📈</div>
-                    <div class="stat-value">${totU}</div>
-                    <div class="stat-label">6 Ayda Toplam Kayıt</div>
-                </div></div>
-                <div class="col-md-3"><div class="stat-card">
-                    <div class="stat-icon" style="background:#ede9fe;">⚡</div>
-                    <div class="stat-value">${totT}</div>
-                    <div class="stat-label">6 Ayda Toplam İşlem</div>
-                </div></div>`;
+    document.getElementById('actSummaryRow').innerHTML = `
+        <div class="col-md-3"><div class="stat-card">
+            <div class="stat-icon" style="background:#f0fdf9;">📅</div>
+            <div class="stat-value">${last.newUsers}</div>
+            <div class="stat-label">Bu Ay Yeni Kayıt <span style="color:${uDiff>=0?'#16a34a':'#dc2626'};font-size:11px;">${uDiff>=0?'+':''}${uDiff}</span></div>
+        </div></div>
+        <div class="col-md-3"><div class="stat-card">
+            <div class="stat-icon" style="background:#e0f2fe;">📊</div>
+            <div class="stat-value">${last.transactions}</div>
+            <div class="stat-label">Bu Ay İşlem <span style="color:${tDiff>=0?'#16a34a':'#dc2626'};font-size:11px;">${tDiff>=0?'+':''}${tDiff}</span></div>
+        </div></div>
+        <div class="col-md-3"><div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7;">📈</div>
+            <div class="stat-value">${totU}</div>
+            <div class="stat-label">6 Ayda Toplam Kayıt</div>
+        </div></div>
+        <div class="col-md-3"><div class="stat-card">
+            <div class="stat-icon" style="background:#ede9fe;">⚡</div>
+            <div class="stat-value">${totT}</div>
+            <div class="stat-label">6 Ayda Toplam İşlem</div>
+        </div></div>`;
 
-            new Chart(document.getElementById('newUsersChart'), {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Yeni Kayit', data: newUsers,
-                    backgroundColor: 'rgba(26,175,163,0.8)', borderColor: '#1AAFA3',
-                    borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
-                options: { responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
-                              x: { ticks: { font: { size: 11 } }, grid: { display: false } } } }
-            });
+    new Chart(document.getElementById('newUsersChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Yeni Kayit', data: newUsers,
+            backgroundColor: 'rgba(26,175,163,0.8)', borderColor: '#1AAFA3',
+            borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+                      x: { ticks: { font: { size: 11 } }, grid: { display: false } } } }
+    });
 
-            new Chart(document.getElementById('transactionsChart'), {
-                type: 'line',
-                data: { labels, datasets: [{ label: 'Islem', data: txCounts,
-                    borderColor: '#4F46E5', backgroundColor: 'rgba(79,70,229,0.08)',
-                    borderWidth: 2.5, pointBackgroundColor: '#4F46E5',
-                    pointRadius: 5, fill: true, tension: 0.4 }] },
-                options: { responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
-                              x: { ticks: { font: { size: 11 } }, grid: { display: false } } } }
-            });
+    new Chart(document.getElementById('transactionsChart'), {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Islem', data: txCounts,
+            borderColor: '#4F46E5', backgroundColor: 'rgba(79,70,229,0.08)',
+            borderWidth: 2.5, pointBackgroundColor: '#4F46E5',
+            pointRadius: 5, fill: true, tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+                      x: { ticks: { font: { size: 11 } }, grid: { display: false } } } }
+    });
 
-            document.getElementById('newUsersBarDetail').innerHTML = data.map(d => `
-                <div class="month-row">
-                    <div class="month-label">${d.shortMonth}</div>
-                    <div class="month-bar-wrap">
-                        <div class="month-bar" style="width:${(d.newUsers/maxUsers)*100}%;background:linear-gradient(90deg,#1AAFA3,#0D7A71);"></div>
-                    </div>
-                    <div class="month-val">${d.newUsers}</div>
-                </div>`).join('');
+    document.getElementById('newUsersBarDetail').innerHTML = data.map(d => `
+        <div class="month-row">
+            <div class="month-label">${d.shortMonth}</div>
+            <div class="month-bar-wrap"><div class="month-bar" style="width:${(d.newUsers/maxUsers)*100}%;background:linear-gradient(90deg,#1AAFA3,#0D7A71);"></div></div>
+            <div class="month-val">${d.newUsers}</div>
+        </div>`).join('');
 
-            new Chart(document.getElementById('planChart'), {
-                type: 'doughnut',
-                data: { labels: ['Free','Gold','Platinum'],
-                    datasets: [{ data: [@subFree, @subGold, @subPlatinum],
-                        backgroundColor: ['#f3f4f6','#fef3c7','#ede9fe'],
-                        borderColor: ['#9ca3af','#d97706','#7c3aed'],
-                        borderWidth: 2, hoverOffset: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 16 } } } }
-            });
-        }
-    </script>
+    new Chart(document.getElementById('planChart'), {
+        type: 'doughnut',
+        data: { labels: ['Free','Gold','Platinum'],
+            datasets: [{ data: [@subFree, @subGold, @subPlatinum],
+                backgroundColor: ['#f3f4f6','#fef3c7','#ede9fe'],
+                borderColor: ['#9ca3af','#d97706','#7c3aed'],
+                borderWidth: 2, hoverOffset: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 16 } } } }
+    });
+}
+</script>
 }

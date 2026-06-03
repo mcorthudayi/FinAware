@@ -35,7 +35,7 @@ namespace FinAware.MVC.Controllers
             {
                 var client = CreateAuthClient();
                 var response = await client.GetAsync("/api/user/profile");
-
+                var subRes = await client.GetAsync("/api/subscription/my-plan");
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();

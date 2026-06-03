@@ -1,20 +1,60 @@
 ﻿@{
     ViewData["Title"] = "Admin Paneli";
     var stats = ViewBag.Stats;
-    var subStats = ViewBag.SubStats;
     var users = ViewBag.Users as List<dynamic> ?? new List<dynamic>();
     int subFree = ViewBag.SubFree ?? 0;
     int subGold = ViewBag.SubGold ?? 0;
     int subPlatinum = ViewBag.SubPlatinum ?? 0;
+    string monthlyActivityJson = ViewBag.MonthlyActivity ?? "[]";
 }
 
 <style>
+    /*  Tab Nav */
+    .admin-tab-nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 0;
+    }
+
+    .admin-tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.15s;
+    }
+
+        .admin-tab-btn.active {
+            color: #1AAFA3;
+            border-bottom-color: #1AAFA3;
+        }
+
+        .admin-tab-btn:hover {
+            color: #1AAFA3;
+        }
+
+    .admin-tab-pane {
+        display: none;
+    }
+
+        .admin-tab-pane.active {
+            display: block;
+        }
+
+    /* Kartlar */
     .stat-card {
         background: white;
         border-radius: 16px;
         padding: 20px 24px;
-        border: none;
         box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        border: 1px solid #f3f4f6;
         transition: transform 0.2s;
     }
 
@@ -46,12 +86,12 @@
         margin-top: 4px;
     }
 
+    /* Badges */
     .plan-badge {
         padding: 3px 10px;
         border-radius: 20px;
         font-size: 11px;
         font-weight: 700;
-        letter-spacing: 0.5px;
     }
 
     .plan-free {
@@ -91,39 +131,47 @@
         color: #16a34a;
     }
 
-    .admin-table th {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: #9ca3af;
-        font-weight: 600;
-        border-bottom: 1px solid #f3f4f6;
-        padding: 10px 16px;
+    /* Tablo */
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
     }
 
-    .admin-table td {
-        padding: 12px 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f9fafb;
-        font-size: 13px;
-    }
+        .admin-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #9ca3af;
+            font-weight: 600;
+            border-bottom: 1px solid #f3f4f6;
+            padding: 10px 14px;
+            text-align: left;
+        }
 
-    .admin-table tr:hover td {
-        background: #fafafa;
-    }
+        .admin-table td {
+            padding: 11px 14px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f9fafb;
+            font-size: 13px;
+        }
 
+        .admin-table tr:hover td {
+            background: #fafafa;
+        }
+
+    /* Action Butonlar */
     .action-btn {
-        padding: 5px 12px;
+        padding: 4px 10px;
         border-radius: 8px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
         border: none;
         cursor: pointer;
-        transition: all 0.15s;
+        transition: opacity 0.15s;
     }
 
         .action-btn:hover {
-            opacity: 0.85;
+            opacity: 0.8;
         }
 
     .btn-freeze {
@@ -146,241 +194,382 @@
         color: #7c3aed;
     }
 
+    /* Arama */
     .search-box {
         border: 1.5px solid #e5e7eb;
         border-radius: 10px;
-        padding: 8px 14px;
+        padding: 7px 14px;
         font-size: 13px;
         outline: none;
-        width: 240px;
+        width: 300px;
     }
 
         .search-box:focus {
             border-color: #1AAFA3;
         }
 
-    .modal-content {
-        border-radius: 20px;
-        border: none;
-    }
-
+    /* Plan Modal */
     .plan-option {
         border: 2px solid #e5e7eb;
         border-radius: 12px;
-        padding: 14px;
+        padding: 12px;
         cursor: pointer;
         transition: all 0.15s;
     }
 
-        .plan-option:hover {
-            border-color: #1AAFA3;
-        }
-
-        .plan-option.selected {
+        .plan-option:hover, .plan-option.selected {
             border-color: #1AAFA3;
             background: #f0fdf9;
         }
+
+    /* ── Aktivite Kartları ── */
+    .act-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        border: 1px solid #f3f4f6;
+    }
+
+        .act-card h6 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+    .chart-wrap {
+        position: relative;
+        height: 260px;
+    }
+
+    /* ── Ay Satırları ── */
+    .month-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f9fafb;
+    }
+
+        .month-row:last-child {
+            border: none;
+        }
+
+    .month-label {
+        font-size: 12px;
+        color: #6b7280;
+        width: 70px;
+        flex-shrink: 0;
+    }
+
+    .month-bar-wrap {
+        flex: 1;
+        background: #f3f4f6;
+        border-radius: 20px;
+        height: 10px;
+        overflow: hidden;
+    }
+
+    .month-bar {
+        height: 100%;
+        border-radius: 20px;
+        transition: width 0.6s ease;
+    }
+
+    .month-val {
+        font-size: 12px;
+        font-weight: 600;
+        color: #111827;
+        width: 30px;
+        text-align: right;
+        flex-shrink: 0;
+    }
 </style>
 
-<!-- Sayfa Başlığı -->
+<!-- Başlık -->
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h4 style="font-weight:700;color:#111827;margin:0;">Admin Paneli</h4>
         <p style="color:#6b7280;font-size:13px;margin:4px 0 0;">Kullanıcı ve abonelik yönetimi</p>
     </div>
-    <span style="font-size:12px;color:#9ca3af;">
-        Son güncelleme: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
-    </span>
+    <span style="font-size:12px;color:#9ca3af;">@DateTime.Now.ToString("dd.MM.yyyy HH:mm")</span>
 </div>
 
-<!-- İstatistik Kartları -->
-<div class="row g-3 mb-4">
+<!-- İstatistik Kartları Row 1 -->
+<div class="row g-3 mb-3">
     <div class="col-md-2">
         <div class="stat-card">
             <div class="stat-icon" style="background:#f0fdf9;">👥</div>
-            <div class="stat-value">@stats?.totalUsers</div>
+            <div class="stat-value">@(stats?.totalUsers ?? 0)</div>
             <div class="stat-label">Toplam Kullanıcı</div>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card">
             <div class="stat-icon" style="background:#f3f4f6;">🆓</div>
-            <div class="stat-value" style="color:#6b7280;">@(subStats?.free ?? 0)</div>
+            <div class="stat-value" style="color:#6b7280;">@subFree</div>
             <div class="stat-label">Free Plan</div>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card">
             <div class="stat-icon" style="background:#fef3c7;">🥇</div>
-            <div class="stat-value" style="color:#d97706;">@(subStats?.gold ?? 0)</div>
+            <div class="stat-value" style="color:#d97706;">@subGold</div>
             <div class="stat-label">Gold Plan</div>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card">
             <div class="stat-icon" style="background:#ede9fe;">💎</div>
-            <div class="stat-value" style="color:#7c3aed;">@(subStats?.platinum ?? 0)</div>
+            <div class="stat-value" style="color:#7c3aed;">@subPlatinum</div>
             <div class="stat-label">Platinum Plan</div>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card">
             <div class="stat-icon" style="background:#dcfce7;">✅</div>
-            <div class="stat-value" style="color:#16a34a;">@stats?.verifiedUsers</div>
+            <div class="stat-value" style="color:#16a34a;">@(stats?.verifiedUsers ?? 0)</div>
             <div class="stat-label">Doğrulanmış</div>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card">
             <div class="stat-icon" style="background:#e0f2fe;">📊</div>
-            <div class="stat-value" style="color:#0284c7;">@stats?.totalTransactions</div>
+            <div class="stat-value" style="color:#0284c7;">@(stats?.totalTransactions ?? 0)</div>
             <div class="stat-label">Toplam İşlem</div>
         </div>
     </div>
 </div>
 
-<!-- Gelir Özeti -->
+<!-- Row 2 -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="stat-card d-flex align-items-center gap-3">
-            <div class="stat-icon" style="background:#f0fdf9;margin:0;">💰</div>
+            <div class="stat-icon" style="background:#f0fdf9;margin:0;flex-shrink:0;">💰</div>
             <div>
-                <div class="stat-value" style="font-size:20px;color:#1AAFA3;">₺@(((subStats?.gold ?? 0) * 49 + (subStats?.platinum ?? 0) * 99).ToString("N0"))</div>
+                <div style="font-size:20px;font-weight:700;color:#1AAFA3;">₺@((subGold * 75 + subPlatinum * 200).ToString("N0"))</div>
                 <div class="stat-label">Tahmini Aylık Gelir</div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card d-flex align-items-center gap-3">
-            <div class="stat-icon" style="background:#fef3c7;margin:0;">📅</div>
+            <div class="stat-icon" style="background:#fef3c7;margin:0;flex-shrink:0;">📅</div>
             <div>
-                <div class="stat-value" style="font-size:20px;color:#d97706;">@stats?.newUsersThisMonth</div>
+                <div style="font-size:20px;font-weight:700;color:#d97706;">@(stats?.newUsersThisMonth ?? 0)</div>
                 <div class="stat-label">Bu Ay Yeni Kayıt</div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card d-flex align-items-center gap-3">
-            <div class="stat-icon" style="background:#e0f2fe;margin:0;">🤖</div>
+            <div class="stat-icon" style="background:#e0f2fe;margin:0;flex-shrink:0;">🤖</div>
             <div>
-                <div class="stat-value" style="font-size:20px;color:#0284c7;">@stats?.telegramLinked</div>
+                <div style="font-size:20px;font-weight:700;color:#0284c7;">@(stats?.telegramLinked ?? 0)</div>
                 <div class="stat-label">Telegram Bağlı</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Kullanıcı Tablosu -->
-<div style="background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;">
-    <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-weight:700;font-size:15px;color:#111827;">Kullanıcılar</span>
-        <input type="text" class="search-box" id="userSearch" placeholder="Kullanıcı ara..." oninput="filterUsers()" />
-    </div>
+<!-- Tab Nav -->
+<div class="admin-tab-nav">
+    <button class="admin-tab-btn active" onclick="switchTab('users', this)">
+        <i class="bi bi-people me-1"></i>Kullanıcılar
+        <span style="background:#f3f4f6;color:#6b7280;border-radius:20px;padding:1px 8px;font-size:11px;margin-left:6px;">@users.Count</span>
+    </button>
+    <button class="admin-tab-btn" onclick="switchTab('activity', this)">
+        <i class="bi bi-bar-chart-line me-1"></i>Aylık Aktivite
+    </button>
+</div>
 
-    <div style="overflow-x:auto;">
-        <table class="admin-table w-100" id="userTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Kullanıcı</th>
-                    <th>E-posta</th>
-                    <th>Plan</th>
-                    <th>Rol</th>
-                    <th>E-posta</th>
-                    <th>OCR</th>
-                    <th>ARİS</th>
-                    <th>İşlem</th>
-                    <th>Kayıt</th>
-                    <th>Aksiyon</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var user in users)
-                {
-                    var plan = (string)(user.subscriptionPlan ?? "Free");
-                    var planClass = plan == "Platinum" ? "plan-platinum" : plan == "Gold" ? "plan-gold" : "plan-free";
-                    var roleClass = (string)(user.role ?? "") == "Admin" ? "role-admin" : (string)(user.role ?? "") == "Frozen" ? "role-frozen" : "role-user";
+<!-- TAB 1: KULLANICILAR -->
+<div id="tab-users" class="admin-tab-pane active">
+    <div style="background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;border:1px solid #f3f4f6;">
+        <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <span style="font-weight:700;font-size:15px;color:#111827;">Kullanıcılar</span>
+            <input type="text" class="search-box" id="userSearch"
+                   placeholder="🔍 ID, kullanıcı adı veya e-posta..."
+                   oninput="filterUsers()" />
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="admin-table" id="userTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kullanıcı</th>
+                        <th>E-posta</th>
+                        <th>Plan</th>
+                        <th>Rol</th>
+                        <th>Doğrulama</th>
+                        <th>OCR</th>
+                        <th>ARİS</th>
+                        <th>İşlem</th>
+                        <th>Kayıt</th>
+                        <th>Aksiyon</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in users)
+                    {
+                        string plan = (string)(user.subscriptionPlan ?? "Free");
+                        string role = (string)(user.role ?? "User");
+                        string planCls = plan == "Platinum" ? "plan-platinum" : plan == "Gold" ? "plan-gold" : "plan-free";
+                        string roleCls = role == "Admin" ? "role-admin" : role == "Frozen" ? "role-frozen" : "role-user";
+                        bool isFrozen = (bool)(user.isFrozen ?? false);
+                        bool isAdmin = role == "Admin";
 
-                    <tr class="user-row" data-name="@user.username" data-email="@user.email">
-                        <td style="color:#9ca3af;">#@user.userId</td>
-                        <td>
-                            <div style="font-weight:600;color:#111827;">@user.username</div>
-                            @if (user.telegramChatId != null)
-                            {
-                                <div style="font-size:11px;color:#0284c7;">Telegram bağlı</div>
-                            }
-                        </td>
-                        <td style="color:#4b5563;">@user.email</td>
-                        <td>
-                            <span class="plan-badge @planClass">@plan</span>
-                            @if (user.subscriptionExpiry != null)
-                            {
-                                <div style="font-size:10px;color:#9ca3af;margin-top:2px;">
-                                    @(((DateTime)user.subscriptionExpiry).ToString("dd.MM.yyyy"))
-                                </div>
-                            }
-                        </td>
-                        <td><span class="role-badge @roleClass">@user.role</span></td>
-                        <td>
-                            @if (user.isEmailVerified == true)
-                            {
-                                <span style="color:#16a34a;font-size:13px;">✓ Doğru</span>
-                            }
-                            else
-                            {
-                                <span style="color:#d97706;font-size:13px;">⏳ Bekliyor</span>
-                            }
-                        </td>
-                        <td style="color:#6b7280;">@(user.ocrUsageThisMonth ?? 0)</td>
-                        <td style="color:#6b7280;">@(user.arisUsageThisMonth ?? 0)</td>
-                        <td style="color:#6b7280;">@user.transactionCount</td>
-                        <td style="color:#9ca3af;font-size:12px;">@(((DateTime)user.createdAt).ToString("dd.MM.yy"))</td>
-                        <td>
-                            <div class="d-flex gap-1 flex-wrap">
-                                @if ((string)(user.role ?? "") != "Admin")
+                        <tr class="user-row"
+                            data-name="@user.username"
+                            data-email="@user.email"
+                            data-id="@user.userId">
+
+                            <td style="color:#9ca3af;font-size:12px;">#@user.userId</td>
+
+                            <td>
+                                <div style="font-weight:600;color:#111827;font-size:13px;">@user.username</div>
+                                @if (user.telegramChatId != null)
                                 {
-                                    <!-- Plan Değiştir -->
-                                    <button class="action-btn btn-plan"
-                                            onclick="openPlanModal(@user.userId, '@user.username', '@plan')">
-                                        Plan
-                                    </button>
+                                    <div style="font-size:10px;color:#0284c7;">📱 Telegram</div>
+                                }
+                            </td>
 
-                                    <!-- Dondur / Aktif Et -->
-                                    @if ((string)(user.role ?? "") == "Frozen")
-                                    {
-                                        <form method="post" asp-action="UnfreezeUser" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@user.userId" />
-                                            <button type="submit" class="action-btn btn-unfreeze">Aktif</button>
-                                        </form>
-                                    }
-                                    else
-                                    {
-                                        <form method="post" asp-action="FreezeUser" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@user.userId" />
-                                            <button type="submit" class="action-btn btn-freeze">Dondur</button>
-                                        </form>
-                                    }
+                            <td style="color:#4b5563;font-size:12px;">@user.email</td>
 
-                                    <!-- Sil -->
-                                    <form method="post" asp-action="DeleteUser" class="d-inline"
-                                          onsubmit="return confirm('@user.username kullanıcısını silmek istediğine emin misin?')">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@user.userId" />
-                                        <button type="submit" class="action-btn btn-delete">Sil</button>
-                                    </form>
+                            <td>
+                                <span class="plan-badge @planCls">@plan</span>
+                                @if (user.subscriptionExpiry != null)
+                                {
+                                    <div style="font-size:10px;color:#9ca3af;margin-top:2px;">
+                                        @(((DateTime)user.subscriptionExpiry).ToString("dd.MM.yy"))
+                                    </div>
+                                }
+                            </td>
+
+                            <td><span class="role-badge @roleCls">@role</span></td>
+
+                            <td>
+                                @if ((bool)(user.isEmailVerified ?? false))
+                                {
+                                    <span style="color:#16a34a;font-size:13px;">✓ Doğru</span>
                                 }
                                 else
                                 {
-                                    <span style="font-size:12px;color:#9ca3af;">—</span>
+                                    <span style="color:#d97706;font-size:13px;">⏳ Bekliyor</span>
                                 }
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            </td>
+
+                            <td style="color:#6b7280;font-size:12px;">@(user.ocrUsageThisMonth ?? 0)</td>
+                            <td style="color:#6b7280;font-size:12px;">@(user.arisUsageThisMonth ?? 0)</td>
+                            <td style="color:#6b7280;font-size:12px;">@(user.transactionCount ?? 0)</td>
+                            <td style="color:#9ca3af;font-size:11px;">@(((DateTime)user.createdAt).ToString("dd.MM.yy"))</td>
+
+                            <td>
+                                @if (!isAdmin)
+                                {
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        <button class="action-btn btn-plan"
+                                                onclick="openPlanModal(@user.userId, '@user.username', '@plan')">
+                                            Plan
+                                        </button>
+                                        @if (isFrozen)
+                                        {
+                                            <form method="post" asp-action="UnfreezeUser" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@user.userId" />
+                                                <button type="submit" class="action-btn btn-unfreeze">Aktif</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-action="FreezeUser" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@user.userId" />
+                                                <button type="submit" class="action-btn btn-freeze">Dondur</button>
+                                            </form>
+                                        }
+                                        <form method="post" asp-action="DeleteUser" class="d-inline"
+                                              onsubmit="return confirm('@user.username kullanıcısını silmek istediğine emin misin?')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@user.userId" />
+                                            <button type="submit" class="action-btn btn-delete">Sil</button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span style="font-size:11px;color:#9ca3af;">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB 2: AYLIK AKTİVİTE  -->
+<div id="tab-activity" class="admin-tab-pane">
+
+    <!-- Özet Kartlar -->
+    <div class="row g-3 mb-4" id="actSummaryRow">
+        <!-- JS ile doldurulacak -->
+    </div>
+
+    <div class="row g-4">
+        <!-- Yeni Kayıt Grafiği -->
+        <div class="col-md-6">
+            <div class="act-card">
+                <h6><i class="bi bi-person-plus me-2" style="color:#1AAFA3;"></i>Son 6 Ay — Yeni Kayıt</h6>
+                <div class="chart-wrap">
+                    <canvas id="newUsersChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- İşlem Grafiği -->
+        <div class="col-md-6">
+            <div class="act-card">
+                <h6><i class="bi bi-arrow-left-right me-2" style="color:#4F46E5;"></i>Son 6 Ay — İşlem Sayısı</h6>
+                <div class="chart-wrap">
+                    <canvas id="transactionsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yeni Kayıt Bar Detay -->
+        <div class="col-md-6">
+            <div class="act-card">
+                <h6><i class="bi bi-calendar3 me-2" style="color:#d97706;"></i>Aylık Yeni Kayıt Detayı</h6>
+                <div id="newUsersBarDetail"></div>
+            </div>
+        </div>
+
+        <!-- Abonelik Dağılımı -->
+        <div class="col-md-6">
+            <div class="act-card">
+                <h6><i class="bi bi-gem me-2" style="color:#7c3aed;"></i>Abonelik Dağılımı</h6>
+                <div class="chart-wrap" style="height:220px;">
+                    <canvas id="planChart"></canvas>
+                </div>
+                <div class="d-flex justify-content-center gap-4 mt-3">
+                    <div style="text-align:center;">
+                        <div style="font-size:22px;font-weight:700;color:#6b7280;">@subFree</div>
+                        <div style="font-size:11px;color:#9ca3af;">Free</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:22px;font-weight:700;color:#d97706;">@subGold</div>
+                        <div style="font-size:11px;color:#9ca3af;">Gold</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:22px;font-weight:700;color:#7c3aed;">@subPlatinum</div>
+                        <div style="font-size:11px;color:#9ca3af;">Platinum</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -390,12 +579,12 @@
         <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
             <div class="modal-header" style="border:none;padding:24px 24px 0;">
                 <div>
-                    <h5 class="modal-title fw-bold" style="font-size:17px;">Plan Değiştir</h5>
-                    <p class="text-muted" style="font-size:13px;margin:4px 0 0;" id="planModalUsername"></p>
+                    <h5 class="modal-title fw-bold" style="font-size:16px;">Plan Değiştir</h5>
+                    <p class="text-muted mb-0" style="font-size:13px;" id="planModalUsername"></p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding:20px 24px;">
+            <div class="modal-body" style="padding:20px 24px 28px;">
                 <form method="post" asp-action="ChangePlan" id="planForm">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" id="planUserId" />
@@ -403,28 +592,28 @@
 
                     <div class="row g-2 mb-3">
                         <div class="col-4">
-                            <div class="plan-option selected" onclick="selectPlan('Free', this)">
-                                <div style="font-weight:700;font-size:14px;color:#6b7280;">Free</div>
-                                <div style="font-size:12px;color:#9ca3af;">₺0/ay</div>
+                            <div class="plan-option selected" onclick="selectPlan('Free',this)">
+                                <div style="font-weight:700;font-size:13px;color:#6b7280;">🆓 Free</div>
+                                <div style="font-size:11px;color:#9ca3af;">₺0/ay</div>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="plan-option" onclick="selectPlan('Gold', this)">
-                                <div style="font-weight:700;font-size:14px;color:#d97706;">Gold</div>
-                                <div style="font-size:12px;color:#9ca3af;">₺49/ay</div>
+                            <div class="plan-option" onclick="selectPlan('Gold',this)">
+                                <div style="font-weight:700;font-size:13px;color:#d97706;">🥇 Gold</div>
+                                <div style="font-size:11px;color:#9ca3af;">₺75/ay</div>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="plan-option" onclick="selectPlan('Platinum', this)">
-                                <div style="font-weight:700;font-size:14px;color:#7c3aed;">Platinum</div>
-                                <div style="font-size:12px;color:#9ca3af;">₺99/ay</div>
+                            <div class="plan-option" onclick="selectPlan('Platinum',this)">
+                                <div style="font-weight:700;font-size:13px;color:#7c3aed;">💎 Platinum</div>
+                                <div style="font-size:11px;color:#9ca3af;">₺200/ay</div>
                             </div>
                         </div>
                     </div>
 
                     <div id="monthsGroup">
                         <label style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block;">Süre</label>
-                        <select name="months" class="form-select" style="border-radius:10px;font-size:13px;">
+                        <select name="months" class="form-select" style="border-radius:10px;font-size:13px;border-color:#e5e7eb;">
                             <option value="1">1 Ay</option>
                             <option value="3">3 Ay</option>
                             <option value="6">6 Ay</option>
@@ -433,8 +622,8 @@
                     </div>
 
                     <button type="submit" class="btn w-100 mt-3"
-                            style="background:linear-gradient(135deg,#1AAFA3,#0D7A71);color:white;border-radius:10px;font-weight:600;padding:11px;">
-                        Planı Güncelle
+                            style="background:linear-gradient(135deg,#1AAFA3,#0D7A71);color:white;border-radius:10px;font-weight:600;padding:10px;font-size:14px;border:none;">
+                        <i class="bi bi-check-circle me-2"></i>Planı Güncelle
                     </button>
                 </form>
             </div>
@@ -443,21 +632,39 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
+        //  Tab sistemi
+        function switchTab(name, btn) {
+            document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+            if (name === 'activity') initCharts();
+        }
+
+        //  Kullanıcı arama (ID + name + email)
+        function filterUsers() {
+            const q = document.getElementById('userSearch').value.toLowerCase().trim();
+            document.querySelectorAll('.user-row').forEach(row => {
+                const name  = (row.dataset.name  || '').toLowerCase();
+                const email = (row.dataset.email || '').toLowerCase();
+                const id    = (row.dataset.id    || '').toLowerCase();
+                row.style.display = (!q || name.includes(q) || email.includes(q) || id.includes(q)) ? '' : 'none';
+            });
+        }
+
+        //  Plan modal
         function openPlanModal(userId, username, currentPlan) {
             document.getElementById('planUserId').value = userId;
             document.getElementById('planModalUsername').textContent = username;
             document.getElementById('planValue').value = currentPlan;
-
             document.querySelectorAll('.plan-option').forEach(el => el.classList.remove('selected'));
-            const opts = document.querySelectorAll('.plan-option');
             const idx = currentPlan === 'Platinum' ? 2 : currentPlan === 'Gold' ? 1 : 0;
-            opts[idx]?.classList.add('selected');
-
+            document.querySelectorAll('.plan-option')[idx]?.classList.add('selected');
             document.getElementById('monthsGroup').style.display = currentPlan === 'Free' ? 'none' : 'block';
             new bootstrap.Modal(document.getElementById('planModal')).show();
         }
-
         function selectPlan(plan, el) {
             document.querySelectorAll('.plan-option').forEach(e => e.classList.remove('selected'));
             el.classList.add('selected');
@@ -465,12 +672,155 @@
             document.getElementById('monthsGroup').style.display = plan === 'Free' ? 'none' : 'block';
         }
 
-        function filterUsers() {
-            const q = document.getElementById('userSearch').value.toLowerCase();
-            document.querySelectorAll('.user-row').forEach(row => {
-                const name  = row.dataset.name?.toLowerCase() ?? '';
-                const email = row.dataset.email?.toLowerCase() ?? '';
-                row.style.display = name.includes(q) || email.includes(q) ? '' : 'none';
+        //  Grafik verisi
+        const activityData = @Html.Raw(monthlyActivityJson);
+        let chartsInitialized = false;
+
+        function initCharts() {
+            if (chartsInitialized) return;
+            chartsInitialized = true;
+
+            if (!activityData || activityData.length === 0) return;
+
+            const labels    = activityData.map(d => d.shortMonth);
+            const newUsers  = activityData.map(d => d.newUsers);
+            const txCounts  = activityData.map(d => d.transactions);
+            const maxUsers  = Math.max(...newUsers, 1);
+            const maxTx     = Math.max(...txCounts, 1);
+
+            // Özet kartlar
+            const thisMonth = activityData[activityData.length - 1];
+            const lastMonth = activityData[activityData.length - 2] || { newUsers:0, transactions:0 };
+            const userDiff  = thisMonth.newUsers  - lastMonth.newUsers;
+            const txDiff    = thisMonth.transactions - lastMonth.transactions;
+            const totalNewUsers = newUsers.reduce((a,b)=>a+b,0);
+            const totalTx       = txCounts.reduce((a,b)=>a+b,0);
+
+            document.getElementById('actSummaryRow').innerHTML = `
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#f0fdf9;">📅</div>
+                        <div class="stat-value">${thisMonth.newUsers}</div>
+                        <div class="stat-label">Bu Ay Yeni Kayıt
+                            <span style="color:${userDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">
+                                ${userDiff>=0?'+':''}${userDiff}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#e0f2fe;">📊</div>
+                        <div class="stat-value">${thisMonth.transactions}</div>
+                        <div class="stat-label">Bu Ay İşlem
+                            <span style="color:${txDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">
+                                ${txDiff>=0?'+':''}${txDiff}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#fef3c7;">📈</div>
+                        <div class="stat-value">${totalNewUsers}</div>
+                        <div class="stat-label">6 Ayda Toplam Kayıt</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#ede9fe;">⚡</div>
+                        <div class="stat-value">${totalTx}</div>
+                        <div class="stat-label">6 Ayda Toplam İşlem</div>
+                    </div>
+                </div>`;
+
+            //  Bar chart: Yeni Kayıt
+            new Chart(document.getElementById('newUsersChart'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Yeni Kayıt',
+                        data: newUsers,
+                        backgroundColor: 'rgba(26,175,163,0.8)',
+                        borderColor: '#1AAFA3',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+                        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // Line chart: İşlem Sayısı
+            new Chart(document.getElementById('transactionsChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'İşlem Sayısı',
+                        data: txCounts,
+                        borderColor: '#4F46E5',
+                        backgroundColor: 'rgba(79,70,229,0.08)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#4F46E5',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+                        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // Yeni Kayıt Bar Detay
+            const detailHtml = activityData.map(d => `
+                <div class="month-row">
+                    <div class="month-label">${d.shortMonth}</div>
+                    <div class="month-bar-wrap">
+                        <div class="month-bar" style="width:${(d.newUsers/maxUsers)*100}%;background:linear-gradient(90deg,#1AAFA3,#0D7A71);"></div>
+                    </div>
+                    <div class="month-val">${d.newUsers}</div>
+                </div>`).join('');
+            document.getElementById('newUsersBarDetail').innerHTML = detailHtml;
+
+            // Doughnut chart: Plan Dağılımı 
+            new Chart(document.getElementById('planChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Free', 'Gold', 'Platinum'],
+                    datasets: [{
+                        data: [@subFree, @subGold, @subPlatinum],
+                        backgroundColor: ['#f3f4f6', '#fef3c7', '#ede9fe'],
+                        borderColor: ['#9ca3af', '#d97706', '#7c3aed'],
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 12 }, padding: 16 }
+                        }
+                    }
+                }
             });
         }
     </script>

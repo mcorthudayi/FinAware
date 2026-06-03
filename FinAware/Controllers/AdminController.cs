@@ -181,6 +181,36 @@ namespace FinAware.API.Controllers
 
             return Ok(new { user = new { user.Username, user.Email }, transactions });
         }
+        [HttpGet("monthly-activity")]
+        public async Task<IActionResult> GetMonthlyActivity()
+        {
+            var months = new List<object>();
+            for (int i = 5; i >= 0; i--)
+            {
+                var date = DateTime.Now.AddMonths(-i);
+                var newUsers = await _context.Users.CountAsync(u =>
+                    u.CreatedAt.Month == date.Month && u.CreatedAt.Year == date.Year);
+                var txCount = await _context.Transactions.CountAsync(t =>
+                    t.Date.Month == date.Month && t.Date.Year == date.Year);
+                var gold = await _context.Users.CountAsync(u =>
+                    u.SubscriptionPlan == "Gold" &&
+                    u.CreatedAt.Month == date.Month && u.CreatedAt.Year == date.Year);
+                var platinum = await _context.Users.CountAsync(u =>
+                    u.SubscriptionPlan == "Platinum" &&
+                    u.CreatedAt.Month == date.Month && u.CreatedAt.Year == date.Year);
+
+                months.Add(new
+                {
+                    month = date.ToString("MMMM yyyy"),
+                    shortMonth = date.ToString("MMM yy"),
+                    newUsers,
+                    transactions = txCount,
+                    gold,
+                    platinum
+                });
+            }
+            return Ok(months);
+        }
     }
     public class ChangePlanDto
     {

@@ -28,6 +28,7 @@
             overflow-x: hidden;
         }
 
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
             top: 0;
@@ -208,7 +209,6 @@
             overflow-x: hidden;
             position: relative;
             z-index: 1;
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Subscription" ? "active" : "")" href="/Subscription/Index"> <i class="bi bi-gem"></i><span>Planlar</span> </a>
         }
 
             .nav-menu::-webkit-scrollbar {
@@ -299,6 +299,7 @@
                 display: block;
             }
 
+        /* MAIN */
         .main-wrapper {
             margin-left: var(--sidebar-w);
             min-height: 100vh;
@@ -428,7 +429,7 @@
         }
 
         .main-content {
-            padding: 28px 40px;
+            padding: 28px 40px 140px 40px;
             flex: 1;
         }
 
@@ -465,113 +466,337 @@
                 background: #f0fdf4;
             }
 
-           /* ── FAB ── */
+        /* FAB */
         .fab-container {
-            position: fixed; bottom: 28px; right: 28px;
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
             z-index: 1000;
-            display: flex; flex-direction: column;
-            align-items: flex-end; gap: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
         }
 
-        /* ARİS butonu */
         .aris-btn {
-            width: 52px; height: 52px; border-radius: 14px;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
             border: none;
             box-shadow: 0 4px 16px rgba(124,58,237,0.4);
             color: white;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
             position: relative;
         }
-        .aris-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.5); }
-        .aris-label {
-            position: absolute; right: 60px; top: 50%;
-            transform: translateY(-50%);
-            background: #4F46E5; color: white;
-            font-size: 12px; font-weight: 600;
-            padding: 4px 10px; border-radius: 8px;
-            white-space: nowrap; pointer-events: none;
-            opacity: 0; transition: opacity 0.2s;
-        }
-        .aris-btn:hover .aris-label { opacity: 1; }
 
-        /* + butonu */
+            .aris-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(124,58,237,0.5);
+            }
+
+        .aris-label {
+            position: absolute;
+            right: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #4F46E5;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .aris-btn:hover .aris-label {
+            opacity: 1;
+        }
+
         .fab-btn {
-            width: 52px; height: 52px; border-radius: 14px;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             background: linear-gradient(135deg, #1AAFA3 0%, #0D7A71 100%);
             border: none;
             box-shadow: 0 4px 16px rgba(26,175,163,0.4);
-            color: white; font-size: 22px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
+            color: white;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .fab-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,175,163,0.5); }
 
-        /* ── ARİS WIDGET ── */
+            .fab-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(26,175,163,0.5);
+            }
+
+        /* ARİS WIDGET */
         .aris-widget {
-            position: fixed; bottom: 28px; right: 96px;
-            width: 360px; height: 520px;
-            background: white; border-radius: 20px;
+            position: fixed;
+            bottom: 28px;
+            right: 96px;
+            width: 360px;
+            height: 520px;
+            background: white;
+            border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column;
+            display: flex;
+            flex-direction: column;
             z-index: 999;
             transform: scale(0.8) translateY(20px);
-            opacity: 0; pointer-events: none;
+            opacity: 0;
+            pointer-events: none;
             transform-origin: bottom right;
             transition: all 0.25s cubic-bezier(.4,0,.2,1);
         }
-        .aris-widget.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+
+            .aris-widget.open {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+                pointer-events: all;
+            }
 
         .aris-header {
             padding: 16px 20px;
             background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
             border-radius: 20px 20px 0 0;
-            display: flex; align-items: center; gap: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             flex-shrink: 0;
         }
+
         .aris-avatar-wrap {
-            width: 40px; height: 40px; border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             background: rgba(255,255,255,0.15);
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border: 1px solid rgba(255,255,255,0.25);
-            flex-shrink: 0; overflow: hidden;
+            flex-shrink: 0;
+            overflow: hidden;
         }
-        .aris-header-info { flex: 1; }
-        .aris-header-name { font-size: 15px; font-weight: 700; color: white; }
-        .aris-header-status { font-size: 11px; color: rgba(255,255,255,0.7); }
-        .aris-close { background: rgba(255,255,255,0.15); border: none; color: white; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.2s; }
-        .aris-close:hover { background: rgba(255,255,255,0.25); }
 
-        .aris-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .aris-messages::-webkit-scrollbar { width: 3px; }
-        .aris-messages::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+        .aris-header-info {
+            flex: 1;
+        }
 
-        .msg { display: flex; gap: 8px; align-items: flex-end; }
-        .msg.user { flex-direction: row-reverse; }
-        .msg-bubble { max-width: 78%; padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5; }
-        .msg.aris .msg-bubble { background: #f3f4f6; color: #1f2937; border-radius: 4px 16px 16px 16px; }
-        .msg.user .msg-bubble { background: linear-gradient(135deg,#7C3AED,#4F46E5); color: white; border-radius: 16px 4px 16px 16px; }
-        .msg-icon { width: 28px; height: 28px; border-radius: 8px; background: #7C3AED; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+        .aris-header-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+        }
 
-        .aris-typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; background: #f3f4f6; border-radius: 4px 16px 16px 16px; width: fit-content; }
-        .aris-typing span { width: 6px; height: 6px; background: #9ca3af; border-radius: 50%; animation: bounce 1.2s infinite; }
-        .aris-typing span:nth-child(2) { animation-delay: 0.2s; }
-        .aris-typing span:nth-child(3) { animation-delay: 0.4s; }
-        @@keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+        .aris-header-status {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+        }
 
-        .aris-quick { padding: 0 16px 10px; display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
-        .aris-chip { padding: 5px 10px; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-size: 11px; color: #374151; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-        .aris-chip:hover { border-color: #7C3AED; color: #7C3AED; background: #f5f3ff; }
+        .aris-close {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
 
-        .aris-input-area { padding: 12px 16px; border-top: 1px solid #f3f4f6; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-        .aris-input { flex: 1; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 9px 12px; font-size: 13px; outline: none; transition: border-color 0.2s; font-family: inherit; }
-        .aris-input:focus { border-color: #7C3AED; }
-        .aris-send { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg,#7C3AED,#4F46E5); border: none; color: white; font-size: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
-        .aris-send:hover { transform: scale(1.05); }
-        .aris-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
-        /* ── RESPONSIVE ── */
+            .aris-close:hover {
+                background: rgba(255,255,255,0.25);
+            }
+
+        .aris-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+            .aris-messages::-webkit-scrollbar {
+                width: 3px;
+            }
+
+            .aris-messages::-webkit-scrollbar-thumb {
+                background: #e5e7eb;
+                border-radius: 2px;
+            }
+
+        .msg {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+            .msg.user {
+                flex-direction: row-reverse;
+            }
+
+        .msg-bubble {
+            max-width: 78%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .msg.aris .msg-bubble {
+            background: #f3f4f6;
+            color: #1f2937;
+            border-radius: 4px 16px 16px 16px;
+        }
+
+        .msg.user .msg-bubble {
+            background: linear-gradient(135deg,#7C3AED,#4F46E5);
+            color: white;
+            border-radius: 16px 4px 16px 16px;
+        }
+
+        .msg-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #7C3AED;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .aris-typing {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 10px 14px;
+            background: #f3f4f6;
+            border-radius: 4px 16px 16px 16px;
+            width: fit-content;
+        }
+
+            .aris-typing span {
+                width: 6px;
+                height: 6px;
+                background: #9ca3af;
+                border-radius: 50%;
+                animation: bounce 1.2s infinite;
+            }
+
+                .aris-typing span:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+
+                .aris-typing span:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+
+        @@keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .aris-quick {
+            padding: 0 16px 10px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .aris-chip {
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1.5px solid #e5e7eb;
+            background: white;
+            font-size: 11px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+            .aris-chip:hover {
+                border-color: #7C3AED;
+                color: #7C3AED;
+                background: #f5f3ff;
+            }
+
+        .aris-input-area {
+            padding: 12px 16px;
+            border-top: 1px solid #f3f4f6;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .aris-input {
+            flex: 1;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+            .aris-input:focus {
+                border-color: #7C3AED;
+            }
+
+        .aris-send {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg,#7C3AED,#4F46E5);
+            border: none;
+            color: white;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+            .aris-send:hover {
+                transform: scale(1.05);
+            }
+
+            .aris-send:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        /* RESPONSIVE */
         @@media (max-width: 768px) {
             .sidebar {
                 transform: translateX(calc(-1 * var(--sidebar-w)));
@@ -628,6 +853,7 @@
         @{
             var username = Context.Session.GetString("Username") ?? "U";
             var profilePhoto = Context.Session.GetString("ProfilePhoto");
+            var userRole = Context.Session.GetString("Role") ?? "User";
         }
 
         <a href="/Account/Index" class="sidebar-user">
@@ -651,27 +877,46 @@
         <div class="nav-section-label">Menü</div>
 
         <div class="nav-menu">
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")" href="/Dashboard/Index">
-                <i class="bi bi-house-door-fill"></i><span>Ana Sayfa</span>
-            </a>
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transaction" ? "active" : "")" href="/Transaction/Index">
-                <i class="bi bi-arrow-left-right"></i><span>İşlemler</span>
-            </a>
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Budget" ? "active" : "")" href="/Budget/Index">
-                <i class="bi bi-wallet2"></i><span>Bütçe</span>
-            </a>
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Saving" ? "active" : "")" href="/Saving/Index">
-                <i class="bi bi-piggy-bank"></i><span>Birikimlerim</span>
-            </a>
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Analysis" ? "active" : "")" href="/Analysis/Index">
-                <i class="bi bi-bar-chart-line-fill"></i><span>Analiz</span>
-            </a>
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")" href="/Category/Index">
-                <i class="bi bi-grid-fill"></i><span>Kategoriler</span>
-            </a>
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notification" ? "active" : "")" href="/Notification/Index">
-                <i class="bi bi-bell-fill"></i><span>Bildirimler</span>
-            </a>
+            @if (userRole == "Admin")
+            {
+                <!-- Admin menüsü -->
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
+                   href="/Admin/Index">
+                    <i class="bi bi-speedometer2"></i><span>Admin Paneli</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["action"]?.ToString() == "Activity" ? "active" : "")"
+                   href="/Admin/Activity">
+                    <i class="bi bi-bar-chart-line"></i><span>Aylık Aktivite</span>
+                </a>
+            }
+            else
+            {
+                <!-- Normal kullanıcı menüsü -->
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")" href="/Dashboard/Index">
+                    <i class="bi bi-house-door-fill"></i><span>Ana Sayfa</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transaction" ? "active" : "")" href="/Transaction/Index">
+                    <i class="bi bi-arrow-left-right"></i><span>İşlemler</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Budget" ? "active" : "")" href="/Budget/Index">
+                    <i class="bi bi-wallet2"></i><span>Bütçe</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Saving" ? "active" : "")" href="/Saving/Index">
+                    <i class="bi bi-piggy-bank"></i><span>Birikimlerim</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Analysis" ? "active" : "")" href="/Analysis/Index">
+                    <i class="bi bi-bar-chart-line-fill"></i><span>Analiz</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")" href="/Category/Index">
+                    <i class="bi bi-grid-fill"></i><span>Kategoriler</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notification" ? "active" : "")" href="/Notification/Index">
+                    <i class="bi bi-bell-fill"></i><span>Bildirimler</span>
+                </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Subscription" ? "active" : "")" href="/Subscription/Index">
+                    <i class="bi bi-gem"></i><span>Planlar</span>
+                </a>
+            }
         </div>
 
         <div class="sidebar-footer">
@@ -734,149 +979,144 @@
         </div>
     </div>
 
-    <!-- FAB CONTAINER -->
-    <div class="fab-container">
-        <!-- ARİS butonu -->
-        <button class="aris-btn" id="arisToggle" title="ARİS ile konuş">
-            <svg width="26" height="26" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 3 L33 9 L33 22 Q33 32 19 37 Q5 32 5 22 L5 9 Z"
-                      fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round" />
-                <polyline points="10,25 14,19 18,22 22,16 26,18 31,11"
-                          fill="none" stroke="white" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round" />
-                <circle cx="22" cy="16" r="2" fill="white" />
-                <circle cx="31" cy="11" r="2.5" fill="white" />
-            </svg>
-            <span class="aris-label">ARİS</span>
-        </button>
-
-        <!-- + butonu -->
-        <button class="fab-btn" data-bs-toggle="modal" data-bs-target="#addModal">
-            <i class="bi bi-plus"></i>
-        </button>
-    </div>
-
-    <!-- ARİS WIDGET -->
-    <div class="aris-widget" id="arisWidget">
-        <div class="aris-header">
-            <div class="aris-avatar" style="background:none;border:none;padding:0;">
-                <svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Arka plan -->
-                    <rect width="38" height="38" rx="10" fill="url(#arisGrad)" />
-                    <defs>
-                        <linearGradient id="arisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#7C3AED" />
-                            <stop offset="100%" style="stop-color:#4F46E5" />
-                        </linearGradient>
-                    </defs>
-                    <!-- Kalkan -->
-                    <path d="M19 6 L29 10 L29 20 Q29 27 19 32 Q9 27 9 20 L9 10 Z"
-                          fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5"
-                          stroke-linejoin="round" />
-                    <!-- Kalkan içi dolgu -->
-                    <path d="M19 8 L27 11.5 L27 20 Q27 25.5 19 30 Q11 25.5 11 20 L11 11.5 Z"
+    <!-- FAB -->
+    @if (userRole != "Admin")
+    {
+        <div class="fab-container">
+            <button class="aris-btn" id="arisToggle" title="ARİS ile konuş">
+                <svg width="26" height="26" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 3 L33 9 L33 22 Q33 32 19 37 Q5 32 5 22 L5 9 Z"
+                          fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round" />
+                    <path d="M19 6 L30 11 L30 22 Q30 29 19 34 Q8 29 8 22 L8 11 Z"
                           fill="rgba(255,255,255,0.1)" />
-                    <!-- Grafik çizgisi (analiz) -->
-                    <polyline points="12,22 15,18 18,20 21,15 24,17 27,12"
-                              fill="none" stroke="rgba(255,255,255,0.85)"
-                              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <!-- Grafik noktaları -->
-                    <circle cx="15" cy="18" r="1.2" fill="white" />
-                    <circle cx="21" cy="15" r="1.2" fill="white" />
-                    <circle cx="27" cy="12" r="1.5" fill="white" />
+                    <polyline points="10,25 14,19 18,22 22,16 26,18 31,11"
+                              fill="none" stroke="white" stroke-width="2"
+                              stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="22" cy="16" r="2" fill="white" />
+                    <circle cx="31" cy="11" r="2.5" fill="white" />
                 </svg>
-            </div>
-            <div class="aris-header-info">
-                <div class="aris-header-name">ARİS</div>
-                <div class="aris-header-status">Finansal Asistanın</div>
-            </div>
-            <button class="aris-close" id="arisClose">
-                <i class="bi bi-x"></i>
+                <span class="aris-label">ARİS</span>
+            </button>
+            <button class="fab-btn" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="bi bi-plus"></i>
             </button>
         </div>
 
-        <div class="aris-messages" id="arisMessages">
-            <div class="msg aris">
-                <div class="msg-icon">✨</div>
-                <div class="msg-bubble">
-                    Merhaba @username! Ben ARİS, finansal asistanın. Harcamalarını, bütçeni ve birikimlerini analiz edip sana özel tavsiyeler verebilirim. Ne öğrenmek istersin?
+        <!-- ARİS WIDGET -->
+        <div class="aris-widget" id="arisWidget">
+            <div class="aris-header">
+                <div class="aris-avatar-wrap">
+                    <svg width="32" height="32" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 2 L34 8 L34 21 Q34 31 19 37 Q4 31 4 21 L4 8 Z"
+                              fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linejoin="round" />
+                        <path d="M19 5 L31 10 L31 21 Q31 28 19 34 Q7 28 7 21 L7 10 Z"
+                              fill="rgba(255,255,255,0.12)" />
+                        <polyline points="10,24 14,18 18,21 22,15 26,17 31,10"
+                                  fill="none" stroke="rgba(255,255,255,0.95)"
+                                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="14" cy="18" r="1.5" fill="white" />
+                        <circle cx="22" cy="15" r="1.5" fill="white" />
+                        <circle cx="31" cy="10" r="2" fill="white" />
+                    </svg>
                 </div>
+                <div class="aris-header-info">
+                    <div class="aris-header-name">ARİS</div>
+                    <div class="aris-header-status">Finansal Asistanın</div>
+                </div>
+                <button class="aris-close" id="arisClose">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="aris-messages" id="arisMessages">
+                <div class="msg aris">
+                    <div class="msg-icon">
+                        <svg width="18" height="18" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 2 L34 8 L34 21 Q34 31 19 37 Q4 31 4 21 L4 8 Z"
+                                  fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round" />
+                            <polyline points="10,24 14,18 18,21 22,15 26,17 31,10"
+                                      fill="none" stroke="white" stroke-width="2"
+                                      stroke-linecap="round" stroke-linejoin="round" />
+                            <circle cx="31" cy="10" r="2.5" fill="white" />
+                        </svg>
+                    </div>
+                    <div class="msg-bubble">
+                        Merhaba @username! Ben ARİS, finansal asistanın. Harcamalarını, bütçeni ve birikimlerini analiz edip sana özel tavsiyeler verebilirim. Ne öğrenmek istersin?
+                    </div>
+                </div>
+            </div>
+            <div class="aris-quick" id="arisQuick">
+                <button class="aris-chip" onclick="arisQuickSend('Bu ay nasıl gidiyorum?')">Bu ay nasıl?</button>
+                <button class="aris-chip" onclick="arisQuickSend('Nerede tasarruf edebilirim?')">Tasarruf öner</button>
+                <button class="aris-chip" onclick="arisQuickSend('Bütçem nasıl?')">Bütçem</button>
+                <button class="aris-chip" onclick="arisQuickSend('Birikimlerim yetişir mi?')">Birikimlerim</button>
+            </div>
+            <div class="aris-input-area">
+                <input type="text" class="aris-input" id="arisInput"
+                       placeholder="ARİS'e sor..." maxlength="300" />
+                <button class="aris-send" id="arisSend">
+                    <i class="bi bi-send-fill"></i>
+                </button>
             </div>
         </div>
 
-        <div class="aris-quick" id="arisQuick">
-            <button class="aris-chip" onclick="arisQuickSend('Bu ay nasıl gidiyorum?')">Bu ay nasıl?</button>
-            <button class="aris-chip" onclick="arisQuickSend('Nerede tasarruf edebilirim?')">Tasarruf öner</button>
-            <button class="aris-chip" onclick="arisQuickSend('Bütçem nasıl?')">Bütçem</button>
-            <button class="aris-chip" onclick="arisQuickSend('Birikimlerim yetişir mi?')">Birikimlerim</button>
-        </div>
-
-        <div class="aris-input-area">
-            <input type="text" class="aris-input" id="arisInput"
-                   placeholder="ARİS'e sor..." maxlength="300" />
-            <button class="aris-send" id="arisSend">
-                <i class="bi bi-send-fill"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- ADD MODAL Bütçe -->
-    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="border:none;padding:24px 24px 0;">
-                    <h5 class="modal-title fw-bold" style="font-size:18px;">Yeni Ekle</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" style="padding:20px 24px 28px;">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <a href="/Transaction/Create" class="text-decoration-none">
-                                <div style="border:2px solid #e5e7eb;border-radius:16px;padding:24px 16px;text-align:center;transition:all 0.2s;"
-                                     onmouseover="this.style.borderColor='#1AAFA3';this.style.background='#f0fdf4'"
-                                     onmouseout="this.style.borderColor='#e5e7eb';this.style.background='white'">
-                                    <i class="bi bi-arrow-left-right" style="font-size:36px;color:#1AAFA3;display:block;margin-bottom:10px;"></i>
-                                    <div style="font-weight:600;font-size:14px;color:#111827;">İşlem</div>
-                                    <div style="font-size:12px;color:#6b7280;margin-top:2px;">Gelir / Gider</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a href="/Saving/Create" class="text-decoration-none">
-                                <div style="border:2px solid #e5e7eb;border-radius:16px;padding:24px 16px;text-align:center;transition:all 0.2s;"
-                                     onmouseover="this.style.borderColor='#1AAFA3';this.style.background='#f0fdf4'"
-                                     onmouseout="this.style.borderColor='#e5e7eb';this.style.background='white'">
-                                    <i class="bi bi-piggy-bank" style="font-size:36px;color:#1AAFA3;display:block;margin-bottom:10px;"></i>
-                                    <div style="font-weight:600;font-size:14px;color:#111827;">Birikim</div>
-                                    <div style="font-size:12px;color:#6b7280;margin-top:2px;">Hedef Oluştur</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-12">
-                            <a href="/Budget/Index" class="text-decoration-none">
-                                <div style="border:2px solid #e5e7eb;border-radius:16px;padding:20px 16px;text-align:center;transition:all 0.2s;"
-                                     onmouseover="this.style.borderColor='#1AAFA3';this.style.background='#f0fdf4'"
-                                     onmouseout="this.style.borderColor='#e5e7eb';this.style.background='white'">
-                                    <i class="bi bi-wallet2" style="font-size:36px;color:#1AAFA3;display:block;margin-bottom:10px;"></i>
-                                    <div style="font-weight:600;font-size:14px;color:#111827;">Bütçe Limiti</div>
-                                    <div style="font-size:12px;color:#6b7280;margin-top:2px;">Kategori Bazlı Limit Belirle</div>
-                                </div>
-                            </a>
+        <!-- ADD MODAL -->
+        <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+                    <div class="modal-header" style="border:none;padding:24px 24px 0;">
+                        <h5 class="modal-title fw-bold" style="font-size:18px;">Yeni Ekle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="padding:20px 24px 28px;">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <a href="/Transaction/Create" class="text-decoration-none">
+                                    <div style="border:2px solid #e5e7eb;border-radius:16px;padding:24px 16px;text-align:center;transition:all 0.2s;"
+                                         onmouseover="this.style.borderColor='#1AAFA3';this.style.background='#f0fdf4'"
+                                         onmouseout="this.style.borderColor='#e5e7eb';this.style.background='white'">
+                                        <i class="bi bi-arrow-left-right" style="font-size:36px;color:#1AAFA3;display:block;margin-bottom:10px;"></i>
+                                        <div style="font-weight:600;font-size:14px;color:#111827;">İşlem</div>
+                                        <div style="font-size:12px;color:#6b7280;margin-top:2px;">Gelir / Gider</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/Saving/Create" class="text-decoration-none">
+                                    <div style="border:2px solid #e5e7eb;border-radius:16px;padding:24px 16px;text-align:center;transition:all 0.2s;"
+                                         onmouseover="this.style.borderColor='#1AAFA3';this.style.background='#f0fdf4'"
+                                         onmouseout="this.style.borderColor='#e5e7eb';this.style.background='white'">
+                                        <i class="bi bi-piggy-bank" style="font-size:36px;color:#1AAFA3;display:block;margin-bottom:10px;"></i>
+                                        <div style="font-weight:600;font-size:14px;color:#111827;">Birikim</div>
+                                        <div style="font-size:12px;color:#6b7280;margin-top:2px;">Hedef Oluştur</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-12">
+                                <a href="/Budget/Index" class="text-decoration-none" data-bs-dismiss="modal">
+                                    <div style="border:2px solid #e5e7eb;border-radius:16px;padding:20px 16px;text-align:center;transition:all 0.2s;"
+                                         onmouseover="this.style.borderColor='#1AAFA3';this.style.background='#f0fdf4'"
+                                         onmouseout="this.style.borderColor='#e5e7eb';this.style.background='white'">
+                                        <i class="bi bi-wallet2" style="font-size:36px;color:#1AAFA3;display:block;margin-bottom:10px;"></i>
+                                        <div style="font-weight:600;font-size:14px;color:#111827;">Bütçe Limiti</div>
+                                        <div style="font-size:12px;color:#6b7280;margin-top:2px;">Kategori Bazlı Limit Belirle</div>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Sidebar
-        const sidebar = document.getElementById('sidebar');
-        const mainWrapper = document.getElementById('mainWrapper');
+        const sidebar      = document.getElementById('sidebar');
+        const mainWrapper  = document.getElementById('mainWrapper');
         const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const overlay = document.getElementById('sidebarOverlay');
-        const isMobile = () => window.innerWidth <= 768;
+        const overlay      = document.getElementById('sidebarOverlay');
+        const isMobile     = () => window.innerWidth <= 768;
         let sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
         function applySidebarState() {
@@ -914,15 +1154,15 @@
         if (isMobile()) sidebarCollapsed = true;
         applySidebarState();
 
-        // Bildirimler
+        //  Bildirimler 
         let notificationsCache = [];
         async function loadNotifications() {
             try {
-                const countRes = await fetch('/Notification/GetUnreadCount');
+                const countRes  = await fetch('/Notification/GetUnreadCount');
                 const countData = await countRes.json();
-                const badge = document.getElementById('notificationBadge');
+                const badge     = document.getElementById('notificationBadge');
                 if (countData.count > 0) {
-                    badge.textContent = countData.count;
+                    badge.textContent   = countData.count;
                     badge.style.display = 'flex';
                 } else {
                     badge.style.display = 'none';
@@ -956,31 +1196,46 @@
             setInterval(loadNotifications, 30000);
         });
 
-        // ARIS
-        const arisWidget  = document.getElementById('arisWidget');
-        const arisToggle  = document.getElementById('arisToggle');
-        const arisClose   = document.getElementById('arisClose');
-        const arisInput   = document.getElementById('arisInput');
-        const arisSend    = document.getElementById('arisSend');
+        //  ARİS 
+        const arisWidget   = document.getElementById('arisWidget');
+        const arisToggle   = document.getElementById('arisToggle');
+        const arisClose    = document.getElementById('arisClose');
+        const arisInput    = document.getElementById('arisInput');
+        const arisSend     = document.getElementById('arisSend');
         const arisMessages = document.getElementById('arisMessages');
-        const arisQuick   = document.getElementById('arisQuick');
+        const arisQuick    = document.getElementById('arisQuick');
         let arisOpen = false;
 
-        arisToggle.addEventListener('click', () => {
-            arisOpen = !arisOpen;
-            arisWidget.classList.toggle('open', arisOpen);
-            if (arisOpen) setTimeout(() => arisInput.focus(), 300);
-        });
-        arisClose.addEventListener('click', () => {
-            arisOpen = false;
-            arisWidget.classList.remove('open');
-        });
+        if (arisToggle) {
+            arisToggle.addEventListener('click', () => {
+                arisOpen = !arisOpen;
+                arisWidget.classList.toggle('open', arisOpen);
+                if (arisOpen) setTimeout(() => arisInput.focus(), 300);
+            });
+        }
+        if (arisClose) {
+            arisClose.addEventListener('click', () => {
+                arisOpen = false;
+                arisWidget.classList.remove('open');
+            });
+        }
+
+        const arisIconHTML = `
+            <svg width="18" height="18" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 2 L34 8 L34 21 Q34 31 19 37 Q4 31 4 21 L4 8 Z"
+                      fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+                <polyline points="10,24 14,18 18,21 22,15 26,17 31,10"
+                          fill="none" stroke="white" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="31" cy="10" r="2.5" fill="white"/>
+            </svg>`;
 
         function appendMessage(text, sender) {
             const msg = document.createElement('div');
             msg.className = `msg ${sender}`;
             if (sender === 'aris') {
-                msg.innerHTML = `<div class="msg-icon">✨</div><div class="msg-bubble">${text}</div>`;
+                msg.innerHTML = `<div class="msg-icon">${arisIconHTML}</div>
+                    <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>`;
             } else {
                 msg.innerHTML = `<div class="msg-bubble">${text}</div>`;
             }
@@ -989,29 +1244,22 @@
         }
 
         function showTyping() {
-            const typing = document.createElement('div');
-            typing.className = 'msg aris';
-            typing.id = 'arisTyping';
-            typing.innerHTML = `<div class="msg-icon">✨</div>
-                <div class="aris-typing">
-                    <span></span><span></span><span></span>
-                </div>`;
-            arisMessages.appendChild(typing);
+            const t = document.createElement('div');
+            t.className = 'msg aris'; t.id = 'arisTyping';
+            t.innerHTML = `<div class="msg-icon">${arisIconHTML}</div>
+                <div class="aris-typing"><span></span><span></span><span></span></div>`;
+            arisMessages.appendChild(t);
             arisMessages.scrollTop = arisMessages.scrollHeight;
         }
-
-        function removeTyping() {
-            document.getElementById('arisTyping')?.remove();
-        }
+        function removeTyping() { document.getElementById('arisTyping')?.remove(); }
 
         async function sendToAris(message) {
-            if (!message.trim()) return;
-            arisQuick.style.display = 'none';
+            if (!message.trim() || arisSend?.disabled) return;
+            if (arisQuick) arisQuick.style.display = 'none';
             appendMessage(message, 'user');
-            arisInput.value = '';
+            if (arisInput) arisInput.value = '';
             showTyping();
-            arisSend.disabled = true;
-
+            if (arisSend) arisSend.disabled = true;
             try {
                 const res = await fetch('/Aris/Chat', {
                     method: 'POST',
@@ -1025,22 +1273,16 @@
                 removeTyping();
                 appendMessage('Bağlantı hatası, biraz sonra tekrar dene.', 'aris');
             } finally {
-                arisSend.disabled = false;
-                arisInput.focus();
+                if (arisSend) arisSend.disabled = false;
+                if (arisInput) arisInput.focus();
             }
         }
 
-        arisSend.addEventListener('click', () => sendToAris(arisInput.value));
-        arisInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendToAris(arisInput.value);
-            }
+        arisSend?.addEventListener('click', () => sendToAris(arisInput.value));
+        arisInput?.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendToAris(arisInput.value); }
         });
-
-        function arisQuickSend(msg) {
-            sendToAris(msg);
-        }
+        function arisQuickSend(msg) { sendToAris(msg); }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

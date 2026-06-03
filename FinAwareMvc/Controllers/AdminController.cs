@@ -41,19 +41,28 @@ namespace FinAwareMvc.Controllers
             ViewBag.Stats = await _apiService.GetAdminStatsAsync();
             ViewBag.Users = await _apiService.GetAdminUsersAsync();
 
-            // Subscription istatistikleri
+            // ── client bir kez oluştur, her iki çağrıda kullan ──
+            var client = CreateApiClient();
+
             try
             {
-                var client = CreateApiClient();
-                var res = await client.GetAsync("/api/admin/subscription-stats");
-                if (res.IsSuccessStatusCode)
+                var subRes = await client.GetAsync("/api/admin/subscription-stats");
+                if (subRes.IsSuccessStatusCode)
                 {
-                    var json = await res.Content.ReadAsStringAsync();
-                    var subEl = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
+                    var json = await subRes.Content.ReadAsStringAsync();
+                    var subEl = JsonSerializer.Deserialize<JsonElement>(json);
                     ViewBag.SubFree = subEl.TryGetProperty("free", out var f) ? f.GetInt32() : 0;
                     ViewBag.SubGold = subEl.TryGetProperty("gold", out var g) ? g.GetInt32() : 0;
                     ViewBag.SubPlatinum = subEl.TryGetProperty("platinum", out var p) ? p.GetInt32() : 0;
                 }
+            }
+            catch { }
+
+            try
+            {
+                var actRes = await client.GetAsync("/api/admin/monthly-activity");
+                if (actRes.IsSuccessStatusCode)
+                    ViewBag.MonthlyActivity = await actRes.Content.ReadAsStringAsync();
             }
             catch { }
 

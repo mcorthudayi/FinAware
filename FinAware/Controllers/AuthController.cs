@@ -118,9 +118,9 @@ namespace FinAware.API.Controllers
                 var token = GenerateJwtToken(user);
 
                 Console.WriteLine($"✅ Login successful: {user.Username}");
-             
 
-                return Ok(new { token, username = user.Username, email = user.Email });
+
+                return Ok(new { token, username = user.Username, email = user.Email, role = user.Role });
             }
             catch (Exception ex)
             {

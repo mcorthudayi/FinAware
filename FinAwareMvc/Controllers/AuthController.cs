@@ -26,11 +26,21 @@ namespace FinAware.MVC.Controllers
             return client;
         }
 
+        private IActionResult RedirectByRole(string role)
+        {
+            if (role == "Admin")
+                return RedirectToAction("Index", "Admin");
+            return RedirectToAction("Index", "Dashboard");
+        }
+
         [HttpGet]
         public async Task<IActionResult> Login()
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AuthToken")))
-                return RedirectToAction("Index", "Dashboard");
+            {
+                var role = HttpContext.Session.GetString("Role") ?? "User";
+                return RedirectByRole(role);
+            }
 
             var rememberToken = Request.Cookies["FinAware_RememberToken"];
             if (!string.IsNullOrEmpty(rememberToken))
@@ -40,7 +50,8 @@ namespace FinAware.MVC.Controllers
                 try
                 {
                     var client = CreateClient();
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", rememberToken);
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", rememberToken);
 
                     var profileResponse = await client.GetAsync("/api/user/profile");
                     if (profileResponse.IsSuccessStatusCode)
@@ -55,6 +66,8 @@ namespace FinAware.MVC.Controllers
                                 HttpContext.Session.SetString("Username", profile["username"].GetString() ?? "");
                             if (profile.ContainsKey("email"))
                                 HttpContext.Session.SetString("Email", profile["email"].GetString() ?? "");
+                            if (profile.ContainsKey("role"))
+                                HttpContext.Session.SetString("Role", profile["role"].GetString() ?? "User");
                             if (profile.ContainsKey("profilePhoto") &&
                                 profile["profilePhoto"].ValueKind != JsonValueKind.Null)
                             {
@@ -66,6 +79,9 @@ namespace FinAware.MVC.Controllers
                                 }
                             }
                         }
+
+                        var role = HttpContext.Session.GetString("Role") ?? "User";
+                        return RedirectByRole(role);
                     }
                     else
                     {
@@ -81,8 +97,6 @@ namespace FinAware.MVC.Controllers
                     HttpContext.Session.Clear();
                     return View();
                 }
-
-                return RedirectToAction("Index", "Dashboard");
             }
 
             return View();
@@ -101,6 +115,7 @@ namespace FinAware.MVC.Controllers
                     HttpContext.Session.SetString("AuthToken", loginResponse.Token);
                     HttpContext.Session.SetString("Username", loginResponse.Username);
                     HttpContext.Session.SetString("Email", loginResponse.Email);
+                    HttpContext.Session.SetString("Role", loginResponse.Role ?? "User");
 
                     if (rememberMe)
                     {
@@ -113,10 +128,12 @@ namespace FinAware.MVC.Controllers
                         });
                     }
 
+                    // Profil fotoğrafını çek
                     try
                     {
                         var client = CreateClient();
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
+                        client.DefaultRequestHeaders.Authorization =
+                            new AuthenticationHeaderValue("Bearer", loginResponse.Token);
 
                         var profileResponse = await client.GetAsync("/api/user/profile");
                         if (profileResponse.IsSuccessStatusCode)
@@ -142,7 +159,7 @@ namespace FinAware.MVC.Controllers
                         Console.WriteLine($"⚠️ Profile photo fetch failed: {ex.Message}");
                     }
 
-                    return RedirectToAction("Index", "Dashboard");
+                    return RedirectByRole(loginResponse.Role ?? "User");
                 }
 
                 ViewBag.ErrorMessage = "E-posta veya şifre hatalı!";
@@ -188,7 +205,7 @@ namespace FinAware.MVC.Controllers
         public IActionResult Register()
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AuthToken")))
-                return RedirectToAction("Index", "Dashboard");
+                return RedirectByRole(HttpContext.Session.GetString("Role") ?? "User");
             return View();
         }
 
@@ -208,11 +225,7 @@ namespace FinAware.MVC.Controllers
 
                 if (result)
                 {
-                    //SMTP kapalı olduğu için yorum satırı yapıldı, doğrulama maili gönderilemiyor.Açıldığında aktif hale getirilebilir.
-                    //ViewBag.SuccessMessage = $"Kayıt başarılı! {email} adresine doğrulama maili gönderildi.";
                     ViewBag.SuccessMessage = "Kayıt başarılı! Giriş yapabilirsiniz.";
-                    ViewBag.ShowResendButton = true;
-                    ViewBag.UnverifiedEmail = email;
                     return View("Login");
                 }
 

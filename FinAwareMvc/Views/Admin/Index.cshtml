@@ -634,16 +634,16 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        //  Tab sistemi
+        // Tab sistemi 
         function switchTab(name, btn) {
             document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
             btn.classList.add('active');
-            if (name === 'activity') initCharts();
+            if (name === 'activity') loadActivityData();
         }
 
-        //  Kullanıcı arama (ID + name + email)
+        // Kullanıcı arama 
         function filterUsers() {
             const q = document.getElementById('userSearch').value.toLowerCase().trim();
             document.querySelectorAll('.user-row').forEach(row => {
@@ -654,7 +654,7 @@
             });
         }
 
-        //  Plan modal
+        // Plan modal 
         function openPlanModal(userId, username, currentPlan) {
             document.getElementById('planUserId').value = userId;
             document.getElementById('planModalUsername').textContent = username;
@@ -672,29 +672,44 @@
             document.getElementById('monthsGroup').style.display = plan === 'Free' ? 'none' : 'block';
         }
 
-        //  Grafik verisi
-        const activityData = @Html.Raw(monthlyActivityJson);
+        //  Aktivite verisi API'den fetch 
         let chartsInitialized = false;
 
-        function initCharts() {
+        async function loadActivityData() {
             if (chartsInitialized) return;
-            chartsInitialized = true;
 
+            document.getElementById('actSummaryRow').innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <div class="spinner-border text-success" role="status"></div>
+                    <div class="mt-2 text-muted" style="font-size:13px;">Veriler yükleniyor...</div>
+                </div>`;
+
+            try {
+                const res  = await fetch('/Admin/GetMonthlyActivityData');
+                const data = await res.json();
+                chartsInitialized = true;
+                renderCharts(data);
+            } catch(e) {
+                document.getElementById('actSummaryRow').innerHTML =
+                    `<div class="col-12"><div class="alert alert-danger">Veri yüklenemedi: ${e.message}</div></div>`;
+            }
+        }
+
+        function renderCharts(activityData) {
             if (!activityData || activityData.length === 0) return;
 
-            const labels    = activityData.map(d => d.shortMonth);
-            const newUsers  = activityData.map(d => d.newUsers);
-            const txCounts  = activityData.map(d => d.transactions);
-            const maxUsers  = Math.max(...newUsers, 1);
-            const maxTx     = Math.max(...txCounts, 1);
+            const labels   = activityData.map(d => d.shortMonth);
+            const newUsers = activityData.map(d => d.newUsers);
+            const txCounts = activityData.map(d => d.transactions);
+            const maxUsers = Math.max(...newUsers, 1);
 
-            // Özet kartlar
+            // Özet kartlar 
             const thisMonth = activityData[activityData.length - 1];
-            const lastMonth = activityData[activityData.length - 2] || { newUsers:0, transactions:0 };
-            const userDiff  = thisMonth.newUsers  - lastMonth.newUsers;
-            const txDiff    = thisMonth.transactions - lastMonth.transactions;
-            const totalNewUsers = newUsers.reduce((a,b)=>a+b,0);
-            const totalTx       = txCounts.reduce((a,b)=>a+b,0);
+            const lastMonth = activityData[activityData.length - 2] || { newUsers: 0, transactions: 0 };
+            const userDiff  = thisMonth.newUsers      - lastMonth.newUsers;
+            const txDiff    = thisMonth.transactions  - lastMonth.transactions;
+            const totalNew  = newUsers.reduce((a, b) => a + b, 0);
+            const totalTx   = txCounts.reduce((a, b) => a + b, 0);
 
             document.getElementById('actSummaryRow').innerHTML = `
                 <div class="col-md-3">
@@ -702,8 +717,8 @@
                         <div class="stat-icon" style="background:#f0fdf9;">📅</div>
                         <div class="stat-value">${thisMonth.newUsers}</div>
                         <div class="stat-label">Bu Ay Yeni Kayıt
-                            <span style="color:${userDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">
-                                ${userDiff>=0?'+':''}${userDiff}
+                            <span style="color:${userDiff >= 0 ? '#16a34a' : '#dc2626'};font-size:11px;margin-left:4px;">
+                                ${userDiff >= 0 ? '+' : ''}${userDiff}
                             </span>
                         </div>
                     </div>
@@ -713,8 +728,8 @@
                         <div class="stat-icon" style="background:#e0f2fe;">📊</div>
                         <div class="stat-value">${thisMonth.transactions}</div>
                         <div class="stat-label">Bu Ay İşlem
-                            <span style="color:${txDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">
-                                ${txDiff>=0?'+':''}${txDiff}
+                            <span style="color:${txDiff >= 0 ? '#16a34a' : '#dc2626'};font-size:11px;margin-left:4px;">
+                                ${txDiff >= 0 ? '+' : ''}${txDiff}
                             </span>
                         </div>
                     </div>
@@ -722,7 +737,7 @@
                 <div class="col-md-3">
                     <div class="stat-card">
                         <div class="stat-icon" style="background:#fef3c7;">📈</div>
-                        <div class="stat-value">${totalNewUsers}</div>
+                        <div class="stat-value">${totalNew}</div>
                         <div class="stat-label">6 Ayda Toplam Kayıt</div>
                     </div>
                 </div>
@@ -734,7 +749,7 @@
                     </div>
                 </div>`;
 
-            //  Bar chart: Yeni Kayıt
+            // Bar chart: Yeni Kayıt 
             new Chart(document.getElementById('newUsersChart'), {
                 type: 'bar',
                 data: {
@@ -746,7 +761,7 @@
                         borderColor: '#1AAFA3',
                         borderWidth: 2,
                         borderRadius: 8,
-                        borderSkipped: false,
+                        borderSkipped: false
                     }]
                 },
                 options: {
@@ -759,7 +774,7 @@
                 }
             });
 
-            // Line chart: İşlem Sayısı
+            //  Line chart: İşlem Sayısı 
             new Chart(document.getElementById('transactionsChart'), {
                 type: 'line',
                 data: {
@@ -772,7 +787,6 @@
                         borderWidth: 2.5,
                         pointBackgroundColor: '#4F46E5',
                         pointRadius: 5,
-                        pointHoverRadius: 7,
                         fill: true,
                         tension: 0.4
                     }]
@@ -787,24 +801,26 @@
                 }
             });
 
-            // Yeni Kayıt Bar Detay
-            const detailHtml = activityData.map(d => `
+            //  Bar detay
+            document.getElementById('newUsersBarDetail').innerHTML = activityData.map(d => `
                 <div class="month-row">
                     <div class="month-label">${d.shortMonth}</div>
                     <div class="month-bar-wrap">
-                        <div class="month-bar" style="width:${(d.newUsers/maxUsers)*100}%;background:linear-gradient(90deg,#1AAFA3,#0D7A71);"></div>
+                        <div class="month-bar" style="width:${(d.newUsers / maxUsers) * 100}%;background:linear-gradient(90deg,#1AAFA3,#0D7A71);"></div>
                     </div>
                     <div class="month-val">${d.newUsers}</div>
                 </div>`).join('');
-            document.getElementById('newUsersBarDetail').innerHTML = detailHtml;
 
-            // Doughnut chart: Plan Dağılımı 
+            //  Doughnut: Plan dağılımı
+            const subFree     = @subFree;
+            const subGold     = @subGold;
+            const subPlatinum = @subPlatinum;
             new Chart(document.getElementById('planChart'), {
                 type: 'doughnut',
                 data: {
                     labels: ['Free', 'Gold', 'Platinum'],
                     datasets: [{
-                        data: [@subFree, @subGold, @subPlatinum],
+                        data: [subFree, subGold, subPlatinum],
                         backgroundColor: ['#f3f4f6', '#fef3c7', '#ede9fe'],
                         borderColor: ['#9ca3af', '#d97706', '#7c3aed'],
                         borderWidth: 2,
@@ -814,12 +830,7 @@
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     cutout: '65%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { size: 12 }, padding: 16 }
-                        }
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 16 } } }
                 }
             });
         }

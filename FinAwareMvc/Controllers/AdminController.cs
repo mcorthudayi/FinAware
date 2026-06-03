@@ -41,7 +41,7 @@ namespace FinAwareMvc.Controllers
             ViewBag.Stats = await _apiService.GetAdminStatsAsync();
             ViewBag.Users = await _apiService.GetAdminUsersAsync();
 
-            // ── client bir kez oluştur, her iki çağrıda kullan ──
+            //  client bir kez oluştur, her iki çağrıda kullan
             var client = CreateApiClient();
 
             try
@@ -91,6 +91,26 @@ namespace FinAwareMvc.Controllers
             await _apiService.AdminDeleteUserAsync(id);
             TempData["Success"] = "Kullanıcı silindi.";
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMonthlyActivityData()
+        {
+            try
+            {
+                var client = CreateApiClient();
+                var response = await client.GetAsync("/api/admin/monthly-activity");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return Content(json, "application/json");
+                }
+                return Json(new List<object>());
+            }
+            catch
+            {
+                return Json(new List<object>());
+            }
         }
 
         [HttpPost]

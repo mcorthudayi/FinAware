@@ -31,11 +31,12 @@ namespace FinAware.MVC.Controllers
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AuthToken")))
                 return RedirectToAction("Login", "Auth");
 
+            var client = CreateAuthClient();
+
+            //  Kullanıcı profili
             try
             {
-                var client = CreateAuthClient();
                 var response = await client.GetAsync("/api/user/profile");
-                var subRes = await client.GetAsync("/api/subscription/my-plan");
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
@@ -44,25 +45,28 @@ namespace FinAware.MVC.Controllers
 
                     if (userProfile != null)
                     {
-                        ViewBag.Username = userProfile.ContainsKey("username") ? userProfile["username"].GetString() : HttpContext.Session.GetString("Username");
-                        ViewBag.Email = userProfile.ContainsKey("email") ? userProfile["email"].GetString() : HttpContext.Session.GetString("Email");
+                        ViewBag.Username = userProfile.ContainsKey("username")
+                            ? userProfile["username"].GetString()
+                            : HttpContext.Session.GetString("Username");
+                        ViewBag.Email = userProfile.ContainsKey("email")
+                            ? userProfile["email"].GetString()
+                            : HttpContext.Session.GetString("Email");
                         ViewBag.EmailNotificationsEnabled = userProfile.ContainsKey("emailNotificationsEnabled")
                             && userProfile["emailNotificationsEnabled"].GetBoolean();
-
-                        
                         ViewBag.TelegramLinked = userProfile.ContainsKey("telegramLinked")
                             && userProfile["telegramLinked"].GetBoolean();
                         ViewBag.TelegramLinkedAt = userProfile.ContainsKey("telegramLinkedAt")
                             && userProfile["telegramLinkedAt"].ValueKind != JsonValueKind.Null
-                            ? userProfile["telegramLinkedAt"].GetString()
-                            : null;
+                            ? userProfile["telegramLinkedAt"].GetString() : null;
 
-                        if (userProfile.ContainsKey("profilePhoto") && userProfile["profilePhoto"].ValueKind != JsonValueKind.Null)
+                        if (userProfile.ContainsKey("profilePhoto")
+                            && userProfile["profilePhoto"].ValueKind != JsonValueKind.Null)
                         {
                             var photoFileName = userProfile["profilePhoto"].GetString();
                             if (!string.IsNullOrEmpty(photoFileName))
                             {
-                                var apiBaseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["ApiBaseUrl"] ?? "https://localhost:7061";
+                                var apiBaseUrl = HttpContext.RequestServices
+                                    .GetRequiredService<IConfiguration>()["ApiBaseUrl"] ?? "https://localhost:7061";
                                 var photoUrl = $"{apiBaseUrl}/api/user/photo/{photoFileName}";
                                 ViewBag.ProfilePhoto = photoUrl;
                                 HttpContext.Session.SetString("ProfilePhoto", photoUrl);
@@ -71,10 +75,36 @@ namespace FinAware.MVC.Controllers
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) { Console.WriteLine($"❌ Get profile error: {ex.Message}"); }
+
+            // Abonelik planı 
+            try
             {
-                Console.WriteLine($"❌ Get profile error: {ex.Message}");
+                var subRes = await client.GetAsync("/api/subscription/my-plan");
+                if (subRes.IsSuccessStatusCode)
+                {
+                    var subJson = await subRes.Content.ReadAsStringAsync();
+                    var subData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(subJson,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    if (subData != null)
+                    {
+                        ViewBag.SubscriptionPlan = subData.ContainsKey("plan") ? subData["plan"].GetString() : "Free";
+                        ViewBag.SubscriptionExpiry = subData.ContainsKey("expiry") ? subData["expiry"].GetString() : null;
+                        ViewBag.OcrUsage = subData.ContainsKey("ocrUsage") ? subData["ocrUsage"].GetInt32() : 0;
+                        ViewBag.ArisUsage = subData.ContainsKey("arisUsage") ? subData["arisUsage"].GetInt32() : 0;
+                        ViewBag.OcrLimit = subData.ContainsKey("ocrLimit") ? subData["ocrLimit"].GetInt32() : 0;
+                        ViewBag.ArisLimit = subData.ContainsKey("arisLimit") ? subData["arisLimit"].GetInt32() : 0;
+
+                        Console.WriteLine($"✅ Subscription loaded: {ViewBag.SubscriptionPlan}");
+                    }
+                }
             }
+            catch (Exception ex) { Console.WriteLine($"⚠️ SubPlan error: {ex.Message}"); }
+
+            // Default değer — sub plan hiç yüklenmediyse
+            if (ViewBag.SubscriptionPlan == null)
+                ViewBag.SubscriptionPlan = "Free";
 
             return View();
         }
@@ -101,7 +131,6 @@ namespace FinAware.MVC.Controllers
                 formData.Add(fileContent, "file", photo.FileName);
 
                 var response = await client.PostAsync("/api/user/upload-profile-photo", formData);
-
                 if (response.IsSuccessStatusCode)
                 {
                     var responseText = await response.Content.ReadAsStringAsync();

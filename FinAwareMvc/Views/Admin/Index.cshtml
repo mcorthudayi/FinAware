@@ -653,7 +653,13 @@
                 row.style.display = (!q || name.includes(q) || email.includes(q) || id.includes(q)) ? '' : 'none';
             });
         }
-
+                // Sayfa yüklenince hash kontrolü
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.hash === '#activity') {
+                const btn = document.querySelectorAll('.admin-tab-btn')[1];
+                if (btn) switchTab('activity', btn);
+            }
+        });
         // Plan modal 
         function openPlanModal(userId, username, currentPlan) {
             document.getElementById('planUserId').value = userId;

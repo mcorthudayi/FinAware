@@ -10,12 +10,25 @@ namespace FinAware.API.Services
 
         public IyzicoService(IConfiguration configuration)
         {
+            var apiKey = configuration["Iyzico__ApiKey"]
+                         ?? configuration["Iyzico:ApiKey"]
+                         ?? throw new Exception("Iyzico ApiKey bulunamadı!");
+
+            var secretKey = configuration["Iyzico__SecretKey"]
+                         ?? configuration["Iyzico:SecretKey"]
+                         ?? throw new Exception("Iyzico SecretKey bulunamadı!");
+
+            var baseUrl = configuration["Iyzico__BaseUrl"]
+                         ?? configuration["Iyzico:BaseUrl"]
+                         ?? "https://sandbox-api.iyzipay.com";
+
+            Console.WriteLine($"✅ Iyzico config: apiKey={apiKey[..8]}... baseUrl={baseUrl}");
+
             _options = new Options
             {
-                ApiKey = configuration["Iyzico__ApiKey"]!,
-                SecretKey = configuration["Iyzico__SecretKey"]!,
-                BaseUrl = configuration["Iyzico__BaseUrl"]
-                            ?? "https://sandbox-api.iyzipay.com"
+                ApiKey = apiKey,
+                SecretKey = secretKey,
+                BaseUrl = baseUrl
             };
         }
 

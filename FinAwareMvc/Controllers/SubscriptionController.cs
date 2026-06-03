@@ -51,7 +51,6 @@ namespace FinAware.MVC.Controllers
 
         //  Ödeme başlat 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Subscribe(string plan)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AuthToken")))
@@ -63,25 +62,36 @@ namespace FinAware.MVC.Controllers
                 var json = JsonSerializer.Serialize(new { plan });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("/api/subscription/initialize", content);
+                var responseText = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"📡 Subscribe response [{response.StatusCode}]: {responseText}");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    TempData["Error"] = "Ödeme başlatılamadı.";
+                    TempData["Error"] = $"Ödeme başlatılamadı: {responseText}";
                     return RedirectToAction("Index");
                 }
 
-                var responseText = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<JsonElement>(responseText,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                ViewBag.CheckoutFormContent = result.GetProperty("checkoutFormContent").GetString();
+                var checkoutContent = result.TryGetProperty("checkoutFormContent", out var c)
+                    ? c.GetString() : null;
+
+                if (string.IsNullOrEmpty(checkoutContent))
+                {
+                    TempData["Error"] = "İyzico checkout formu boş döndü.";
+                    return RedirectToAction("Index");
+                }
+
+                ViewBag.CheckoutFormContent = checkoutContent;
                 ViewBag.Plan = plan;
                 return View("Checkout");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Subscribe error: {ex.Message}");
-                TempData["Error"] = "Bir hata oluştu.";
+                TempData["Error"] = $"Hata: {ex.Message}";
                 return RedirectToAction("Index");
             }
         }

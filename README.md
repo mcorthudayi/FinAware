@@ -140,11 +140,6 @@ ConnectionStrings__DefaultConnection=Server=...
 - GitHub: [@mcorthudayi](https://github.com/mcorthudayi)
 - LinkedIn: [linkedin.com/in/mhudayicort](https://linkedin.com/in/mhudayicort)
 
-**Beyza Beyazkılıç Yum** — Proje Ortağı
-
-**Danışman:** Dr. Fuat Candan — İstanbul Beykent Üniversitesi
-
----
 
 ## 📄 Lisans
 

@@ -1,56 +1,22 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
+﻿using Iyzipay;
+using Iyzipay.Model;
+using Iyzipay.Request;
 
 namespace FinAware.API.Services
 {
     public class IyzicoService
     {
-        private readonly IConfiguration _configuration;
-        private readonly HttpClient _httpClient;
-
-        private string ApiKey => _configuration["Iyzico__ApiKey"]!;
-        private string SecretKey => _configuration["Iyzico__SecretKey"]!;
-        private string BaseUrl => _configuration["Iyzico__BaseUrl"]
-                                 ?? "https://sandbox-api.iyzipay.com";
+        private readonly Options _options;
 
         public IyzicoService(IConfiguration configuration)
         {
-            _configuration = configuration;
-            _httpClient = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-        }
-
-        private string GenerateAuthorizationHeader(string randomKey, string requestBody)
-        {
-            var pkiString = $"[apiKey={ApiKey}&randomKey={randomKey}&signature=";
-            var hashStr = ApiKey + randomKey + SecretKey + requestBody;
-
-            using var sha = System.Security.Cryptography.SHA256.Create();
-            var hash = Convert.ToBase64String(
-                sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(hashStr)));
-
-            return $"IYZWSv2 apiKey:{ApiKey}&randomKey:{randomKey}&signature:{hash}";
-        }
-
-        private string RandomKey() => Guid.NewGuid().ToString("N")[..16];
-
-        private async Task<JsonElement> PostAsync(string path, object body)
-        {
-            var json = JsonSerializer.Serialize(body);
-            var randomKey = RandomKey();
-            var auth = GenerateAuthorizationHeader(randomKey, json);
-
-            var request = new HttpRequestMessage(HttpMethod.Post, path)
+            _options = new Options
             {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
+                ApiKey = configuration["Iyzico__ApiKey"]!,
+                SecretKey = configuration["Iyzico__SecretKey"]!,
+                BaseUrl = configuration["Iyzico__BaseUrl"]
+                            ?? "https://sandbox-api.iyzipay.com"
             };
-            request.Headers.Add("Authorization", auth);
-            request.Headers.Add("x-iyzi-rnd", randomKey);
-
-            var response = await _httpClient.SendAsync(request);
-            var text = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"📡 Iyzico [{path}]: {text}");
-            return JsonSerializer.Deserialize<JsonElement>(text);
         }
 
         public async Task<IyzicoCheckoutResult> InitializeCheckoutFormAsync(
@@ -61,66 +27,73 @@ namespace FinAware.API.Services
             var planName = plan == "Gold" ? "FinAware Gold" : "FinAware Platinum";
             var conversationId = $"finaware_{userId}_{plan}_{DateTime.Now:yyyyMMddHHmmss}";
 
-            var body = new
+            var firstName = username.Split(' ')[0];
+            var lastName = username.Split(' ').Length > 1 ? username.Split(' ')[1] : username;
+
+            var request = new CreateCheckoutFormInitializeRequest
             {
-                locale = "tr",
-                conversationId,
-                price,
-                paidPrice = price,
-                currency = "TRY",
-                basketId = conversationId,
-                paymentGroup = "SUBSCRIPTION",
-                callbackUrl,
-                enabledInstallments = new[] { 1, 2, 3, 6, 9, 12 },
-                buyer = new
+                Locale = Locale.TR.ToString(),
+                ConversationId = conversationId,
+                Price = price,
+                PaidPrice = price,
+                Currency = Currency.TRY.ToString(),
+                BasketId = conversationId,
+                PaymentGroup = PaymentGroup.PRODUCT.ToString(),
+                CallbackUrl = callbackUrl,
+                EnabledInstallments = new List<int> { 1, 2, 3, 6, 9, 12 },
+
+                Buyer = new Buyer
                 {
-                    id = userId.ToString(),
-                    name = username.Split(' ')[0],
-                    surname = username.Split(' ').Length > 1 ? username.Split(' ')[1] : username,
-                    email,
-                    identityNumber = "11111111111",
-                    registrationDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    lastLoginDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    registrationAddress = "Türkiye",
-                    city = "Istanbul",
-                    country = "Turkey",
-                    ip
+                    Id = userId.ToString(),
+                    Name = firstName,
+                    Surname = lastName,
+                    Email = email,
+                    IdentityNumber = "74300864791",
+                    RegistrationAddress = "Istanbul",
+                    City = "Istanbul",
+                    Country = "Turkey",
+                    Ip = string.IsNullOrEmpty(ip) ? "85.34.78.112" : ip
                 },
-                shippingAddress = new
+
+                ShippingAddress = new Address
                 {
-                    contactName = username,
-                    city = "Istanbul",
-                    country = "Turkey",
-                    address = "Türkiye"
+                    ContactName = $"{firstName} {lastName}",
+                    City = "Istanbul",
+                    Country = "Turkey",
+                    Description = "Istanbul"
                 },
-                billingAddress = new
+
+                BillingAddress = new Address
                 {
-                    contactName = username,
-                    city = "Istanbul",
-                    country = "Turkey",
-                    address = "Türkiye"
+                    ContactName = $"{firstName} {lastName}",
+                    City = "Istanbul",
+                    Country = "Turkey",
+                    Description = "Istanbul"
                 },
-                basketItems = new[]
+
+                BasketItems = new List<BasketItem>
                 {
-                    new
+                    new BasketItem
                     {
-                        id        = plan,
-                        name      = planName,
-                        category1 = "Yazilim",
-                        itemType  = "VIRTUAL",
-                        price
+                        Id        = plan,
+                        Name      = planName,
+                        Category1 = "Software",
+                        ItemType  = BasketItemType.VIRTUAL.ToString(),
+                        Price     = price
                     }
                 }
             };
 
-            var result = await PostAsync(
-                "/payment/iyzipos/checkoutform/initialize/auth/ecom", body);
+            var result = await Task.Run(() =>
+                CheckoutFormInitialize.Create(request, _options));
+
+            Console.WriteLine($"📡 Iyzico Init: status={result.Status} error={result.ErrorMessage} errorCode={result.ErrorCode}");
 
             return new IyzicoCheckoutResult
             {
-                Status = result.TryGetProperty("status", out var s) ? s.GetString() ?? "" : "",
-                CheckoutFormContent = result.TryGetProperty("checkoutFormContent", out var c) ? c.GetString() ?? "" : "",
-                Token = result.TryGetProperty("token", out var t) ? t.GetString() ?? "" : "",
+                Status = result.Status ?? "",
+                CheckoutFormContent = result.CheckoutFormContent ?? "",
+                Token = result.Token ?? "",
                 ConversationId = conversationId,
                 Plan = plan
             };
@@ -128,38 +101,40 @@ namespace FinAware.API.Services
 
         public async Task<IyzicoPaymentResult> RetrieveCheckoutFormAsync(string token)
         {
-            var body = new { locale = "tr", token };
-            var result = await PostAsync(
-                "/payment/iyzipos/checkoutform/auth/ecom/detail", body);
+            var request = new RetrieveCheckoutFormRequest
+            {
+                Locale = Locale.TR.ToString(),
+                Token = token
+            };
 
-            var status = result.TryGetProperty("status", out var s) ? s.GetString() ?? "" : "";
-            var payStatus = result.TryGetProperty("paymentStatus", out var ps) ? ps.GetString() ?? "" : "";
-            var convId = result.TryGetProperty("conversationId", out var c) ? c.GetString() ?? "" : "";
+            var result = await Task.Run(() =>
+                CheckoutForm.Retrieve(request, _options));
+
+            Console.WriteLine($"📡 Iyzico Retrieve: status={result.Status} payStatus={result.PaymentStatus}");
 
             return new IyzicoPaymentResult
             {
-                Success = status == "success" && payStatus == "SUCCESS",
-                ConversationId = convId,
-                PaymentId = result.TryGetProperty("paymentId", out var pid) ? pid.GetString() ?? "" : "",
-                Status = status
+                Success = result.Status == "success" && result.PaymentStatus == "SUCCESS",
+                ConversationId = result.ConversationId ?? "",
+                PaymentId = result.PaymentId ?? "",
+                Status = result.Status ?? ""
             };
         }
 
         public async Task<bool> RefundAsync(string paymentTransactionId, decimal price)
         {
-            var body = new
+            var request = new CreateRefundRequest
             {
-                locale = "tr",
-                conversationId = Guid.NewGuid().ToString("N")[..16],
-                paymentTransactionId,
-                price = price.ToString("F2"),
-                currency = "TRY",
-                ip = "85.34.78.112"
+                Locale = Locale.TR.ToString(),
+                ConversationId = Guid.NewGuid().ToString("N")[..16],
+                PaymentTransactionId = paymentTransactionId,
+                Price = price.ToString("F2"),
+                Currency = Currency.TRY.ToString(),
+                Ip = "85.34.78.112"
             };
 
-            var result = await PostAsync("/payment/refund", body);
-            var status = result.TryGetProperty("status", out var s) ? s.GetString() : "";
-            return status == "success";
+            var result = await Task.Run(() => Refund.Create(request, _options));
+            return result.Status == "success";
         }
     }
 

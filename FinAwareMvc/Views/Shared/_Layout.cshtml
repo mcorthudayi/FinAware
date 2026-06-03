@@ -1047,8 +1047,10 @@
             <div class="aris-quick" id="arisQuick">
                 <button class="aris-chip" onclick="arisQuickSend('Bu ay nasıl gidiyorum?')">Bu ay nasıl?</button>
                 <button class="aris-chip" onclick="arisQuickSend('Nerede tasarruf edebilirim?')">Tasarruf öner</button>
-                <button class="aris-chip" onclick="arisQuickSend('Bütçem nasıl?')">Bütçem</button>
-                <button class="aris-chip" onclick="arisQuickSend('Birikimlerim yetişir mi?')">Birikimlerim</button>
+                <button class="aris-chip" onclick="arisQuickSend('Birikimlerime götür')">Birikimlerim</button>
+                <button class="aris-chip" onclick="arisQuickSend('İşlemler sayfasına git')">İşlemlerim</button>
+                <button class="aris-chip" onclick="arisQuickSend('Bütçe durumum nasıl?')">Bütçem</button>
+                <button class="aris-chip" onclick="arisQuickSend('Analiz sayfasına git')">Analiz</button>
             </div>
             <div class="aris-input-area">
                 <input type="text" class="aris-input" id="arisInput"
@@ -1253,15 +1255,16 @@
         }
         function removeTyping() { document.getElementById('arisTyping')?.remove(); }
 
-        async function sendToAris(message) {
+               async function sendToAris(message) {
             if (!message.trim() || arisSend?.disabled) return;
             if (arisQuick) arisQuick.style.display = 'none';
             appendMessage(message, 'user');
             if (arisInput) arisInput.value = '';
             showTyping();
             if (arisSend) arisSend.disabled = true;
+
             try {
-                const res = await fetch('/Aris/Chat', {
+                const res  = await fetch('/Aris/Chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
@@ -1269,12 +1272,50 @@
                 const data = await res.json();
                 removeTyping();
                 appendMessage(data.reply, 'aris');
+
+                // Aksiyonu işle
+                if (data.action) {
+                    await handleArisAction(data.action);
+                }
             } catch (e) {
                 removeTyping();
                 appendMessage('Bağlantı hatası, biraz sonra tekrar dene.', 'aris');
             } finally {
                 if (arisSend) arisSend.disabled = false;
                 if (arisInput) arisInput.focus();
+            }
+        }
+
+        async function handleArisAction(action) {
+            await new Promise(r => setTimeout(r, 800)); // Yanıtı okusun
+
+            switch (action.type) {
+                case 'navigate':
+                    if (action.url) window.location.href = action.url;
+                    break;
+
+                case 'open_modal':
+                    const modal = document.getElementById('addModal');
+                    if (modal) new bootstrap.Modal(modal).show();
+                    break;
+
+                case 'add_transaction':
+                case 'create_budget':
+                case 'create_saving':
+                case 'add_to_saving':
+                    // Bunlar API'de zaten işlendi, sayfayı yenile
+                    await new Promise(r => setTimeout(r, 500));
+                    if (action.type === 'create_saving' || action.type === 'add_to_saving') {
+                        appendMessage('Birikim sayfasına yönlendiriliyorsun...', 'aris');
+                        setTimeout(() => window.location.href = '/Saving/Index', 1500);
+                    } else if (action.type === 'create_budget') {
+                        appendMessage('Bütçe sayfasına yönlendiriliyorsun...', 'aris');
+                        setTimeout(() => window.location.href = '/Budget/Index', 1500);
+                    } else {
+                        appendMessage('İşlem eklendi! Sayfa yenileniyor...', 'aris');
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                    break;
             }
         }
 

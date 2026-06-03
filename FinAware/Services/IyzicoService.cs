@@ -22,9 +22,13 @@ namespace FinAware.API.Services
 
         private string GenerateAuthorizationHeader(string randomKey, string requestBody)
         {
+            var pkiString = $"[apiKey={ApiKey}&randomKey={randomKey}&signature=";
             var hashStr = ApiKey + randomKey + SecretKey + requestBody;
+
+            using var sha = System.Security.Cryptography.SHA256.Create();
             var hash = Convert.ToBase64String(
-                SHA256.HashData(Encoding.UTF8.GetBytes(hashStr)));
+                sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(hashStr)));
+
             return $"IYZWSv2 apiKey:{ApiKey}&randomKey:{randomKey}&signature:{hash}";
         }
 
@@ -53,7 +57,7 @@ namespace FinAware.API.Services
             string plan, int userId, string email, string username,
             string callbackUrl, string ip)
         {
-            var price = plan == "Gold" ? "75.00" : "200.00";
+            var price = plan == "Gold" ? "75" : "200";
             var planName = plan == "Gold" ? "FinAware Gold" : "FinAware Platinum";
             var conversationId = $"finaware_{userId}_{plan}_{DateTime.Now:yyyyMMddHHmmss}";
 
@@ -102,7 +106,7 @@ namespace FinAware.API.Services
                     {
                         id        = plan,
                         name      = planName,
-                        category1 = "Yazılım",
+                        category1 = "Yazilim",
                         itemType  = "VIRTUAL",
                         price
                     }

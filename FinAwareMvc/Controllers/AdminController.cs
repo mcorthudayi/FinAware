@@ -41,7 +41,6 @@ namespace FinAwareMvc.Controllers
             ViewBag.Stats = await _apiService.GetAdminStatsAsync();
             ViewBag.Users = await _apiService.GetAdminUsersAsync();
 
-            //  client bir kez oluştur, her iki çağrıda kullan
             var client = CreateApiClient();
 
             try
@@ -56,17 +55,34 @@ namespace FinAwareMvc.Controllers
                     ViewBag.SubPlatinum = subEl.TryGetProperty("platinum", out var p) ? p.GetInt32() : 0;
                 }
             }
-            catch { }
-
-            try
+            catch (Exception ex)
             {
-                var actRes = await client.GetAsync("/api/admin/monthly-activity");
-                if (actRes.IsSuccessStatusCode)
-                    ViewBag.MonthlyActivity = await actRes.Content.ReadAsStringAsync();
+                Console.WriteLine($"⚠️ SubStats error: {ex.Message}");
             }
-            catch { }
 
             return View();
+        }
+
+        // Aylık aktivite verisini JSON olarak döndür (JS fetch ile çağrılır)
+        [HttpGet]
+        public async Task<IActionResult> GetMonthlyActivityData()
+        {
+            try
+            {
+                var client = CreateApiClient();
+                var response = await client.GetAsync("/api/admin/monthly-activity");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return Content(json, "application/json");
+                }
+                return Json(new List<object>());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ MonthlyActivity error: {ex.Message}");
+                return Json(new List<object>());
+            }
         }
 
         [HttpPost]
@@ -93,26 +109,6 @@ namespace FinAwareMvc.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetMonthlyActivityData()
-        {
-            try
-            {
-                var client = CreateApiClient();
-                var response = await client.GetAsync("/api/admin/monthly-activity");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return Content(json, "application/json");
-                }
-                return Json(new List<object>());
-            }
-            catch
-            {
-                return Json(new List<object>());
-            }
-        }
-
         [HttpPost]
         public async Task<IActionResult> ChangePlan(int id, string plan, int months = 1)
         {
@@ -125,7 +121,7 @@ namespace FinAwareMvc.Controllers
                 var response = await client.PostAsync($"/api/admin/users/{id}/change-plan", content);
 
                 if (response.IsSuccessStatusCode)
-                    TempData["Success"] = $"Plan başarıyla güncellendi: {plan}";
+                    TempData["Success"] = $"Plan güncellendi: {plan}";
                 else
                     TempData["Error"] = "Plan güncellenemedi.";
             }
@@ -134,7 +130,6 @@ namespace FinAwareMvc.Controllers
                 Console.WriteLine($"❌ ChangePlan error: {ex.Message}");
                 TempData["Error"] = "Bir hata oluştu.";
             }
-
             return RedirectToAction("Index");
         }
     }

@@ -5,11 +5,9 @@
     int subFree = ViewBag.SubFree ?? 0;
     int subGold = ViewBag.SubGold ?? 0;
     int subPlatinum = ViewBag.SubPlatinum ?? 0;
-    string monthlyActivityJson = ViewBag.MonthlyActivity ?? "[]";
 }
 
 <style>
-    /*  Tab Nav */
     .admin-tab-nav {
         display: flex;
         gap: 8px;
@@ -48,7 +46,6 @@
             display: block;
         }
 
-    /* Kartlar */
     .stat-card {
         background: white;
         border-radius: 16px;
@@ -86,7 +83,6 @@
         margin-top: 4px;
     }
 
-    /* Badges */
     .plan-badge {
         padding: 3px 10px;
         border-radius: 20px;
@@ -131,7 +127,6 @@
         color: #16a34a;
     }
 
-    /* Tablo */
     .admin-table {
         width: 100%;
         border-collapse: collapse;
@@ -159,7 +154,6 @@
             background: #fafafa;
         }
 
-    /* Action Butonlar */
     .action-btn {
         padding: 4px 10px;
         border-radius: 8px;
@@ -194,7 +188,6 @@
         color: #7c3aed;
     }
 
-    /* Arama */
     .search-box {
         border: 1.5px solid #e5e7eb;
         border-radius: 10px;
@@ -208,7 +201,6 @@
             border-color: #1AAFA3;
         }
 
-    /* Plan Modal */
     .plan-option {
         border: 2px solid #e5e7eb;
         border-radius: 12px;
@@ -222,7 +214,6 @@
             background: #f0fdf9;
         }
 
-    /* ── Aktivite Kartları ── */
     .act-card {
         background: white;
         border-radius: 16px;
@@ -243,7 +234,6 @@
         height: 260px;
     }
 
-    /* ── Ay Satırları ── */
     .month-row {
         display: flex;
         align-items: center;
@@ -296,7 +286,7 @@
     <span style="font-size:12px;color:#9ca3af;">@DateTime.Now.ToString("dd.MM.yyyy HH:mm")</span>
 </div>
 
-<!-- İstatistik Kartları Row 1 -->
+<!-- Stat Row 1 -->
 <div class="row g-3 mb-3">
     <div class="col-md-2">
         <div class="stat-card">
@@ -342,7 +332,7 @@
     </div>
 </div>
 
-<!-- Row 2 -->
+<!-- Stat Row 2 -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="stat-card d-flex align-items-center gap-3">
@@ -389,12 +379,10 @@
     <div style="background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;border:1px solid #f3f4f6;">
         <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <span style="font-weight:700;font-size:15px;color:#111827;">Kullanıcılar</span>
-            <input type="text" class="search-box" id="userSearch"
-                   placeholder="🔍 ID, kullanıcı adı veya e-posta..."
-                   oninput="filterUsers()" />
+            <input type="text" class="search-box" id="userSearch" placeholder="🔍 ID, kullanıcı adı veya e-posta..." oninput="filterUsers()" />
         </div>
         <div style="overflow-x:auto;">
-            <table class="admin-table" id="userTable">
+            <table class="admin-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -420,13 +408,8 @@
                         bool isFrozen = (bool)(user.isFrozen ?? false);
                         bool isAdmin = role == "Admin";
 
-                        <tr class="user-row"
-                            data-name="@user.username"
-                            data-email="@user.email"
-                            data-id="@user.userId">
-
+                        <tr class="user-row" data-name="@user.username" data-email="@user.email" data-id="@user.userId">
                             <td style="color:#9ca3af;font-size:12px;">#@user.userId</td>
-
                             <td>
                                 <div style="font-weight:600;color:#111827;font-size:13px;">@user.username</div>
                                 @if (user.telegramChatId != null)
@@ -434,21 +417,15 @@
                                     <div style="font-size:10px;color:#0284c7;">📱 Telegram</div>
                                 }
                             </td>
-
                             <td style="color:#4b5563;font-size:12px;">@user.email</td>
-
                             <td>
                                 <span class="plan-badge @planCls">@plan</span>
                                 @if (user.subscriptionExpiry != null)
                                 {
-                                    <div style="font-size:10px;color:#9ca3af;margin-top:2px;">
-                                        @(((DateTime)user.subscriptionExpiry).ToString("dd.MM.yy"))
-                                    </div>
+                                    <div style="font-size:10px;color:#9ca3af;margin-top:2px;">@(((DateTime)user.subscriptionExpiry).ToString("dd.MM.yy"))</div>
                                 }
                             </td>
-
                             <td><span class="role-badge @roleCls">@role</span></td>
-
                             <td>
                                 @if ((bool)(user.isEmailVerified ?? false))
                                 {
@@ -456,23 +433,19 @@
                                 }
                                 else
                                 {
+
                                     <span style="color:#d97706;font-size:13px;">⏳ Bekliyor</span>
                                 }
                             </td>
-
                             <td style="color:#6b7280;font-size:12px;">@(user.ocrUsageThisMonth ?? 0)</td>
                             <td style="color:#6b7280;font-size:12px;">@(user.arisUsageThisMonth ?? 0)</td>
                             <td style="color:#6b7280;font-size:12px;">@(user.transactionCount ?? 0)</td>
                             <td style="color:#9ca3af;font-size:11px;">@(((DateTime)user.createdAt).ToString("dd.MM.yy"))</td>
-
                             <td>
                                 @if (!isAdmin)
                                 {
                                     <div class="d-flex gap-1 flex-wrap">
-                                        <button class="action-btn btn-plan"
-                                                onclick="openPlanModal(@user.userId, '@user.username', '@plan')">
-                                            Plan
-                                        </button>
+                                        <button class="action-btn btn-plan" onclick="openPlanModal(@user.userId, '@user.username', '@plan')">Plan</button>
                                         @if (isFrozen)
                                         {
                                             <form method="post" asp-action="UnfreezeUser" class="d-inline">
@@ -499,6 +472,7 @@
                                 }
                                 else
                                 {
+
                                     <span style="font-size:11px;color:#9ca3af;">—</span>
                                 }
                             </td>
@@ -510,50 +484,37 @@
     </div>
 </div>
 
-<!-- TAB 2: AYLIK AKTİVİTE  -->
+<!-- TAB 2: AYLIK AKTİVİTE -->
 <div id="tab-activity" class="admin-tab-pane">
-
-    <!-- Özet Kartlar -->
     <div class="row g-3 mb-4" id="actSummaryRow">
-        <!-- JS ile doldurulacak -->
+        <div class="col-12 text-center py-4">
+            <div class="spinner-border text-success" role="status"></div>
+            <div class="mt-2 text-muted" style="font-size:13px;">Yükleniyor...</div>
+        </div>
     </div>
-
     <div class="row g-4">
-        <!-- Yeni Kayıt Grafiği -->
         <div class="col-md-6">
             <div class="act-card">
                 <h6><i class="bi bi-person-plus me-2" style="color:#1AAFA3;"></i>Son 6 Ay — Yeni Kayıt</h6>
-                <div class="chart-wrap">
-                    <canvas id="newUsersChart"></canvas>
-                </div>
+                <div class="chart-wrap"><canvas id="newUsersChart"></canvas></div>
             </div>
         </div>
-
-        <!-- İşlem Grafiği -->
         <div class="col-md-6">
             <div class="act-card">
                 <h6><i class="bi bi-arrow-left-right me-2" style="color:#4F46E5;"></i>Son 6 Ay — İşlem Sayısı</h6>
-                <div class="chart-wrap">
-                    <canvas id="transactionsChart"></canvas>
-                </div>
+                <div class="chart-wrap"><canvas id="transactionsChart"></canvas></div>
             </div>
         </div>
-
-        <!-- Yeni Kayıt Bar Detay -->
         <div class="col-md-6">
             <div class="act-card">
                 <h6><i class="bi bi-calendar3 me-2" style="color:#d97706;"></i>Aylık Yeni Kayıt Detayı</h6>
                 <div id="newUsersBarDetail"></div>
             </div>
         </div>
-
-        <!-- Abonelik Dağılımı -->
         <div class="col-md-6">
             <div class="act-card">
                 <h6><i class="bi bi-gem me-2" style="color:#7c3aed;"></i>Abonelik Dağılımı</h6>
-                <div class="chart-wrap" style="height:220px;">
-                    <canvas id="planChart"></canvas>
-                </div>
+                <div class="chart-wrap" style="height:220px;"><canvas id="planChart"></canvas></div>
                 <div class="d-flex justify-content-center gap-4 mt-3">
                     <div style="text-align:center;">
                         <div style="font-size:22px;font-weight:700;color:#6b7280;">@subFree</div>
@@ -573,7 +534,7 @@
     </div>
 </div>
 
-<!-- Plan Değiştir Modal -->
+<!-- Plan Modal -->
 <div class="modal fade" id="planModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
@@ -585,11 +546,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" style="padding:20px 24px 28px;">
-                <form method="post" asp-action="ChangePlan" id="planForm">
+                <form method="post" asp-action="ChangePlan">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" id="planUserId" />
                     <input type="hidden" name="plan" id="planValue" value="Free" />
-
                     <div class="row g-2 mb-3">
                         <div class="col-4">
                             <div class="plan-option selected" onclick="selectPlan('Free',this)">
@@ -610,7 +570,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div id="monthsGroup">
                         <label style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block;">Süre</label>
                         <select name="months" class="form-select" style="border-radius:10px;font-size:13px;border-color:#e5e7eb;">
@@ -620,7 +579,6 @@
                             <option value="12">12 Ay</option>
                         </select>
                     </div>
-
                     <button type="submit" class="btn w-100 mt-3"
                             style="background:linear-gradient(135deg,#1AAFA3,#0D7A71);color:white;border-radius:10px;font-weight:600;padding:10px;font-size:14px;border:none;">
                         <i class="bi bi-check-circle me-2"></i>Planı Güncelle
@@ -634,24 +592,16 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        // Tab sistemi
-                function switchTab(name, btn) {
+        let chartsInitialized = false;
+
+        function switchTab(name, btn) {
             document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
             btn.classList.add('active');
-            if (name === 'activity' && !chartsInitialized) {
-                try {
-                    const data = @Html.Raw(ViewBag.MonthlyActivity ?? "[]");
-                    renderCharts(data);
-                    chartsInitialized = true;
-                } catch(e) {
-                    console.error('Chart error:', e);
-                }
-            }
+            if (name === 'activity' && !chartsInitialized) loadActivityData();
         }
 
-        // Kullanıcı arama 
         function filterUsers() {
             const q = document.getElementById('userSearch').value.toLowerCase().trim();
             document.querySelectorAll('.user-row').forEach(row => {
@@ -661,14 +611,7 @@
                 row.style.display = (!q || name.includes(q) || email.includes(q) || id.includes(q)) ? '' : 'none';
             });
         }
-                // Sayfa yüklenince hash kontrolü
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.location.hash === '#activity') {
-                const btn = document.querySelectorAll('.admin-tab-btn')[1];
-                if (btn) switchTab('activity', btn);
-            }
-        });
-        // Plan modal 
+
         function openPlanModal(userId, username, currentPlan) {
             document.getElementById('planUserId').value = userId;
             document.getElementById('planModalUsername').textContent = username;
@@ -679,6 +622,7 @@
             document.getElementById('monthsGroup').style.display = currentPlan === 'Free' ? 'none' : 'block';
             new bootstrap.Modal(document.getElementById('planModal')).show();
         }
+
         function selectPlan(plan, el) {
             document.querySelectorAll('.plan-option').forEach(e => e.classList.remove('selected'));
             el.classList.add('selected');
@@ -686,166 +630,105 @@
             document.getElementById('monthsGroup').style.display = plan === 'Free' ? 'none' : 'block';
         }
 
-        //  Aktivite verisi API'den fetch 
-        let chartsInitialized = false;
-
         async function loadActivityData() {
-            if (chartsInitialized) return;
-
-            document.getElementById('actSummaryRow').innerHTML = `
-                <div class="col-12 text-center py-4">
-                    <div class="spinner-border text-success" role="status"></div>
-                    <div class="mt-2 text-muted" style="font-size:13px;">Veriler yükleniyor...</div>
-                </div>`;
-
             try {
                 const res  = await fetch('/Admin/GetMonthlyActivityData');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
                 chartsInitialized = true;
                 renderCharts(data);
             } catch(e) {
                 document.getElementById('actSummaryRow').innerHTML =
-                    `<div class="col-12"><div class="alert alert-danger">Veri yüklenemedi: ${e.message}</div></div>`;
+                    '<div class="col-12"><div class="alert alert-warning">Veri yuklenemedi: ' + e.message + '</div></div>';
             }
         }
 
-        function renderCharts(activityData) {
-            if (!activityData || activityData.length === 0) return;
+        function renderCharts(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('actSummaryRow').innerHTML =
+                    '<div class="col-12 text-center text-muted py-4">Henuz veri yok</div>';
+                return;
+            }
 
-            const labels   = activityData.map(d => d.shortMonth);
-            const newUsers = activityData.map(d => d.newUsers);
-            const txCounts = activityData.map(d => d.transactions);
+            const labels   = data.map(d => d.shortMonth);
+            const newUsers = data.map(d => d.newUsers);
+            const txCounts = data.map(d => d.transactions);
             const maxUsers = Math.max(...newUsers, 1);
 
-            // Özet kartlar 
-            const thisMonth = activityData[activityData.length - 1];
-            const lastMonth = activityData[activityData.length - 2] || { newUsers: 0, transactions: 0 };
-            const userDiff  = thisMonth.newUsers      - lastMonth.newUsers;
-            const txDiff    = thisMonth.transactions  - lastMonth.transactions;
-            const totalNew  = newUsers.reduce((a, b) => a + b, 0);
-            const totalTx   = txCounts.reduce((a, b) => a + b, 0);
+            const last  = data[data.length - 1];
+            const prev  = data[data.length - 2] || { newUsers: 0, transactions: 0 };
+            const uDiff = last.newUsers      - prev.newUsers;
+            const tDiff = last.transactions  - prev.transactions;
+            const totU  = newUsers.reduce((a,b) => a+b, 0);
+            const totT  = txCounts.reduce((a,b) => a+b, 0);
 
             document.getElementById('actSummaryRow').innerHTML = `
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background:#f0fdf9;">📅</div>
-                        <div class="stat-value">${thisMonth.newUsers}</div>
-                        <div class="stat-label">Bu Ay Yeni Kayıt
-                            <span style="color:${userDiff >= 0 ? '#16a34a' : '#dc2626'};font-size:11px;margin-left:4px;">
-                                ${userDiff >= 0 ? '+' : ''}${userDiff}
-                            </span>
-                        </div>
+                <div class="col-md-3"><div class="stat-card">
+                    <div class="stat-icon" style="background:#f0fdf9;">📅</div>
+                    <div class="stat-value">${last.newUsers}</div>
+                    <div class="stat-label">Bu Ay Yeni Kayıt
+                        <span style="color:${uDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">${uDiff>=0?'+':''}${uDiff}</span>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background:#e0f2fe;">📊</div>
-                        <div class="stat-value">${thisMonth.transactions}</div>
-                        <div class="stat-label">Bu Ay İşlem
-                            <span style="color:${txDiff >= 0 ? '#16a34a' : '#dc2626'};font-size:11px;margin-left:4px;">
-                                ${txDiff >= 0 ? '+' : ''}${txDiff}
-                            </span>
-                        </div>
+                </div></div>
+                <div class="col-md-3"><div class="stat-card">
+                    <div class="stat-icon" style="background:#e0f2fe;">📊</div>
+                    <div class="stat-value">${last.transactions}</div>
+                    <div class="stat-label">Bu Ay İşlem
+                        <span style="color:${tDiff>=0?'#16a34a':'#dc2626'};font-size:11px;margin-left:4px;">${tDiff>=0?'+':''}${tDiff}</span>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background:#fef3c7;">📈</div>
-                        <div class="stat-value">${totalNew}</div>
-                        <div class="stat-label">6 Ayda Toplam Kayıt</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background:#ede9fe;">⚡</div>
-                        <div class="stat-value">${totalTx}</div>
-                        <div class="stat-label">6 Ayda Toplam İşlem</div>
-                    </div>
-                </div>`;
+                </div></div>
+                <div class="col-md-3"><div class="stat-card">
+                    <div class="stat-icon" style="background:#fef3c7;">📈</div>
+                    <div class="stat-value">${totU}</div>
+                    <div class="stat-label">6 Ayda Toplam Kayıt</div>
+                </div></div>
+                <div class="col-md-3"><div class="stat-card">
+                    <div class="stat-icon" style="background:#ede9fe;">⚡</div>
+                    <div class="stat-value">${totT}</div>
+                    <div class="stat-label">6 Ayda Toplam İşlem</div>
+                </div></div>`;
 
-            // Bar chart: Yeni Kayıt 
             new Chart(document.getElementById('newUsersChart'), {
                 type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Yeni Kayıt',
-                        data: newUsers,
-                        backgroundColor: 'rgba(26,175,163,0.8)',
-                        borderColor: '#1AAFA3',
-                        borderWidth: 2,
-                        borderRadius: 8,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
+                data: { labels, datasets: [{ label: 'Yeni Kayit', data: newUsers,
+                    backgroundColor: 'rgba(26,175,163,0.8)', borderColor: '#1AAFA3',
+                    borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
+                options: { responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
-                        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
-                    }
-                }
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+                              x: { ticks: { font: { size: 11 } }, grid: { display: false } } } }
             });
 
-            //  Line chart: İşlem Sayısı 
             new Chart(document.getElementById('transactionsChart'), {
                 type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'İşlem Sayısı',
-                        data: txCounts,
-                        borderColor: '#4F46E5',
-                        backgroundColor: 'rgba(79,70,229,0.08)',
-                        borderWidth: 2.5,
-                        pointBackgroundColor: '#4F46E5',
-                        pointRadius: 5,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
+                data: { labels, datasets: [{ label: 'Islem', data: txCounts,
+                    borderColor: '#4F46E5', backgroundColor: 'rgba(79,70,229,0.08)',
+                    borderWidth: 2.5, pointBackgroundColor: '#4F46E5',
+                    pointRadius: 5, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
-                        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
-                    }
-                }
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+                              x: { ticks: { font: { size: 11 } }, grid: { display: false } } } }
             });
 
-            //  Bar detay
-            document.getElementById('newUsersBarDetail').innerHTML = activityData.map(d => `
+            document.getElementById('newUsersBarDetail').innerHTML = data.map(d => `
                 <div class="month-row">
                     <div class="month-label">${d.shortMonth}</div>
                     <div class="month-bar-wrap">
-                        <div class="month-bar" style="width:${(d.newUsers / maxUsers) * 100}%;background:linear-gradient(90deg,#1AAFA3,#0D7A71);"></div>
+                        <div class="month-bar" style="width:${(d.newUsers/maxUsers)*100}%;background:linear-gradient(90deg,#1AAFA3,#0D7A71);"></div>
                     </div>
                     <div class="month-val">${d.newUsers}</div>
                 </div>`).join('');
 
-            //  Doughnut: Plan dağılımı
-            const subFree     = @subFree;
-            const subGold     = @subGold;
-            const subPlatinum = @subPlatinum;
             new Chart(document.getElementById('planChart'), {
                 type: 'doughnut',
-                data: {
-                    labels: ['Free', 'Gold', 'Platinum'],
-                    datasets: [{
-                        data: [subFree, subGold, subPlatinum],
-                        backgroundColor: ['#f3f4f6', '#fef3c7', '#ede9fe'],
-                        borderColor: ['#9ca3af', '#d97706', '#7c3aed'],
-                        borderWidth: 2,
-                        hoverOffset: 8
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 16 } } }
-                }
+                data: { labels: ['Free','Gold','Platinum'],
+                    datasets: [{ data: [@subFree, @subGold, @subPlatinum],
+                        backgroundColor: ['#f3f4f6','#fef3c7','#ede9fe'],
+                        borderColor: ['#9ca3af','#d97706','#7c3aed'],
+                        borderWidth: 2, hoverOffset: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 16 } } } }
             });
         }
     </script>

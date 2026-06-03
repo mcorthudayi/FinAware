@@ -101,19 +101,38 @@ namespace FinAware.MVC.Controllers
 
         // iyzico callback (ödeme sonucu)
         [HttpPost]
-        public async Task<IActionResult> Callback(string token)
+        public async Task<IActionResult> Callback()
         {
             try
             {
+                // İyzico form'dan token'ı al
+                var token = Request.Form["token"].ToString();
+                Console.WriteLine($"📡 Callback token: {token}");
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    ViewBag.Success = false;
+                    return View("CallbackResult");
+                }
+
                 var client = _httpClientFactory.CreateClient();
                 var apiBase = _configuration["ApiBaseUrl"] ?? "https://finaware-uq2x.onrender.com";
                 client.BaseAddress = new Uri(apiBase);
 
-                var content = new FormUrlEncodedContent(new[] {
-                    new KeyValuePair<string, string>("token", token)
-                });
+                // JWT token varsa ekle
+                var jwt = HttpContext.Session.GetString("AuthToken");
+                if (!string.IsNullOrEmpty(jwt))
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", jwt);
+
+                // JSON olarak gönder
+                var json = JsonSerializer.Serialize(new { token });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("/api/subscription/callback", content);
                 var text = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"📡 Callback response [{response.StatusCode}]: {text}");
+
                 var result = JsonSerializer.Deserialize<JsonElement>(text,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 

@@ -110,11 +110,11 @@ namespace FinAware.API.Controllers
         // Callback (iyzico ödeme sonrası döner)
         [HttpPost("callback")]
         [AllowAnonymous]
-        public async Task<IActionResult> Callback([FromForm] string token)
+        public async Task<IActionResult> Callback([FromBody] CallbackDto dto)
         {
             try
             {
-                var result = await _iyzico.RetrieveCheckoutFormAsync(token);
+                var result = await _iyzico.RetrieveCheckoutFormAsync(dto.Token);
 
                 if (!result.Success)
                     return Ok(new { success = false, message = "Ödeme başarısız." });
@@ -213,5 +213,9 @@ namespace FinAware.API.Controllers
     public class InitializeSubscriptionDto
     {
         public string Plan { get; set; } = "";
+    }
+    public class CallbackDto
+    {
+        public string Token { get; set; } = "";
     }
 }

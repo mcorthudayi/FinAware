@@ -1,0 +1,34 @@
+﻿@{
+    ViewData["Title"] = "Ödeme Sonucu";
+    bool success = ViewBag.Success == true;
+    string plan = ViewBag.Plan ?? "";
+}
+
+<div style="max-width:480px;margin:60px auto;text-align:center;">
+    <div style="background:white;border-radius:20px;padding:48px 32px;box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+        @if (success)
+        {
+            <div style="font-size:56px;margin-bottom:16px;">🎉</div>
+            <h3 style="font-weight:700;color:#111827;margin-bottom:8px;">Ödeme Başarılı!</h3>
+            <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">
+                @plan planına geçişin tamamlandı. Tüm özelliklerin aktif.
+            </p>
+            <a href="/Dashboard/Index" class="btn"
+               style="background:linear-gradient(135deg,#1AAFA3,#0D7A71);color:white;border-radius:12px;padding:12px 32px;font-weight:600;text-decoration:none;">
+                Dashboard'a Git
+            </a>
+        }
+        else
+        {
+            <div style="font-size:56px;margin-bottom:16px;">❌</div>
+            <h3 style="font-weight:700;color:#111827;margin-bottom:8px;">Ödeme Başarısız</h3>
+            <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">
+                Ödeme tamamlanamadı. Lütfen tekrar dene.
+            </p>
+            <a href="/Subscription/Index" class="btn"
+               style="background:#f3f4f6;color:#374151;border-radius:12px;padding:12px 32px;font-weight:600;text-decoration:none;">
+                Tekrar Dene
+            </a>
+        }
+    </div>
+</div>

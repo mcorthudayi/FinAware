@@ -8,12 +8,35 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/finaware.css" asp-append-version="true" />
     <style>
+        
         :root {
             --primary: #1AAFA3;
             --primary-dark: #0D7A71;
-            --sidebar-w: 240px;
-            --topbar-h: 56px;
-            --transition: 0.25s cubic-bezier(.4,0,.2,1);
+            --primary-bg: #E8F7F6;
+            --primary-light: rgba(26,175,163,0.12);
+            --sidebar-grad: linear-gradient(160deg, #0D7A71 0%, #1AAFA3 60%, #02C39A 100%);
+            --accent: #02C39A;
+            --theme-name: "Varsayılan";
+        }
+
+        [data-theme="gold"] {
+            --primary: #D97706;
+            --primary-dark: #B45309;
+            --primary-bg: #FEF3C7;
+            --primary-light: rgba(217,119,6,0.12);
+            --sidebar-grad: linear-gradient(160deg, #92400E 0%, #D97706 55%, #F59E0B 100%);
+            --accent: #F59E0B;
+            --theme-name: "Gold";
+        }
+
+        [data-theme="platinum"] {
+            --primary: #7C3AED;
+            --primary-dark: #5B21B6;
+            --primary-bg: #EDE9FE;
+            --primary-light: rgba(124,58,237,0.12);
+            --sidebar-grad: linear-gradient(160deg, #3B0764 0%, #7C3AED 55%, #A78BFA 100%);
+            --accent: #A78BFA;
+            --theme-name: "Platinum";
         }
 
         * {
@@ -35,7 +58,7 @@
             left: 0;
             width: var(--sidebar-w);
             height: 100vh;
-            background: linear-gradient(180deg, #1AAFA3 0%, #0a6b65 100%);
+            background: var(--sidebar-grad);
             display: flex;
             flex-direction: column;
             z-index: 200;
@@ -1324,5 +1347,16 @@
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        (function() {
+            const saved = localStorage.getItem('finaware_theme') || 'default';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('finaware_theme', theme);
+        }
+    </script>
 </body>
 </html>

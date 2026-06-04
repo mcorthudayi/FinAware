@@ -16,7 +16,9 @@
             --primary-light: rgba(26,175,163,0.12);
             --sidebar-grad: linear-gradient(160deg, #0D7A71 0%, #1AAFA3 60%, #02C39A 100%);
             --accent: #02C39A;
-            --theme-name: "Varsayılan";
+            --sidebar-w: 240px;
+            --topbar-h: 56px;
+            --transition: 0.25s cubic-bezier(.4,0,.2,1);
         }
 
         [data-theme="gold"] {
@@ -873,6 +875,7 @@
                 <span class="sidebar-brand-tagline">Finansal Asistan</span>
             </div>
         </div>
+        </a>
 
         @{
             var username = Context.Session.GetString("Username") ?? "U";

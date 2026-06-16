@@ -33,7 +33,7 @@ namespace FinAware.Bot.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        // ExecuteAsync - retry mekanizmasi ile polling
+        // ExecuteAsync retry mekanizmasi ile polling
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -83,7 +83,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // Ana Yonlendirici
+        // Ana Yönlendirici
         private async Task HandleUpdateAsync(
             ITelegramBotClient botClient,
             Update update,
@@ -122,7 +122,7 @@ namespace FinAware.Bot.Services
 
             link = await RefreshTokenIfNeeded(link, db, ct) ?? link;
 
-            // Fotograf
+            // Fotoğraf mesajı varsa önce onu işle, yoksa metin komutlarına geç
             if (message.Photo != null && message.Photo.Length > 0)
             {
                 await HandlePhotoMessage(botClient, chatId, message, link, ct);
@@ -194,7 +194,7 @@ namespace FinAware.Bot.Services
             );
         }
 
-        // /bakiye
+        // bakiye komutu
         private async Task HandleBakiyeCommand(
             ITelegramBotClient botClient, long chatId,
             BotUserLink link, CancellationToken ct)
@@ -261,7 +261,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /islemler
+        // /işlemler
         private async Task HandleIslemlerCommand(
             ITelegramBotClient botClient, long chatId,
             BotUserLink link, CancellationToken ct)
@@ -315,7 +315,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /butce
+        // /bütçe
         private async Task HandleButceCommand(
             ITelegramBotClient botClient, long chatId,
             BotUserLink link, CancellationToken ct)
@@ -435,7 +435,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /ozet
+        // /özet
         private async Task HandleOzetCommand(
             ITelegramBotClient botClient, long chatId,
             BotUserLink link, CancellationToken ct)
@@ -553,7 +553,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /gelir <miktar> <kategori> [aciklama]
+        // /gelir <miktar> <kategori> [açıklama]
         private async Task HandleGelirCommand(
             ITelegramBotClient botClient, long chatId,
             string[] parts, BotUserLink link, CancellationToken ct)
@@ -580,7 +580,7 @@ namespace FinAware.Bot.Services
             await EkleIslem(botClient, chatId, link, amount, "Income", kategoriAdi, aciklama, ct);
         }
 
-        // /gider <miktar> <kategori> [aciklama]
+        // /gider <miktar> <kategori> [açıklama]
         private async Task HandleGiderCommand(
             ITelegramBotClient botClient, long chatId,
             string[] parts, BotUserLink link, CancellationToken ct)
@@ -607,7 +607,7 @@ namespace FinAware.Bot.Services
             await EkleIslem(botClient, chatId, link, amount, "Expense", kategoriAdi, aciklama, ct);
         }
 
-        // Islem ekleme yardimci
+        // Islem ekleme ortak fonksiyonu (hem gelir hem gider için)
         private async Task EkleIslem(
             ITelegramBotClient botClient, long chatId,
             BotUserLink link, decimal amount, string type,
@@ -676,7 +676,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /butcelimit <kategori> <limit>
+        // /butçelimit <kategori> <limit>
         private async Task HandleButceLimitCommand(
             ITelegramBotClient botClient, long chatId,
             string[] parts, BotUserLink link, CancellationToken ct)
@@ -744,7 +744,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /birikimyeni <hedef_adi> <miktar> [tarih]
+        // /birikimyeni <hedef_adı> <miktar> [tarih]
         private async Task HandleBirikimYeniCommand(
             ITelegramBotClient botClient, long chatId,
             string[] parts, BotUserLink link, CancellationToken ct)
@@ -801,7 +801,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /birikimyatir <hedef_adi> <miktar>
+        // /birikimyatir <hedef_adı> <miktar>
         private async Task HandleBirikimYatirCommand(
             ITelegramBotClient botClient, long chatId,
             string[] parts, BotUserLink link, CancellationToken ct)
@@ -878,7 +878,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /analiz - GPT kapsamli rapor
+        // /analiz  GPT kapsamlı rapor
         private async Task HandleAnalizCommand(
             ITelegramBotClient botClient, long chatId,
             BotUserLink link, IServiceScope scope, CancellationToken ct)
@@ -946,7 +946,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // /yeniuye
+        // /yeniüye
         private async Task HandleYeniUyeCommand(
             ITelegramBotClient botClient, long chatId,
             BotUserLink link, CancellationToken ct)
@@ -975,7 +975,7 @@ namespace FinAware.Bot.Services
             );
         }
 
-        // /yardim
+        // /yardım
         private async Task HandleYardimCommand(
             ITelegramBotClient botClient, long chatId, CancellationToken ct)
         {
@@ -1013,7 +1013,7 @@ namespace FinAware.Bot.Services
             );
         }
 
-        // Fatura fotografı
+        // Fatura fotoğrafı gonderildiğinde analiz etme
         private async Task HandlePhotoMessage(
             ITelegramBotClient botClient,
             long chatId,
@@ -1103,7 +1103,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // Metin mesaji - doğal dil veya fatura onay
+        // Metin mesajı doğal dil veya fatura onay
         private async Task HandleTextMessage(
             ITelegramBotClient botClient,
             long chatId,
@@ -1141,7 +1141,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // Fatura onay (evet / hayir)
+        // Fatura onay (evet / hayır)
         private async Task HandleInvoiceConfirmation(
             ITelegramBotClient botClient,
             long chatId,
@@ -1230,7 +1230,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // Hesap baglama (/start TOKEN)
+        // Hesap bağlama (/start TOKEN)
         private async Task HandleStartCommand(
             ITelegramBotClient botClient,
             long chatId,
@@ -1365,7 +1365,7 @@ namespace FinAware.Bot.Services
             }
         }
 
-        // Yardimcilar
+        // Yardımcılar
         private HttpClient CreateApiClient(BotUserLink link)
         {
             var client = _httpClientFactory.CreateClient("FinAwareApi");

@@ -16,7 +16,7 @@ namespace FinAware.Bot.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        // Dogal dil isleme - function calling ile
+        // Doğal dil işleme (function callingle)
         public async Task<string> ProcessMessageAsync(string userMessage, BotUserLink link, CancellationToken ct)
         {
             var openAiKey = _configuration["OpenAI__ApiKey"] ?? _configuration["OpenAI:ApiKey"];
@@ -247,7 +247,7 @@ namespace FinAware.Bot.Services
                    "Uzgunum, anlayamadim. Tekrar dener misin?";
         }
 
-        // /analiz komutu icin kapsamli GPT raporu
+        // /analiz komutu için kapsamlı GPT raporu
         public async Task<string> GenerateAnalysisAsync(BotUserLink link, CancellationToken ct)
         {
             var openAiKey = _configuration["OpenAI__ApiKey"] ?? _configuration["OpenAI:ApiKey"];
@@ -346,7 +346,7 @@ Rakamlara dayali, kisisel, motive edici yaz. Genel kliselerden kacin. Markdown k
             }
         }
 
-        // Detayli istatistik hesapla (analiz icin)
+        // Detaylı istatistik hesapla (analiz için)
         private string BuildDetailedStats(string txJson, DateTime now)
         {
             try
@@ -420,7 +420,7 @@ Rakamlara dayali, kisisel, motive edici yaz. Genel kliselerden kacin. Markdown k
             }
         }
 
-        // ExecuteAddTransaction
+        // işlem ekleme komutu
         private async Task<string> ExecuteAddTransaction(
             JsonElement args, HttpClient apiClient, CancellationToken ct)
         {
@@ -482,7 +482,7 @@ Rakamlara dayali, kisisel, motive edici yaz. Genel kliselerden kacin. Markdown k
             }
         }
 
-        // ExecuteGetMonthlySummary
+        // aylık özet getirme komutu
         private async Task<string> ExecuteGetMonthlySummary(
             JsonElement args, HttpClient apiClient, CancellationToken ct)
         {
@@ -547,7 +547,7 @@ Rakamlara dayali, kisisel, motive edici yaz. Genel kliselerden kacin. Markdown k
             }
         }
 
-        // ExecuteGetDetailedMonthlyReport
+        // detaylı aylık rapor getirme komutu
         private async Task<string> ExecuteGetDetailedMonthlyReport(
             JsonElement args, HttpClient apiClient, CancellationToken ct)
         {
@@ -631,7 +631,7 @@ Rakamlara dayali, kisisel, motive edici yaz. Genel kliselerden kacin. Markdown k
             }
         }
 
-        // ExecuteGetFirmExpenses
+        // belirli bir firma/mağazaya ne kadar harcandığı komutu
         private async Task<string> ExecuteGetFirmExpenses(
             JsonElement args, HttpClient apiClient, CancellationToken ct)
         {
@@ -700,7 +700,7 @@ Rakamlara dayali, kisisel, motive edici yaz. Genel kliselerden kacin. Markdown k
             }
         }
 
-        // ExecuteGetBudgetStatus
+        // bütçe durumunu gösterme komutu
         private async Task<string> ExecuteGetBudgetStatus(
             JsonElement args, HttpClient apiClient, CancellationToken ct)
         {
@@ -749,7 +749,7 @@ Rakamlara dayali, kisisel, motive edici yaz. Genel kliselerden kacin. Markdown k
             }
         }
 
-        // ExecuteGetRecentTransactions
+        // son işlemler getirme komutu
         private async Task<string> ExecuteGetRecentTransactions(
             JsonElement args, HttpClient apiClient, CancellationToken ct)
         {

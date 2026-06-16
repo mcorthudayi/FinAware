@@ -170,7 +170,7 @@ namespace FinAware.API.Controllers
 
                 Console.WriteLine($"📊 Budget check: {categoryName} | %{Math.Round(percentage, 1)} | Spent: {spent} / Limit: {budget.LimitAmount}");
 
-                // ── %50 bilgi bildirimi ───────────────────────────────────
+                // %50 bilgi bildirimi
                 if (percentage >= 50 && percentage < 80)
                 {
                     var title = $"📊 Bütçe Bilgisi - {categoryName}";
@@ -220,7 +220,7 @@ namespace FinAware.API.Controllers
                     warnings.Add(new { type = "info", categoryName, percentage, remaining = budget.LimitAmount - spent });
                 }
 
-                // ── %80 uyarı bildirimi ───────────────────────────────────
+                //  %80 uyarı bildirimi
                 if (percentage >= 80 && percentage < 100)
                 {
                     var title = $"⚠️ Bütçe Uyarısı - {categoryName}";
@@ -274,7 +274,7 @@ namespace FinAware.API.Controllers
                     warnings.Add(new { type = "warning", categoryName, percentage, remaining = budget.LimitAmount - spent });
                 }
 
-                // ── %100 aşım bildirimi ───────────────────────────────────
+                // %100 aşım bildirimi
                 if (percentage >= 100)
                 {
                     var title = $"🚨 Bütçe Aşıldı - {categoryName}";

@@ -38,7 +38,6 @@ namespace FinAware.API.Controllers
                 var ay = now.Month;
                 var yil = now.Year;
 
-                // Verileri çek
                 var transactions = await _context.Transactions
                     .Include(t => t.Category)
                     .Where(t => t.UserId == userId)
@@ -58,7 +57,6 @@ namespace FinAware.API.Controllers
                     .Where(c => c.UserId == userId)
                     .ToListAsync();
 
-                // Hesaplamalar
                 decimal totalIncome = 0, totalExpense = 0, monthIncome = 0, monthExpense = 0;
                 var categoryTotals = new Dictionary<string, decimal>();
 

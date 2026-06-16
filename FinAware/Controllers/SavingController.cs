@@ -111,7 +111,7 @@ namespace FinAware.API.Controllers
                     .Select(s => s.RelatedDepositId!.Value)
                     .ToHashSet();
 
-                // ── Aktif (henüz satılmamış) deposit'ler ─────────────────
+                // Aktif (henüz satılmamış) deposit'ler
                 var activeDeposits = deposits
                     .Where(d => !soldDepositIds.Contains(d.SavingTransactionId))
                     .OrderByDescending(d => d.Date)
@@ -146,7 +146,7 @@ namespace FinAware.API.Controllers
                         };
                     }).ToList();
 
-                // ── Satışlar (her sale, ilgili deposit'in alış kuruyla) ──
+                // Satışlar (her sale, ilgili deposit'in alış kuruyla)
                 var saleDetails = sales
                     .OrderByDescending(s => s.Date)
                     .Select(s =>
@@ -178,7 +178,7 @@ namespace FinAware.API.Controllers
                         };
                     }).ToList();
 
-                // ── Aktif özet (yansımamış kar/zarar) ─────────────────────
+                // Aktif özet (yansımamış kar/zarar)
                 decimal activePaid = activeDeposits.Sum(d => d.Amount);
                 decimal activeCurrentValue = activeDeposits.Sum(d => d.CurrentValue);
                 decimal activeProfitLoss = activeCurrentValue - activePaid;
@@ -186,7 +186,7 @@ namespace FinAware.API.Controllers
                     ? (double)(activeProfitLoss / activePaid * 100)
                     : 0;
 
-                // ── Gerçekleşen kar/zarar ─────────────────────────────────
+                // Gerçekleşen kar/zarar
                 decimal totalRealizedPL = saleDetails.Sum(s => s.RealizedProfitLoss);
                 decimal totalSold = saleDetails.Sum(s => s.SaleAmount);
                 int saleCount = saleDetails.Count;

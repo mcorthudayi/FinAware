@@ -4,149 +4,131 @@
     ViewData["Title"] = "Bütçe Yönetimi";
     var monthNames = new[] { "", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
     var prevMonth = Model.Month == 1 ? 12 : Model.Month - 1;
-    var prevYear = Model.Month == 1 ? Model.Year - 1 : Model.Year;
+    var prevYear  = Model.Month == 1 ? Model.Year - 1 : Model.Year;
     var nextMonth = Model.Month == 12 ? 1 : Model.Month + 1;
-    var nextYear = Model.Month == 12 ? Model.Year + 1 : Model.Year;
+    var nextYear  = Model.Month == 12 ? Model.Year + 1 : Model.Year;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="display-6 fw-bold">💼 Bütçe Yönetimi</h1>
-        <p class="text-muted">Aylık harcama limitlerini belirleyin</p>
-    </div>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBudgetModal">
-        <i class="bi bi-plus-circle me-2"></i>Bütçe Ekle
-    </button>
-</div>
+<style>
+    .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
+    .page-title { font-size:26px; font-weight:900; color:var(--text-primary); letter-spacing:-0.5px; }
+    .page-sub { font-size:14px; color:var(--text-secondary); margin-top:4px; }
+    .btn-add { background:var(--primary); color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s; }
+    .btn-add:hover { background:var(--primary-dark); transform:translateY(-1px); }
+    .month-nav { display:flex; align-items:center; justify-content:center; gap:16px; background:white; border-radius:16px; border:1.5px solid var(--border-color); padding:14px; margin-bottom:20px; }
+    .month-nav-btn { width:36px; height:36px; border-radius:10px; background:var(--bg); border:1.5px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; transition:all 0.15s; text-decoration:none; color:var(--text-primary); }
+    .month-nav-btn:hover { background:var(--primary); border-color:var(--primary); color:white; }
+    .summary-row { display:flex; gap:12px; margin-bottom:20px; }
+    .summary-card { flex:1; background:white; border-radius:16px; border:1.5px solid var(--border-color); padding:18px; text-align:center; }
+    .summary-val { font-size:24px; font-weight:900; }
+    .summary-label { font-size:12px; color:var(--text-secondary); margin-top:4px; }
+    .budget-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .budget-card { background:white; border-radius:18px; border:1.5px solid var(--border-color); padding:20px; position:relative; overflow:hidden; transition:all 0.2s; }
+    .budget-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.06); }
+    .budget-accent { position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:18px 0 0 18px; }
+    .budget-inner { padding-left:12px; }
+    .budget-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+    .budget-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
+    .budget-limit { font-size:12px; color:var(--text-secondary); }
+    .budget-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; border:1px solid; white-space:nowrap; }
+    .budget-progress-bg { height:8px; background:#f3f4f6; border-radius:4px; overflow:hidden; margin-bottom:8px; }
+    .budget-progress-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
+    .budget-footer { display:flex; justify-content:space-between; align-items:center; }
+    .budget-spent { font-size:13px; font-weight:700; }
+    .budget-pct { font-size:12px; color:var(--text-secondary); }
+    .btn-delete { background:none; border:none; color:#d1d5db; cursor:pointer; padding:4px 8px; border-radius:8px; transition:all 0.15s; font-size:14px; }
+    .btn-delete:hover { color:#EF4444; background:#FEF2F2; }
+    .empty-state { text-align:center; padding:56px 24px; background:white; border-radius:20px; border:1.5px solid var(--border-color); }
+</style>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <div class="alert alert-success alert-dismissible fade show mb-3">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <div class="alert alert-danger alert-dismissible fade show mb-3">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 }
 
-<!-- Ay Navigasyonu -->
-<div class="card mb-4" style="border-radius: 12px;">
-    <div class="card-body d-flex justify-content-between align-items-center">
-        <a href="/Budget/Index?month=@prevMonth&year=@prevYear" class="btn btn-outline-secondary">
-            <i class="bi bi-chevron-left"></i>
-        </a>
-        <h5 class="mb-0 fw-bold">@monthNames[Model.Month] @Model.Year</h5>
-        <a href="/Budget/Index?month=@nextMonth&year=@nextYear" class="btn btn-outline-secondary">
-            <i class="bi bi-chevron-right"></i>
-        </a>
+<div class="page-header">
+    <div>
+        <div class="page-title">💼 Bütçe Yönetimi</div>
+        <div class="page-sub">Aylık harcama limitlerini belirle</div>
     </div>
+    <button type="button" class="btn-add" data-bs-toggle="modal" data-bs-target="#addBudgetModal">
+        <i class="bi bi-plus-lg"></i> Bütçe Ekle
+    </button>
+</div>
+
+<!-- Ay Nav -->
+<div class="month-nav">
+    <a href="/Budget/Index?month=@prevMonth&year=@prevYear" class="month-nav-btn">‹</a>
+    <span style="font-size:17px;font-weight:800;color:var(--text-primary);">@monthNames[Model.Month] @Model.Year</span>
+    <a href="/Budget/Index?month=@nextMonth&year=@nextYear" class="month-nav-btn">›</a>
 </div>
 
 <!-- Özet -->
-<div class="card mb-4" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <div class="card-body">
-        <h5 class="card-title mb-3">📊 Bu Ay Özeti</h5>
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <h3 class="fw-bold text-danger">₺@Model.TotalExpense.ToString("N2")</h3>
-                <small class="text-muted">Toplam Harcama</small>
-            </div>
-            <div class="col-md-4 text-center">
-                <h3 class="fw-bold" style="color: #4DB6AC;">@Model.Budgets.Count</h3>
-                <small class="text-muted">Aktif Bütçe</small>
-            </div>
-            <div class="col-md-4 text-center">
-                <h3 class="fw-bold text-warning">@Model.Budgets.Count(b => b.IsInfo || b.IsWarning || b.IsOver)</h3>
-                <small class="text-muted">Bilgi / Uyarı / Aşım</small>
-            </div>
-        </div>
+<div class="summary-row">
+    <div class="summary-card">
+        <div class="summary-val" style="color:#EF4444;">₺@Model.TotalExpense.ToString("N2")</div>
+        <div class="summary-label">Toplam Harcama</div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-val" style="color:var(--primary);">@Model.Budgets.Count</div>
+        <div class="summary-label">Aktif Bütçe</div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-val" style="color:#F59E0B;">@Model.Budgets.Count(b => b.IsInfo || b.IsWarning || b.IsOver)</div>
+        <div class="summary-label">Bilgi / Uyarı / Aşım</div>
     </div>
 </div>
 
 <!-- Bütçe Listesi -->
 @if (!Model.Budgets.Any())
 {
-    <div class="card" style="border-radius: 12px; text-align: center; padding: 60px;">
-        <h3>💼 Henüz bütçe yok</h3>
-        <p class="text-muted">Bu ay için bütçe limitlari belirleyin</p>
-        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addBudgetModal">
-            <i class="bi bi-plus-circle me-2"></i>Bütçe Ekle
+    <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:12px;">💼</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:6px;">Henüz bütçe yok</div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-bottom:20px;">Bu ay için bütçe limitlari belirle</div>
+        <button type="button" class="btn-add" style="margin:0 auto;" data-bs-toggle="modal" data-bs-target="#addBudgetModal">
+            <i class="bi bi-plus-lg"></i> Bütçe Ekle
         </button>
     </div>
 }
 else
 {
-    <div class="row">
+    <div class="budget-grid">
         @foreach (var budget in Model.Budgets)
         {
-            var barColor = budget.IsOver ? "#F44336" : budget.IsWarning ? "#FF9800" : budget.IsInfo ? "#2196F3" : "#4CAF50";
-            var cardBorder = budget.IsOver ? "#F44336" : budget.IsWarning ? "#FF9800" : budget.IsInfo ? "#2196F3" : "#4DB6AC";
-
-            <div class="col-md-6 mb-4">
-                <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid @cardBorder;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="fw-bold mb-1">@budget.CategoryIcon @budget.CategoryName</h5>
-                                <small class="text-muted">Limit: ₺@budget.LimitAmount.ToString("N2")</small>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                @if (budget.IsOver)
-                                {
-                                    <span class="badge bg-danger">🚨 Aşıldı</span>
-                                }
-                                else if (budget.IsWarning)
-                                {
-                                    <span class="badge bg-warning text-dark">⚠️ Uyarı</span>
-                                }
-                                else if (budget.IsInfo)
-                                {
-                                    <span class="badge bg-primary">📊 %50 Doldu</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-success">✅ Normal</span>
-                                }
-                                <form method="post" action="/Budget/Delete/@budget.BudgetId" style="display: inline;"
-                                      onsubmit="return confirm('Bu bütçeyi silmek istediğinize emin misiniz?')">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="month" value="@Model.Month" />
-                                    <input type="hidden" name="year" value="@Model.Year" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
+            var bColor = budget.IsOver ? "#EF4444" : budget.IsWarning ? "#F59E0B" : budget.IsInfo ? "#3B82F6" : "#10B981";
+            var bLabel = budget.IsOver ? "🔴 Aşıldı" : budget.IsWarning ? "🟡 Uyarı" : budget.IsInfo ? "🔵 %50 Doldu" : "🟢 Normal";
+            <div class="budget-card">
+                <div class="budget-accent" style="background:@bColor;"></div>
+                <div class="budget-inner">
+                    <div class="budget-top">
+                        <div>
+                            <div class="budget-name">@budget.CategoryIcon @budget.CategoryName</div>
+                            <div class="budget-limit">Limit: ₺@budget.LimitAmount.ToString("N2")</div>
                         </div>
-
-                        <div class="d-flex justify-content-between mb-1">
-                            <small class="fw-bold" style="color: @barColor;">₺@budget.Spent.ToString("N2") harcandı</small>
-                            <small class="text-muted">%@budget.Percentage.ToString("N1")</small>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span class="budget-badge" style="color:@bColor;background:@(bColor)18;border-color:@(bColor)40;">@bLabel</span>
+                            <form method="post" action="/Budget/Delete/@budget.BudgetId" style="display:inline;" onsubmit="return confirm('Bu bütçeyi silmek istediğine emin misin?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="month" value="@Model.Month"/>
+                                <input type="hidden" name="year" value="@Model.Year"/>
+                                <button type="submit" class="btn-delete"><i class="bi bi-trash"></i></button>
+                            </form>
                         </div>
-                        <div class="progress mb-2" style="height: 12px; border-radius: 6px;">
-                            <div class="progress-bar" role="progressbar"
-                                 style="width: @(Math.Min(budget.Percentage, 100))%; background-color: @barColor;"
-                                 aria-valuenow="@budget.Percentage" aria-valuemin="0" aria-valuemax="100">
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">
-                                @if (budget.IsOver)
-                                {
-                                    <span class="text-danger">₺@(Math.Abs(budget.Remaining).ToString("N2")) aşıldı</span>
-                                }
-                                else
-                                {
-                                    <span>₺@budget.Remaining.ToString("N2") kaldı</span>
-                                }
-                            </small>
-                            <small class="text-muted">Limit: ₺@budget.LimitAmount.ToString("N2")</small>
-                        </div>
+                    </div>
+                    <div class="budget-progress-bg">
+                        <div class="budget-progress-fill" style="width:@(Math.Min(budget.Percentage, 100))%;background:@bColor;"></div>
+                    </div>
+                    <div class="budget-footer">
+                        <span class="budget-spent" style="color:@bColor;">
+                            @if (budget.IsOver) { <span>₺@(Math.Abs(budget.Remaining).ToString("N2")) aşıldı</span> }
+                            else { <span>₺@budget.Remaining.ToString("N2") kaldı</span> }
+                        </span>
+                        <span class="budget-pct">%@budget.Percentage.ToString("N1") · ₺@budget.Spent.ToString("N2") harcandı</span>
                     </div>
                 </div>
             </div>
@@ -154,22 +136,21 @@ else
     </div>
 }
 
-<!-- Bütçe Ekle Modal -->
+<!-- Modal -->
 <div class="modal fade" id="addBudgetModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 15px;">
-            <div class="modal-header border-0">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold">💼 Bütçe Ekle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form method="post" action="/Budget/Create">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="month" value="@Model.Month" />
-                    <input type="hidden" name="year" value="@Model.Year" />
-
+                    <input type="hidden" name="month" value="@Model.Month"/>
+                    <input type="hidden" name="year" value="@Model.Year"/>
                     <div class="mb-3">
-                        <label class="form-label">Kategori</label>
+                        <label class="form-label fw-600">Kategori</label>
                         <select class="form-select" name="categoryId">
                             <option value="">💰 Genel Bütçe (Tüm Harcamalar)</option>
                             @foreach (var cat in Model.Categories.Where(c => c.Type == "Expense"))
@@ -177,36 +158,30 @@ else
                                 <option value="@cat.CategoryId">@cat.Icon @cat.Name</option>
                             }
                         </select>
-                        <small class="text-muted">Boş bırakırsanız toplam harcama limiti olarak ayarlanır</small>
                     </div>
-
                     <div class="mb-3">
-                        <label class="form-label">Limit Tutarı (₺)</label>
+                        <label class="form-label fw-600">Limit Tutarı (₺)</label>
                         <div class="input-group">
                             <span class="input-group-text">₺</span>
                             <input type="number" step="0.01" min="1" class="form-control" name="limitAmount" required placeholder="0.00">
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Dönem</label>
-                        <div class="row">
-                            <div class="col-6">
+                    <div class="mb-4">
+                        <label class="form-label fw-600">Dönem</label>
+                        <div class="row g-2">
+                            <div class="col-8">
                                 <select class="form-select" name="month">
                                     @for (int m = 1; m <= 12; m++)
-                                    {
-                                        <option value="@m" selected="@(m == Model.Month)">@monthNames[m]</option>
-                                    }
+                                    { <option value="@m" selected="@(m == Model.Month)">@monthNames[m]</option> }
                                 </select>
                             </div>
-                            <div class="col-6">
+                            <div class="col-4">
                                 <input type="number" class="form-control" name="year" value="@Model.Year" min="2020" max="2030">
                             </div>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-check-circle me-2"></i>Bütçe Oluştur
+                    <button type="submit" class="btn-add w-100" style="justify-content:center;">
+                        <i class="bi bi-check-circle"></i> Bütçe Oluştur
                     </button>
                 </form>
             </div>

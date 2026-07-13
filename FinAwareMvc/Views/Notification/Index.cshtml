@@ -4,86 +4,85 @@
     ViewData["Title"] = "Bildirimler";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .page-title { font-size:26px; font-weight:900; color:var(--text-primary); letter-spacing:-0.5px; }
+    .page-sub { font-size:14px; color:var(--text-secondary); margin-top:4px; }
+    .btn-mark-all { background:white; border:1.5px solid var(--border-color); color:var(--text-secondary); padding:10px 18px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px; transition:all 0.15s; }
+    .btn-mark-all:hover { border-color:var(--primary); color:var(--primary); }
+    .notif-card { background:white; border-radius:20px; border:1.5px solid var(--border-color); overflow:hidden; }
+    .notif-row { display:flex; align-items:flex-start; gap:14px; padding:16px 20px; border-bottom:1px solid #f3f4f6; transition:background 0.12s; position:relative; }
+    .notif-row:last-child { border-bottom:none; }
+    .notif-row.unread { background:#F8FDFC; }
+    .notif-row:hover { background:#fafafa; }
+    .notif-row.unread:hover { background:#F0FAF9; }
+    .notif-icon { font-size:28px; flex-shrink:0; width:44px; text-align:center; margin-top:2px; }
+    .notif-body { flex:1; min-width:0; }
+    .notif-title-row { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px; }
+    .notif-title { font-size:14px; font-weight:700; color:var(--text-primary); }
+    .notif-time { font-size:12px; color:var(--text-secondary); flex-shrink:0; }
+    .notif-msg { font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:4px; }
+    .notif-new-badge { display:inline-block; font-size:10px; font-weight:700; background:#E8F7F6; color:var(--primary); padding:2px 8px; border-radius:20px; }
+    .notif-unread-dot { position:absolute; top:50%; right:20px; transform:translateY(-50%); width:8px; height:8px; border-radius:50%; background:var(--primary); }
+    .notif-actions { display:flex; flex-direction:column; gap:4px; flex-shrink:0; }
+    .btn-notif { background:none; border:none; color:#d1d5db; cursor:pointer; padding:6px 8px; border-radius:8px; font-size:13px; transition:all 0.15s; white-space:nowrap; }
+    .btn-notif:hover { color:var(--primary); background:#E8F7F6; }
+    .btn-notif.danger:hover { color:#EF4444; background:#FEF2F2; }
+    .empty-state { text-align:center; padding:64px 24px; background:white; border-radius:20px; border:1.5px solid var(--border-color); }
+</style>
+
+<div class="page-header">
     <div>
-        <h1 class="display-6 fw-bold">Bildirimler</h1>
-        <p class="text-muted">Tüm bildirimleriniz</p>
+        <div class="page-title">🔔 Bildirimler</div>
+        <div class="page-sub">Tüm bildirimleriniz</div>
     </div>
     @if (Model.Any(n => !n.IsRead))
     {
-        <form method="post" action="/Notification/MarkAllAsRead" style="display: inline;">
+        <form method="post" action="/Notification/MarkAllAsRead">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-outline-secondary">
-                <i class="bi bi-check-all me-1"></i>Tümünü Okundu İşaretle
-            </button>
+            <button type="submit" class="btn-mark-all"><i class="bi bi-check-all"></i> Tümünü Okundu İşaretle</button>
         </form>
     }
 </div>
 
 @if (Model != null && Model.Any())
 {
-    <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div class="card-body p-0">
-            @foreach (var notification in Model)
-            {
-                <div class="notification-item @(notification.IsRead ? "" : "unread")"
-                     style="padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: start; gap: 16px; @(notification.IsRead ? "" : "background: #f8f9fa;")">
-
-                    <div style="font-size: 32px; flex-shrink: 0;">
-                        @notification.Icon
+    <div class="notif-card">
+        @foreach (var n in Model)
+        {
+            <div class="notif-row @(n.IsRead ? "" : "unread")">
+                <div class="notif-icon">@n.Icon</div>
+                <div class="notif-body">
+                    <div class="notif-title-row">
+                        <div class="notif-title">@n.Title</div>
+                        <div class="notif-time">@n.TimeAgo</div>
                     </div>
-
-                    <div style="flex: 1;">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <h6 class="mb-0 fw-bold">@notification.Title</h6>
-                            <small class="text-muted">@notification.TimeAgo</small>
-                        </div>
-                        <p class="mb-0 text-muted">@notification.Message</p>
-
-                        @if (!notification.IsRead)
-                        {
-                            <span class="badge bg-primary mt-2">Yeni</span>
-                        }
-                    </div>
-
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            @if (!notification.IsRead)
-                            {
-                                <li>
-                                    <form method="post" action="/Notification/MarkAsRead/@notification.NotificationId" style="margin: 0;">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="bi bi-check me-2"></i>Okundu İşaretle
-                                        </button>
-                                    </form>
-                                </li>
-                            }
-                            <li>
-                                <form method="post" action="/Notification/Delete/@notification.NotificationId" style="margin: 0;">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Bildirimi silmek istediğinize emin misiniz?')">
-                                        <i class="bi bi-trash me-2"></i>Sil
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+                    <div class="notif-msg">@n.Message</div>
+                    @if (!n.IsRead) { <span class="notif-new-badge">Yeni</span> }
                 </div>
-            }
-        </div>
+                <div class="notif-actions">
+                    @if (!n.IsRead)
+                    {
+                        <form method="post" action="/Notification/MarkAsRead/@n.NotificationId" style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-notif"><i class="bi bi-check"></i></button>
+                        </form>
+                    }
+                    <form method="post" action="/Notification/Delete/@n.NotificationId" style="margin:0;" onsubmit="return confirm('Bildirimi silmek istediğine emin misin?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-notif danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+                @if (!n.IsRead) { <div class="notif-unread-dot"></div> }
+            </div>
+        }
     </div>
 }
 else
 {
-    <div class="card" style="border-radius: 12px;">
-        <div class="card-body text-center py-5">
-            <i class="bi bi-bell-slash display-1 text-muted"></i>
-            <h4 class="mt-3">Henüz Bildirim Yok</h4>
-            <p class="text-muted">Yeni bildirimleriniz burada görünecek</p>
-        </div>
+    <div class="empty-state">
+        <div style="font-size:56px;margin-bottom:12px;opacity:0.4;">🔕</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:6px;">Henüz Bildirim Yok</div>
+        <div style="font-size:14px;color:var(--text-secondary);">Yeni bildirimler burada görünecek</div>
     </div>
 }

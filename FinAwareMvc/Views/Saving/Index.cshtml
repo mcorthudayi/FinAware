@@ -4,149 +4,149 @@
     ViewData["Title"] = "Birikimlerim";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="display-6 fw-bold">💰 Birikimlerim</h1>
-        <p class="text-muted">Birikim hedeflerinizi takip edin</p>
-    </div>
-    <a href="/Saving/Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-2"></i>Yeni Hedef Ekle
-    </a>
-</div>
+<style>
+    .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
+    .page-title { font-size:26px; font-weight:900; color:var(--text-primary); letter-spacing:-0.5px; }
+    .page-sub { font-size:14px; color:var(--text-secondary); margin-top:4px; }
+    .btn-add { background:var(--primary); color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s; text-decoration:none; }
+    .btn-add:hover { background:var(--primary-dark); transform:translateY(-1px); color:white; }
+    .saving-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .saving-card { background:white; border-radius:18px; border:1.5px solid var(--border-color); padding:18px; position:relative; overflow:hidden; transition:all 0.2s; }
+    .saving-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.06); }
+    .saving-accent { position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:18px 0 0 18px; }
+    .saving-inner { padding-left:12px; }
+    .saving-top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .saving-icon-box { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+    .saving-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
+    .saving-date { font-size:12px; color:var(--text-secondary); }
+    .saving-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; border:1px solid; }
+    .saving-amounts { display:flex; align-items:center; border-radius:10px; padding:10px; border:1px solid; margin-bottom:10px; }
+    .saving-amt-block { flex:1; text-align:center; }
+    .saving-amt-label { font-size:10px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:2px; }
+    .saving-amt-value { font-size:15px; font-weight:800; }
+    .saving-amt-divider { width:1px; height:28px; margin:0 8px; }
+    .saving-prog-bg { height:7px; background:#f3f4f6; border-radius:4px; overflow:hidden; margin-bottom:6px; }
+    .saving-prog-fill { height:100%; border-radius:4px; }
+    .saving-remain { font-size:11px; color:var(--text-secondary); margin-bottom:14px; }
+    .saving-actions { display:flex; gap:6px; }
+    .btn-action { flex:1; padding:8px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; }
+    .btn-action.outline { background:white; color:var(--primary); border-color:var(--primary); }
+    .btn-action.outline:hover { background:var(--primary); color:white; }
+    .btn-action.danger { background:white; color:#EF4444; border-color:#EF4444; }
+    .btn-action.danger:hover { background:#FEF2F2; }
+    .add-form { border-top:1px solid #f3f4f6; padding-top:14px; margin-top:2px; }
+    .form-row { display:flex; gap:6px; margin-bottom:8px; }
+    .form-input { flex:1; padding:9px 12px; border-radius:10px; border:1.5px solid var(--border-color); font-size:13px; outline:none; transition:border-color 0.15s; }
+    .form-input:focus { border-color:var(--primary); }
+    .form-select-sm { padding:9px 10px; border-radius:10px; border:1.5px solid var(--border-color); font-size:13px; outline:none; background:white; }
+    .btn-submit { width:100%; padding:10px; border-radius:10px; background:var(--primary); color:white; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:background 0.15s; }
+    .btn-submit:hover { background:var(--primary-dark); }
+    .empty-state { text-align:center; padding:56px 24px; background:white; border-radius:20px; border:1.5px solid var(--border-color); }
+</style>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <div class="alert alert-success alert-dismissible fade show mb-3">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 }
-
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <div class="alert alert-danger alert-dismissible fade show mb-3">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 }
+
+<div class="page-header">
+    <div>
+        <div class="page-title">💰 Birikimlerim</div>
+        <div class="page-sub">Birikim hedeflerini takip et</div>
+    </div>
+    <a href="/Saving/Create" class="btn-add"><i class="bi bi-plus-lg"></i> Yeni Hedef</a>
+</div>
 
 @if (Model == null || !Model.Any())
 {
-    <div class="card" style="border-radius: 12px; text-align: center; padding: 60px;">
-        <h3>🎯 Henüz birikim hedefiniz yok</h3>
-        <p class="text-muted">İlk birikim hedefinizi oluşturun!</p>
-        <a href="/Saving/Create" class="btn btn-primary mt-3">
-            <i class="bi bi-plus-circle me-2"></i>Hedef Ekle
+    <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:12px;">🎯</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:6px;">Henüz birikim hedefin yok</div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-bottom:20px;">İlk hedefini oluştur ve biriktirmeye başla</div>
+        <a href="/Saving/Create" class="btn-add" style="display:inline-flex;margin:0 auto;">
+            <i class="bi bi-plus-lg"></i> Hedef Ekle
         </a>
     </div>
 }
 else
 {
-    <div class="row">
-        @foreach (var saving in Model)
+    <div class="saving-grid">
+        @foreach (var s in Model)
         {
-            var progressColor = saving.Progress >= 100 ? "#4CAF50" :
-            saving.Progress >= 75 ? "#4DB6AC" :
-            saving.Progress >= 50 ? "#FFC107" : "#FF9800";
-
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid @(saving.Color ?? "#4DB6AC");">
-                    <div class="card-body">
-
-                        <!-- Başlık + Butonlar -->
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="card-title mb-1">@(saving.Icon ?? "💰") @saving.GoalName</h5>
-                                @if (saving.TargetDate.HasValue)
-                                {
-                                    <small class="text-muted">🗓️ @saving.TargetDate.Value.ToString("dd.MM.yyyy")</small>
-                                }
-                            </div>
-                            <div class="d-flex gap-1">
-                                <a href="/Saving/Details/@saving.SavingId" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-bar-chart-line"></i>
-                                </a>
-                                <form method="post" action="/Saving/Delete/@saving.SavingId"
-                                      style="display: inline;"
-                                      onsubmit="return confirm('Bu birikim hedefini silmek istediğinizden emin misiniz?');">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
+            var pct = s.TargetAmount > 0 ? Math.Min((double)s.CurrentAmount / (double)s.TargetAmount * 100, 100) : 0;
+            var pColor = pct >= 100 ? "#10B981" : pct >= 75 ? "#1AAFA3" : pct >= 50 ? "#F59E0B" : "#F97316";
+            var remaining = s.TargetAmount - s.CurrentAmount;
+            <div class="saving-card">
+                <div class="saving-accent" style="background:@pColor;"></div>
+                <div class="saving-inner">
+                    <div class="saving-top">
+                        <div class="saving-icon-box" style="background:@(pColor)18;">@(s.Icon ?? "💰")</div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="saving-name">@s.GoalName</div>
+                            @if (s.TargetDate.HasValue)
+                            {
+                                <div class="saving-date">🗓️ @s.TargetDate.Value.ToString("dd.MM.yyyy")</div>
+                            }
                         </div>
-
-                        <!-- Progress -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="fw-bold" style="color: @progressColor;">₺@saving.CurrentAmount.ToString("N2")</span>
-                                <span class="text-muted">₺@saving.TargetAmount.ToString("N2")</span>
-                            </div>
-                            <div class="progress" style="height: 10px; border-radius: 5px;">
-                                <div class="progress-bar" role="progressbar"
-                                     style="width: @(Math.Min(saving.Progress, 100))%; background-color: @progressColor;"
-                                     aria-valuenow="@saving.Progress" aria-valuemin="0" aria-valuemax="100">
-                                </div>
-                            </div>
-                            <small class="text-muted">%@saving.Progress.ToString("N1") tamamlandı</small>
+                        <span class="saving-badge" style="color:@pColor;background:@(pColor)15;border-color:@(pColor)40;">%@pct.ToString("N0")</span>
+                    </div>
+                    <div class="saving-amounts" style="background:@(pColor)10;border-color:@(pColor)25;">
+                        <div class="saving-amt-block">
+                            <div class="saving-amt-label">Birikim</div>
+                            <div class="saving-amt-value" style="color:@pColor;">₺@s.CurrentAmount.ToString("N0")</div>
                         </div>
-
-                        <!-- Tutar Ekleme Formu -->
-                        <form method="post" action="/Saving/AddAmount/@saving.SavingId">
+                        <div class="saving-amt-divider" style="background:@(pColor)25;"></div>
+                        <div class="saving-amt-block">
+                            <div class="saving-amt-label">Hedef</div>
+                            <div class="saving-amt-value" style="color:var(--text-primary);">₺@s.TargetAmount.ToString("N0")</div>
+                        </div>
+                    </div>
+                    <div class="saving-prog-bg">
+                        <div class="saving-prog-fill" style="width:@pct%;background:@pColor;"></div>
+                    </div>
+                    <div class="saving-remain">
+                        @if (pct >= 100) { <span>🎉 Hedefe ulaştın!</span> }
+                        else { <span>₺@remaining.ToString("N0") daha gerekiyor</span> }
+                    </div>
+                    <div class="saving-actions" style="margin-bottom:12px;">
+                        <a href="/Saving/Details/@s.SavingId" class="btn-action outline"><i class="bi bi-bar-chart-line"></i> Detay</a>
+                        <form method="post" action="/Saving/Delete/@s.SavingId" style="flex:1;" onsubmit="return confirm('Bu birikim hedefini silmek istediğine emin misin?')">
                             @Html.AntiForgeryToken()
-                            <div class="d-flex gap-2 mb-2">
-                                <input type="number" step="0.0001" min="0.0001" name="amount"
-                                       class="form-control form-control-sm"
-                                       placeholder="Miktar" required
-                                       id="amount-@saving.SavingId">
-                                <select name="currency" class="form-select form-select-sm"
-                                        style="width: 120px; flex-shrink: 0;"
-                                        id="currency-@saving.SavingId"
-                                        onchange="onCurrencyChange(@saving.SavingId)">
-                                    <option value="TRY" selected>₺ TRY</option>
+                            <button type="submit" class="btn-action danger w-100"><i class="bi bi-trash"></i> Sil</button>
+                        </form>
+                    </div>
+                    <!-- Tutar Ekleme -->
+                    <div class="add-form">
+                        <form method="post" action="/Saving/AddAmount/@s.SavingId">
+                            @Html.AntiForgeryToken()
+                            <div class="form-row">
+                                <input type="number" step="0.0001" min="0.0001" name="amount" class="form-input" placeholder="Miktar" required id="amount-@s.SavingId">
+                                <select name="currency" class="form-select-sm" id="currency-@s.SavingId" onchange="onCurrencyChange(@s.SavingId)" style="width:110px;flex-shrink:0;">
+                                    <option value="TRY">₺ TRY</option>
                                     <option value="USD">$ USD</option>
                                     <option value="EUR">€ EUR</option>
                                     <option value="GBP">£ GBP</option>
                                     <option value="CHF">Fr CHF</option>
-                                    <option value="SAR">﷼ SAR</option>
-                                    <option value="AED">AED</option>
-                                    <option value="XAU">🥇 Altın/gr</option>
-                                    <option value="XAG">🥈 Gümüş/gr</option>
+                                    <option value="XAU">🥇 Altın</option>
+                                    <option value="XAG">🥈 Gümüş</option>
                                 </select>
                             </div>
-
-                            <!-- Kur bilgisi / Manuel giriş -->
-                            <div id="rate-box-@saving.SavingId" style="display: none;" class="mb-2">
-                                <!-- Standart döviz kur bilgisi -->
-                                <div id="auto-rate-@saving.SavingId" style="display: none;">
-                                    <small class="text-muted" id="auto-rate-text-@saving.SavingId"></small>
-                                </div>
-
-                                <!-- Altın/Gümüş manuel kur -->
-                                <div id="manual-rate-@saving.SavingId" style="display: none;">
-                                    <div class="alert alert-warning py-2 px-3 mb-2" style="font-size: 12px;">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>
-                                        Altın/Gümüş fiyatı piyasaya göre değişir.
-                                        <a href="https://doviz.com" target="_blank" class="alert-link">doviz.com</a>'dan kontrol edin.
-                                        <br>Tahmini uluslararası kur: <strong id="auto-metal-rate-@saving.SavingId"></strong>
+                            <div id="rate-box-@s.SavingId" style="display:none;margin-bottom:8px;">
+                                <div id="auto-rate-@s.SavingId" style="display:none;"><small class="text-muted" id="auto-rate-text-@s.SavingId"></small></div>
+                                <div id="manual-rate-@s.SavingId" style="display:none;">
+                                    <div class="alert alert-warning py-2 px-3 mb-2" style="font-size:12px;">
+                                        Altın/Gümüş için kur gir veya boş bırak (uluslararası kur kullanılır).<br>
+                                        Tahmini: <strong id="auto-metal-rate-@s.SavingId"></strong>
                                     </div>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text">₺/gram</span>
-                                        <input type="number" step="0.01" min="1"
-                                               class="form-control" name="manualRate"
-                                               id="manual-rate-input-@saving.SavingId"
-                                               placeholder="Gram fiyatı girin (opsiyonel)">
-                                    </div>
-                                    <small class="text-muted">Boş bırakırsanız uluslararası kur kullanılır</small>
+                                    <input type="number" step="0.01" min="1" class="form-input" name="manualRate" id="manual-rate-input-@s.SavingId" placeholder="₺/gram (opsiyonel)">
                                 </div>
                             </div>
-
                             <input type="hidden" name="note" value="">
-
-                            <button type="submit" class="btn btn-sm btn-primary w-100">
-                                <i class="bi bi-plus me-1"></i>Ekle
-                            </button>
+                            <button type="submit" class="btn-submit"><i class="bi bi-plus me-1"></i>Ekle</button>
                         </form>
                     </div>
                 </div>
@@ -156,59 +156,33 @@ else
 }
 
 @section Scripts {
-    <script>
-        let cachedRates = null;
-
-        async function loadRates() {
-            if (cachedRates) return cachedRates;
-            try {
-                const response = await fetch('/Saving/GetRates');
-                if (response.ok) cachedRates = await response.json();
-            } catch (e) { console.error('Kur yükleme hatası:', e); }
-            return cachedRates;
+<script>
+    let cachedRates = null;
+    async function loadRates() {
+        if (cachedRates) return cachedRates;
+        try { const r = await fetch('/Saving/GetRates'); if (r.ok) cachedRates = await r.json(); } catch(e) {}
+        return cachedRates;
+    }
+    async function onCurrencyChange(id) {
+        const cur = document.getElementById(`currency-${id}`).value;
+        const rateBox = document.getElementById(`rate-box-${id}`);
+        const autoRate = document.getElementById(`auto-rate-${id}`);
+        const manualRate = document.getElementById(`manual-rate-${id}`);
+        const autoRateText = document.getElementById(`auto-rate-text-${id}`);
+        const autoMetalRate = document.getElementById(`auto-metal-rate-${id}`);
+        if (cur === 'TRY') { rateBox.style.display = 'none'; return; }
+        rateBox.style.display = 'block';
+        const rates = await loadRates();
+        if (!rates) return;
+        const d = rates.find(r => r.code === cur);
+        if (cur === 'XAU' || cur === 'XAG') {
+            autoRate.style.display = 'none'; manualRate.style.display = 'block';
+            if (d) autoMetalRate.textContent = `~₺${d.rate.toFixed(2)}/gram`;
+        } else {
+            autoRate.style.display = 'block'; manualRate.style.display = 'none';
+            if (d) { const n = {USD:'Dolar',EUR:'Euro',GBP:'Sterlin',CHF:'Frank'}; autoRateText.textContent = `Güncel kur: 1 ${n[cur]||cur} = ₺${d.rate.toFixed(4)} (TCMB)`; }
         }
-
-        async function onCurrencyChange(savingId) {
-            const currency = document.getElementById(`currency-${savingId}`).value;
-            const rateBox = document.getElementById(`rate-box-${savingId}`);
-            const autoRate = document.getElementById(`auto-rate-${savingId}`);
-            const manualRate = document.getElementById(`manual-rate-${savingId}`);
-            const autoRateText = document.getElementById(`auto-rate-text-${savingId}`);
-            const autoMetalRate = document.getElementById(`auto-metal-rate-${savingId}`);
-
-            if (currency === 'TRY') {
-                rateBox.style.display = 'none';
-                return;
-            }
-
-            rateBox.style.display = 'block';
-            const rates = await loadRates();
-            if (!rates) return;
-
-            const currencyData = rates.find(r => r.code === currency);
-
-            if (currency === 'XAU' || currency === 'XAG') {
-                // Altın/Gümüş → manuel giriş göster
-                autoRate.style.display = 'none';
-                manualRate.style.display = 'block';
-                if (currencyData) {
-                    const metalName = currency === 'XAU' ? 'Altın' : 'Gümüş';
-                    autoMetalRate.textContent = `~₺${currencyData.rate.toFixed(2)}/gram (${metalName})`;
-                }
-            } else {
-                // Standart döviz → otomatik kur göster
-                autoRate.style.display = 'block';
-                manualRate.style.display = 'none';
-                if (currencyData) {
-                    const names = {
-                        'USD': 'Dolar', 'EUR': 'Euro', 'GBP': 'Sterlin',
-                        'CHF': 'Frank', 'SAR': 'Riyal', 'AED': 'Dirhem'
-                    };
-                    autoRateText.textContent = `Güncel kur: 1 ${names[currency] || currency} = ₺${currencyData.rate.toFixed(4)} (TCMB)`;
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadRates);
-    </script>
+    }
+    document.addEventListener('DOMContentLoaded', loadRates);
+</script>
 }

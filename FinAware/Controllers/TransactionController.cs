@@ -102,6 +102,68 @@ namespace FinAware.API.Controllers
             }
         }
 
+        // GET /api/analysis?month=7&year=2026
+        // NOT: mutlak route kullanildigi icin (baslangictaki "/") bu action
+        // TransactionController icinde olmasina ragmen /api/analysis adresinden
+        // calisir, controller'in "api/Transaction" route prefix'ini gormezden gelir.
+        [HttpGet("/api/analysis")]
+        public async Task<IActionResult> GetAnalysis([FromQuery] int? month, [FromQuery] int? year)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { message = "Kullanıcı bulunamadı" });
+
+                var targetMonth = month ?? DateTime.Now.Month;
+                var targetYear  = year ?? DateTime.Now.Year;
+
+                var transactions = await _context.Transactions
+                    .Include(t => t.Category)
+                    .Where(t => t.UserId == int.Parse(userId)
+                             && t.Date.Month == targetMonth
+                             && t.Date.Year == targetYear)
+                    .OrderByDescending(t => t.Date)
+                    .Select(t => new
+                    {
+                        t.TransactionId,
+                        t.Amount,
+                        t.Date,
+                        t.Description,
+                        t.Type,
+                        t.OriginalCurrency,
+                        CategoryId = t.CategoryId,
+                        categoryName = t.Category != null ? t.Category.Name : null,
+                        categoryIcon = t.Category != null ? t.Category.Icon : null,
+                    })
+                    .ToListAsync();
+
+                var totalIncome   = transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+                var totalExpenses = transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+                var balance       = totalIncome - totalExpenses;
+
+                var categoryExpenses = transactions
+                    .Where(t => t.Type == "Expense" && t.categoryName != null)
+                    .GroupBy(t => t.categoryName)
+                    .ToDictionary(g => g.Key!, g => g.Sum(t => t.Amount));
+
+                return Ok(new
+                {
+                    month = targetMonth,
+                    year = targetYear,
+                    transactions,
+                    categoryExpenses,
+                    totalIncome,
+                    totalExpenses,
+                    balance,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Analiz verisi alınamadı", error = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionCreateDto dto)
         {
